@@ -1,0 +1,30 @@
+{
+  "name": "simpla",
+  "description": "Dynamic content, without the CMS",
+  "version": "0.0.0",
+  "authors": [
+    "Simpla <admin@simpla.io>"
+  ],
+  "license": "MIT",
+  "main": "simpla.js",
+  "keywords": [
+    "simpla",
+    "web component",
+    "polymer",
+    "content",
+    "cms"
+  ],
+  "ignore": [
+    "*",
+    "!simpla.js",
+    "!LICENSE"
+  ],
+  "dependencies": {
+    "webcomponentsjs": "^0.7.0",
+    "polymer": "^1.3.0",
+    "simpla-img": "SimplaElements/simpla-img#^0.1.0",
+    "simpla-text": "SimplaElements/simpla-text#^0.1.0",
+    "simpla-block": "SimplaElements/simpla-block#^0.1.0",
+    "sm-admin": "SimplaElements/sm-admin#^0.1.0"
+  }
+}
