@@ -14,7 +14,7 @@
 
 <br/>
 
-Simpla is a collection of new, editable HTML elements. Use them in your code, then edit their content permanently on your site. They look like this:
+Simpla is a collection of new, editable HTML elements. Use them in your code, then edit their content permanently on your site anytime. They look like this:
 
 ```html
 <simpla-text sid="text"></simpla-text>
@@ -25,7 +25,7 @@ Simpla is a collection of new, editable HTML elements. Use them in your code, th
 
 ## Installation
 
-Sign up for a free account on [simpla.io](https://www.simpla.io) and create a project. Then link the Simpla library into the `<head>` of your document, either from our high-redundancy CDN:
+Sign up for a free account on [simpla.io](https://www.simpla.io) and create a project. Link the Simpla library into the `<head>` of your document, either from our high-redundancy CDN:
 
 ```html
 <head>
@@ -47,7 +47,7 @@ $ bower install simpla --save
 </head>
 ```
 
-Once the Simpla Javascript library included, setup your project API:
+Then setup Simpla with your project's API key:
 
 ```javascript
 Simpla('PROJECT-API-KEY');
@@ -57,9 +57,9 @@ Simpla('PROJECT-API-KEY');
 
 Just drop Simpla's new HTML elements into your code wherever you want editable content.
 
-- Use `<simpla-text></simpla-text>` for editable text
+- Use `<simpla-text>` for editable text
 
-- Use `<simpla-img></simpla-img>` for editable images.
+- Use `<simpla-img>` for editable images.
 
 All Simpla elements must have an `sid` (Simpla ID) attribute containing a unique ID, and both opening and closing HTML tags. For example:
 
