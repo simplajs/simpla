@@ -47,12 +47,6 @@ $ bower install simpla --save
 </head>
 ```
 
-Then setup Simpla with your project's API key:
-
-```javascript
-Simpla('PROJECT-API-KEY');
-```
-
 ## Basic Usage
 
 Just drop Simpla's new HTML elements into your code wherever you want editable content.
