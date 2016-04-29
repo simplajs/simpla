@@ -19,7 +19,7 @@
 
     var protocol = _ref.protocol;
     var host = _ref.host;
-    var pathname = _ref.pathname;
+    var pathname = _ref.pathname.replace(/(^\/?)/,"/");
 
 
     var path = function () {
