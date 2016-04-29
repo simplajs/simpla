@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simpla</title>
+    <script src="./simpla.js"></script>
+    <script>
+      window.simpla = Simpla({
+        project: 'NJQrIRWng',
+        base: 'https://elements.simpla.io/',
+        elements: [
+          'simpla-img/simpla-img.html',
+          'simpla-text/simpla-text.html',
+          'simpla-block/simpla-block.html',
+          'sm-admin/sm-admin.html'
+        ]
+      });
+      simpla.config = { server: simpla.options.api.auth, api: simpla.options.project };
+    </script>
+  </head>
+  <body>
+    <simpla-block sid="block-0">
+      <simpla-text sid="text"></simpla-text>
+      <simpla-img sid="image"></simpla-img>
+    </simpla-block>
+  </body>
+</html>
