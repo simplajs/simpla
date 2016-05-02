@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Simpla</title>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+    <script>
+      sinon.stub(document.head, 'appendChild');
+    </script>
+
+    <script src="/simpla.js"></script>
+  </head>
+  <body>
+    <script>
+      describe('Simpla', function() {
+        var SimplaClass = Simpla.constructor;
+
+        beforeEach(function() {
+          document.head.appendChild.reset();
+        });
+
+        it('should expose global Simpla variable', function() {
+          expect(window.Simpla).to.be.ok;
+          expect(window.Simpla).to.be.a.function;
+        });
+
+        describe('constructor', function() {
+          it('should create a singleton on .client', function() {
+            var client = Simpla('project-key');
+            expect(Simpla.client).to.equal(client);
+          });
+
+          it('on subsequent calls it should warn', function() {
+            if (!Simpla.client) {
+              Simpla('project-key');
+            }
+
+            var client = Simpla.client;
+            sinon.spy(console, 'warn');
+            Simpla('project-key');
+            expect(client).to.equal(Simpla.client);
+            expect(console.warn.called).to.be.true;
+            console.warn.restore();
+          });
+        });
+
+        describe('class', function() {
+          var simpla;
+
+          it('should set the config up', function() {
+            simpla = new SimplaClass({
+              project: 'project-key'
+            });
+
+            expect(simpla.options.api.data).to.equal('https://api.simpla.io/projects/project-key');
+          });
+
+          it('should setup project if given only the project key', function() {
+            simpla = new SimplaClass('another-project-key');
+
+            expect(simpla.options.api.data).to.equal('https://api.simpla.io/projects/another-project-key');
+          });
+        });
+
+        describe('loading elements', function() {
+          it('should call appendChild on document.head', function() {
+            var base = 'foo',
+                elements = ['bar', 'qux'],
+                links;
+
+            SimplaClass.loadElements(elements, base);
+
+            expect(document.head.appendChild.callCount).to.equal(elements.length);
+
+            elements
+              .map(function(el) {
+                return base + el;
+              })
+              .forEach(function(href, i) {
+                var call = document.head.appendChild.getCall(i),
+                    link = call.args[0],
+                    dummyLink = document.createElement('link');
+
+                dummyLink.href = href;
+                expect(link.rel).to.equal('import');
+                expect(link.href).to.equal(dummyLink.href);
+              });
+
+            document.head.appendChild.reset();
+          });
+        });
+
+        describe('bootscript', function() {
+          /**
+           * NOTE: This is currently disabled as Firefox and Safari seem to struggle
+           * 	with this test, testing the boot function manually seems to work fine
+           */
+          xit('should set up polymer', function(done) {
+            expect(window.Polymer).to.be.ok;
+            expect(window.Polymer.dom).to.equal('shadow');
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

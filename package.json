@@ -1,0 +1,37 @@
+{
+  "name": "simpla",
+  "version": "0.1.0",
+  "description": "Dynamic content, without the CMS",
+  "main": "simpla.js",
+  "scripts": {
+    "test": "gulp test:local"
+  },
+  "author": "Simpla <admin@simpla.io>",
+  "license": "MIT",
+  "keywords": [
+    "simpla",
+    "web component",
+    "polymer",
+    "api"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/simplaio/simpla.git"
+  },
+  "bugs": {
+    "url": "https://github.com/simplaio/simpla/issues"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.12.5",
+    "gulp": "^3.9.1",
+    "gulp-if": "^2.0.0",
+    "gulp-notify": "^2.2.0",
+    "gulp-plumber": "^1.1.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-size": "^2.1.0",
+    "run-sequence": "^1.1.5",
+    "simpla-core": "^0.1.2",
+    "web-component-tester": "^4.2.2",
+    "yargs": "^4.6.0"
+  }
+}
