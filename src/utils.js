@@ -1,3 +1,5 @@
+import { APP_SERVER } from './constants';
+
 /**
  * Ready web components in the browser. If webcomponents are natively supported
  * 	it will do nothing, otherwise it will load in the webcomponents polyfills
