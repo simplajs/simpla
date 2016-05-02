@@ -1,4 +1,4 @@
-import { APP_SERVER } from './constants';
+import { ELEMENTS_SERVER } from './constants';
 
 /**
  * Ready web components in the browser. If webcomponents are natively supported
@@ -23,7 +23,7 @@ export function readyWebComponents() {
   return new Promise(resolve => {
     let script = document.createElement('script');
     script.async = true;
-    script.src = `${APP_SERVER}/webcomponentsjs/webcomponents-lite.min.js`;
+    script.src = `${ELEMENTS_SERVER}/webcomponentsjs/webcomponents-lite.min.js`;
     script.onload = resolve;
     document.head.appendChild(script);
   });
