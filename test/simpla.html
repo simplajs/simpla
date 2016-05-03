@@ -97,9 +97,22 @@
            * NOTE: This is currently disabled as Firefox and Safari seem to struggle
            * 	with this test, testing the boot function manually seems to work fine
            */
-          xit('should set up polymer', function(done) {
+          xit('should set up polymer', function() {
             expect(window.Polymer).to.be.ok;
             expect(window.Polymer.dom).to.equal('shadow');
+          });
+
+          /**
+           * NOTE: This should work in theory, but I believe because the tests are
+           * 	isolated, it's not referencing the right head object. Disabling for now
+           */
+          xit('should hide <default-content> elements', function(done) {
+            var el = document.createElement('default-content'),
+                styles;
+
+            document.body.appendChild(el);
+            styles = window.getComputedStyle(el);
+            expect(styles.display).to.equal('none');
           });
         });
       });

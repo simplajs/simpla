@@ -1,5 +1,8 @@
-import { readyWebComponents, configurePolymer } from './utils';
+import { readyWebComponents, configurePolymer, hideDefaultContent } from './utils';
 import SimplaClass from './class';
+
+// Hide default content as soon as possible
+hideDefaultContent();
 
 // Start the load process, store returned promise
 const ensureReady = readyWebComponents().then(configurePolymer);
