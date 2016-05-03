@@ -1,6 +1,16 @@
 import { ELEMENTS_SERVER } from './constants';
 
 /**
+ * Hides <default-content> elements by injecting a style tag into the head
+ * @return {undefined}
+ */
+export function hideDefaultContent() {
+  let style = document.createElement('style');
+  style.innerHTML = 'default-content { display: none; }';
+  document.head.appendChild(style);
+}
+
+/**
  * Ready web components in the browser. If webcomponents are natively supported
  * 	it will do nothing, otherwise it will load in the webcomponents polyfills
  * @return {Promise}  Promise which resolves once web components is definitely ready
