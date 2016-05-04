@@ -16,7 +16,7 @@ export default class Simpla extends SimplaCore {
       options.elements = { paths: [] };
     } else if (options.elements instanceof Array) {
       // Or an array
-      options.elements = { paths: options.elements };
+      options.elements = { paths: options.elements, base: '' };
     }
 
     // Elements default is an object, so a deep assign is needed

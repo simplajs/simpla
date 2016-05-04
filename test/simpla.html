@@ -108,7 +108,7 @@
 
             it('should allow elements to be an array', function() {
               var paths = [ 'foo' ],
-                  expected = Object.assign({}, defaults, { paths: paths });
+                  expected = Object.assign({}, defaults, { paths: paths, base: '' });
 
               simpla = new SimplaClass({
                 project: 'project-key',
