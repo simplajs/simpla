@@ -11,6 +11,17 @@ export default class Simpla extends SimplaCore {
       options = { project: options };
     }
 
+    // Allow elements to be falsey
+    if (options.hasOwnProperty('elements') && !options.elements) {
+      options.elements = { paths: [] };
+    } else if (options.elements instanceof Array) {
+      // Or an array
+      options.elements = { paths: options.elements };
+    }
+
+    // Elements default is an object, so a deep assign is needed
+    options.elements = Object.assign({}, OPTIONS.elements, options.elements);
+
     // Add defaults
     options = Object.assign({}, OPTIONS, options);
     super(options, ...args);

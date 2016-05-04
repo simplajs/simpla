@@ -21,7 +21,10 @@ export default function Simpla(...args) {
 
   // Start loading elements once browser is ready
   ensureReady
-    .then(() => SimplaClass.loadElements(client.options.elements, client.options.base));
+    .then(() => {
+      let { paths, base } = client.options.elements;
+      return SimplaClass.loadElements(paths, base);
+    });
 
   // Set client on self
   Simpla.client = client;
