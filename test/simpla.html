@@ -62,6 +62,62 @@
 
             expect(simpla.options.api.data).to.equal('https://api.simpla.io/projects/another-project-key');
           });
+
+          describe('element setup', function() {
+            var defaults = {
+                  base: 'https://elements.simpla.io/',
+                  paths: [
+                    'simpla-img/simpla-img.html',
+                    'simpla-text/simpla-text.html',
+                    'simpla-block/simpla-block.html',
+                    'sm-admin/sm-admin.html'
+                  ]
+                };
+
+            it('should have the right default, if excluded or only key is used', function() {
+              simpla = new SimplaClass('project-key');
+              expect(simpla.options.elements).to.deep.equal(defaults);
+
+              simpla = new SimplaClass({
+                project: 'project-key'
+              });
+              expect(simpla.options.elements).to.deep.equal(defaults);
+            });
+
+            it('should mix defaults with a given elements object', function() {
+              var expected = Object.assign({}, defaults, { base: '/bower_components/'});
+              simpla = new SimplaClass({
+                project: 'project-key',
+                elements: {
+                  base: '/bower_components/'
+                }
+              });
+
+              expect(simpla.options.elements).to.deep.equal(expected);
+            });
+
+            it('should make an empty array if given a falsy value', function() {
+              var expected = Object.assign({}, defaults, { paths: [] });
+              simpla = new SimplaClass({
+                project: 'project-key',
+                elements: null
+              });
+
+              expect(simpla.options.elements).to.deep.equal(expected);
+            });
+
+            it('should allow elements to be an array', function() {
+              var paths = [ 'foo' ],
+                  expected = Object.assign({}, defaults, { paths: paths });
+
+              simpla = new SimplaClass({
+                project: 'project-key',
+                elements: paths
+              });
+
+              expect(simpla.options.elements).to.deep.equal(expected);
+            });
+          });
         });
 
         describe('loading elements', function() {
