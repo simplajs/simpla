@@ -30,7 +30,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-size": "^2.1.0",
     "run-sequence": "^1.1.5",
-    "simpla-core": "^0.2.0",
+    "simpla-core": "^0.2.1",
     "web-component-tester": "^4.2.2",
     "yargs": "^4.6.0"
   }
