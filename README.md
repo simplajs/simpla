@@ -14,7 +14,10 @@
 
 <br/>
 
-Simpla is a collection of new, editable HTML elements. Use them in your code, then edit their content permanently on your site anytime. They look like this:
+Simpla is a collection of new dynamic HTML elements that talk to an API, based on the emerging [Web Components](https://www.w3.org/wiki/WebComponents/) spec. Use them in your code, then edit their content permanently on your site any time. 
+
+They look like this:
+
 
 ```html
 <simpla-text sid="text"></simpla-text>
@@ -23,31 +26,24 @@ Simpla is a collection of new, editable HTML elements. Use them in your code, th
 
 <p align="center"><img src="https://www.simpla.io/assets/img/demo.gif" alt="Demo of Simpla"></p>
 
-## Installation
-
-Sign up for a free account on [simpla.io](https://www.simpla.io) and create a project. Link the Simpla library into the `<head>` of your document, either from our high-redundancy CDN:
+## Installation and setup
+Sign up for a free account at [simpla.io](https://www.simpla.io) and create a project. Then include the Simpla library in your HTML document and call `Simpla()` with your project’s API key.
 
 ```html
-<head>
-  ...
-  <script src="https://app.simpla.io"></script>
-</head>
+<script src="https://app.simpla.io"></script>
+<script>
+  // TODO: Enter project key
+  Simpla('PROJECT-KEY');
+</script>
 ```
 
-Or locally with Bower:
+You can also install with Bower and link the library in locally.
 
 ```bash
 $ bower install simpla --save
 ```
 
-```html
-<head>
-  ...
-  <script src="/bower_components/simpla/simpla.js"></script>
-</head>
-```
-
-## Basic Usage
+## Basic usage
 
 Just drop Simpla's new HTML elements into your code wherever you want editable content.
 
@@ -55,7 +51,7 @@ Just drop Simpla's new HTML elements into your code wherever you want editable c
 
 - Use `<simpla-img>` for editable images.
 
-All Simpla elements must have an `sid` (Simpla ID) attribute containing a unique ID, and both opening and closing HTML tags. For example:
+All Simpla elements must have a unique _Content ID_ (usually contained in the `sid` attribute) and both opening and closing HTML tags.
 
 ```html
 <simpla-text sid="my-text"></simpla-text>
@@ -72,9 +68,9 @@ All Simpla elements must have an `sid` (Simpla ID) attribute containing a unique
 
 <p align="center"><img src="https://www.simpla.io/assets/img/hero.png" width="600" /></p>
 
-Enter edit mode and start editing content by appending `#edit` to the end of your page’s URL (eg: `https://mysite.com#edit`).
+Simpla doesn’t have any admin areas or forms. Content is contained inside the new HTML elements, so you can edit everything inline, and it stays strictly structured.
 
-In edit mode you can click text to edit it and highlight text to format it. Click images to open editing controls, where you can zoom and crop, upload a new image, and change the title of the image. Once you’ve finished editing hit the save button to publish your changes. Remove `#edit` from the URL to exit edit mode.
+Open your page in a browser, add `#edit` to the end of the URL (eg: `https://mysite.com#edit`), and login to start editing your content. When you’re finished press save to publish your changes. Remove `#edit` from the URL to exit edit mode.
 
 <br/>
 
