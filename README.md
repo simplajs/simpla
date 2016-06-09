@@ -27,13 +27,13 @@ They look like this:
 <p align="center"><img src="https://www.simpla.io/assets/img/demo.gif" alt="Demo of Simpla"></p>
 
 ## Installation and setup
-Sign up for a free account at [simpla.io](https://www.simpla.io) and create a project. Then include the Simpla library in your HTML document and call `Simpla()` with your project’s API key.
+Sign up for a free account at [simpla.io](https://www.simpla.io) and create a project. Then include the Simpla library in your HTML document and call `Simpla()` with your Project's ID.
 
 ```html
 <script src="https://app.simpla.io"></script>
 <script>
-  // TODO: Enter project key
-  Simpla('PROJECT-KEY');
+  // TODO: Enter project ID
+  Simpla('PROJECT-ID');
 </script>
 ```
 
