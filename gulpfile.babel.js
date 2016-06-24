@@ -15,7 +15,7 @@ const wct = require('web-component-tester');
 
 // JS
 const eslint = require('gulp-eslint');
-const rollup = require('gulp-rollup');
+const rollup = require('gulp-rollup-file');
 const resolve = require('rollup-plugin-node-resolve');
 const commonJs = require('rollup-plugin-commonjs');
 const babel = require('rollup-plugin-babel');

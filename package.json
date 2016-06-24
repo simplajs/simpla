@@ -22,15 +22,24 @@
     "url": "https://github.com/simplaio/simpla/issues"
   },
   "devDependencies": {
+    "babel-eslint": "^6.1.0",
+    "babel-preset-es2015-rollup": "^1.1.1",
     "browser-sync": "^2.12.5",
     "gulp": "^3.9.1",
+    "gulp-eslint": "^2.0.0",
     "gulp-if": "^2.0.0",
     "gulp-notify": "^2.2.0",
     "gulp-plumber": "^1.1.0",
     "gulp-rename": "^1.2.2",
+    "gulp-rollup-file": "^0.1.3",
     "gulp-size": "^2.1.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.4",
+    "rollup-plugin-babel": "~2.4.0",
+    "rollup-plugin-commonjs": "^3.0.1",
+    "rollup-plugin-node-resolve": "^1.7.1",
     "run-sequence": "^1.1.5",
-    "simpla-core": "^0.2.1",
+    "simpla-core": "^0.2.2",
     "web-component-tester": "^4.2.2",
     "yargs": "^4.6.0"
   }
