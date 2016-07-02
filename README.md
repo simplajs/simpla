@@ -1,5 +1,5 @@
 <p align="center">
- <img src="https://www.simpla.io/assets/img/logo-wordmark.png" alt="Simpla logo" width="350" />
+ <img src="https://storage.googleapis.com/simpla-assets/img/logo-wordmark-sml.png" alt="Simpla logo" width="350" />
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 
 <br/>
 
-Simpla is a collection of new dynamic HTML elements that talk to an API, based on the emerging [Web Components](https://www.w3.org/wiki/WebComponents/) spec. Use them in your code, then edit their content permanently on your site any time. 
+Simpla is a collection of new dynamic HTML elements that talk to a RESTful API, based on the emerging [Web Components](https://www.w3.org/wiki/WebComponents/) spec. Use them in your code, then edit their content permanently on your site any time. 
 
 They look like this:
 
@@ -24,7 +24,7 @@ They look like this:
 <simpla-img sid="img"></simpla-img>
 ```
 
-<p align="center"><img src="https://www.simpla.io/assets/img/demo.gif" alt="Demo of Simpla"></p>
+<p align="center"><img src="https://storage.googleapis.com/simpla-assets/img/editing-demo.gif" alt="Demo of Simpla"></p>
 
 ## Installation and setup
 Sign up for a free account at [simpla.io](https://www.simpla.io) and create a project. Then include the Simpla library in your HTML document and call `Simpla()` with your Project's ID.
@@ -66,7 +66,7 @@ All Simpla elements must have a unique _Content ID_ (usually contained in the `s
 
 ## Editing content
 
-<p align="center"><img src="https://www.simpla.io/assets/img/hero.png" width="600" /></p>
+<p align="center"><img src="https://storage.googleapis.com/simpla-assets/img/hero-img.png" width="600" /></p>
 
 Simpla doesn’t have any admin areas or forms. Content is contained inside the new HTML elements, so you can edit everything inline, and it stays strictly structured.
 
