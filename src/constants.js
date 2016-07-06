@@ -1,4 +1,4 @@
-export const SERVER = 'https://api.simpla.io';
+export const AUTH_SERVER = 'https://api.simpla.io';
 export const ELEMENTS_SERVER = 'https://elements.simpla.io';
 export const APP_SERVER = 'https://app.simpla.io';
 
@@ -9,12 +9,4 @@ export const ELEMENTS = [
   'sm-admin/sm-admin.html'
 ];
 
-export const OPTIONS = {
-  api: {
-    auth: SERVER
-  },
-  elements: {
-    base: `${ELEMENTS_SERVER}/`,
-    paths: ELEMENTS
-  }
-}
+export const BASE_PATH = `${ELEMENTS_SERVER}/`;
