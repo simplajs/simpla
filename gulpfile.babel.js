@@ -95,7 +95,6 @@ gulp.task('build:tests', () => {
 
             // Minify and pipe out
             .pipe(gulpif(argv.debug, sourcemaps.write()))
-            .pipe(rename({ dirname: '' }))
             .pipe(size({ gzip: true }))
 
           .pipe(gulp.dest(wctConfig.suites[0]));
