@@ -21,6 +21,7 @@ const commonJs = require('rollup-plugin-commonjs');
 const babel = require('rollup-plugin-babel');
 const uglify = require('gulp-uglify');
 const sourcemaps = require('gulp-sourcemaps');
+const nodeGlobals = require('rollup-plugin-node-globals');
 
 const wctConfig = require('./wct.conf.js');
 
@@ -35,8 +36,14 @@ const bs = browserSync.create(),
               jsnext: true,
               browser: true,
             }),
-            commonJs(),
-            babel()
+            commonJs({
+              exclude: [
+                './node_modules/process-es6/browser.js',
+                './node_modules/rollup-plugin-node-globals/src/global.js',
+              ]
+            }),
+            babel(),
+            nodeGlobals()
           ],
           format: 'umd',
           moduleName: 'Simpla',
