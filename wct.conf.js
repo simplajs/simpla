@@ -1,4 +1,5 @@
 module.exports = {
+  suites: ['.test/'],
   plugins: {
     sauce: {
       disabled: true,

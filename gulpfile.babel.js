@@ -22,6 +22,8 @@ const babel = require('rollup-plugin-babel');
 const uglify = require('gulp-uglify');
 const sourcemaps = require('gulp-sourcemaps');
 
+const wctConfig = require('./wct.conf.js');
+
 const bs = browserSync.create(),
       argv = yargs.boolean(['debug']).argv,
       errorNotifier = () => plumber({ errorHandler: notify.onError('Error: <%= error.message %>') }),
@@ -77,12 +79,31 @@ gulp.task('build', () => {
           .pipe(gulp.dest('.'));
 });
 
+gulp.task('build:tests', () => {
+  return gulp.src('test/**/*.js')
+          .pipe(errorNotifier())
+
+            .pipe(gulpif(argv.debug, sourcemaps.init()))
+            .pipe(rollup(OPTIONS.rollup))
+
+            // Minify and pipe out
+            .pipe(gulpif(argv.debug, sourcemaps.write()))
+            .pipe(rename({ dirname: '' }))
+            .pipe(size({ gzip: true }))
+
+          .pipe(gulp.dest(wctConfig.suites[0]));
+});
+
 gulp.task('demo', (callback) => bs.init(OPTIONS.browserSync));
 
 gulp.task('refresh', () => bs.reload());
 
-gulp.task('test', ['build', 'test:local']);
+gulp.task('test', ['build', 'build:tests', 'test:local']);
 
-gulp.task('watch', () => gulp.watch(['src/**/*'], () => gulprun('build', 'refresh')));
+gulp.task('watch:src', () => gulp.watch(['src/**/*'], () => gulprun('build', 'refresh')));
 
-gulp.task('default', ['build', 'demo', 'watch']);
+gulp.task('watch:tests', () => gulp.watch(['test/**/*', 'src/**/*'], () => gulprun('build', 'build:tests')));
+
+gulp.task('watch', [ 'watch:src', 'watch:tests' ]);
+
+gulp.task('default', ['build', 'build:tests', 'demo', 'watch']);
