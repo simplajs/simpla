@@ -87,7 +87,7 @@ gulp.task('build', () => {
 });
 
 gulp.task('build:tests', () => {
-  return gulp.src('test/**/*.js')
+  return gulp.src(['test/**/*.js', '!test/__**/*'])
           .pipe(errorNotifier())
 
             .pipe(gulpif(argv.debug, sourcemaps.init()))
