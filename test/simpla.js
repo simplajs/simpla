@@ -1,4 +1,4 @@
-import Simpla from '../src/';
+import Simpla from '../src/simpla';
 
 describe('Simpla', () => {
   it('should export a function', () => {
