@@ -39,7 +39,6 @@
     "rollup-plugin-commonjs": "^3.0.1",
     "rollup-plugin-node-resolve": "^1.7.1",
     "run-sequence": "^1.1.5",
-    "simpla-core": "^0.2.2",
     "web-component-tester": "^4.2.2",
     "yargs": "^4.6.0"
   }

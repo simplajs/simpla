@@ -15,8 +15,6 @@
   <body>
     <script>
       describe('Simpla', function() {
-        var SimplaClass = Simpla.constructor;
-
         beforeEach(function() {
           document.head.appendChild.reset();
         });
@@ -26,13 +24,13 @@
           expect(window.Simpla).to.be.a.function;
         });
 
-        describe('constructor', function() {
-          it('should create a singleton on .client', function() {
+        describe('initialization', function() {
+          it('setup the correct state ', function() {
             var client = Simpla('project-key');
             expect(Simpla.client).to.equal(client);
           });
 
-          it('on subsequent calls it should warn', function() {
+          xit('on subsequent calls it should warn', function() {
             if (!Simpla.client) {
               Simpla('project-key');
             }
@@ -44,83 +42,90 @@
             expect(console.warn.called).to.be.true;
             console.warn.restore();
           });
-        });
 
-        describe('class', function() {
-          var simpla;
-
-          it('should set the config up', function() {
-            simpla = new SimplaClass({
+          it('should set correct options in the state', function() {
+            Simpla({
               project: 'project-key'
             });
 
-            expect(simpla.options.api.data).to.equal('https://api.simpla.io/projects/project-key');
+            expect(Simpla.getState().options.dataEndpoint).to.equal('https://api.simpla.io/projects/project-key/items');
           });
 
           it('should setup project if given only the project key', function() {
-            simpla = new SimplaClass('another-project-key');
+            Simpla('another-project-key');
 
-            expect(simpla.options.api.data).to.equal('https://api.simpla.io/projects/another-project-key');
+            expect(Simpla.getState().options.dataEndpoint).to.equal('https://api.simpla.io/projects/another-project-key/items');
           });
 
-          describe('element setup', function() {
-            var defaults = {
-                  base: 'https://elements.simpla.io/',
-                  paths: [
-                    'simpla-img/simpla-img.html',
-                    'simpla-text/simpla-text.html',
-                    'simpla-block/simpla-block.html',
-                    'sm-admin/sm-admin.html'
-                  ]
-                };
+          describe('element imports', function() {
+            var defaults = [
+                  'https://elements.simpla.io/simpla-img/simpla-img.html',
+                  'https://elements.simpla.io/simpla-text/simpla-text.html',
+                  'https://elements.simpla.io/simpla-block/simpla-block.html',
+                  'https://elements.simpla.io/sm-admin/sm-admin.html'
+                ],
+                bower = [
+                  '/bower_componenst/simpla-img/simpla-img.html',
+                  '/bower_componenst/simpla-text/simpla-text.html',
+                  '/bower_componenst/simpla-block/simpla-block.html',
+                  '/bower_componenst/sm-admin/sm-admin.html'
+                ];
+
+            function getImportKeys() {
+              return Object.keys(Simpla.getState().imports);
+            }
+
+            function resolveUrls(urls = []) {
+              return urls.map(href => {
+                var link = document.createElement('link');
+                link.href = href;
+                // This will return the fully resolved url which is what we expect
+                return link.href;
+              });
+            }
 
             it('should have the right default, if excluded or only key is used', function() {
-              simpla = new SimplaClass('project-key');
-              expect(simpla.options.elements).to.deep.equal(defaults);
+              Simpla('project-key');
+              expect(getImportKeys()).to.deep.equal(defaults);
 
-              simpla = new SimplaClass({
-                project: 'project-key'
-              });
-              expect(simpla.options.elements).to.deep.equal(defaults);
+              Simpla({ project: 'project-key' });
+              expect(getImportKeys()).to.deep.equal(defaults);
             });
 
             it('should mix defaults with a given elements object', function() {
-              var expected = Object.assign({}, defaults, { base: '/bower_components/'});
-              simpla = new SimplaClass({
+              Simpla({
                 project: 'project-key',
                 elements: {
                   base: '/bower_components/'
                 }
               });
 
-              expect(simpla.options.elements).to.deep.equal(expected);
+              expect(getImportKeys()).to.deep.equal(resolveUrls(bower));
             });
 
             it('should make an empty array if given a falsy value', function() {
-              var expected = Object.assign({}, defaults, { paths: [] });
-              simpla = new SimplaClass({
+              Simpla({
                 project: 'project-key',
                 elements: null
               });
 
-              expect(simpla.options.elements).to.deep.equal(expected);
+              expect(getImportKeys()).to.deep.equal([]);
             });
 
             it('should allow elements to be an array', function() {
-              var paths = [ 'foo' ],
-                  expected = Object.assign({}, defaults, { paths: paths, base: '' });
+              var paths = [ 'foo' ];
 
-              simpla = new SimplaClass({
+              Simpla({
                 project: 'project-key',
                 elements: paths
               });
 
-              expect(simpla.options.elements).to.deep.equal(expected);
+              expect(getImportKeys()).to.deep.equal(resolveUrls(paths));
             });
           });
         });
 
-        describe('loading elements', function() {
+        xdescribe('loading elements', function() {
           it('should call appendChild on document.head', function() {
             var base = 'foo',
                 elements = ['bar', 'qux'],
