@@ -24,3 +24,7 @@ export const SET_DATA_FAILED = 'set-data-failed';
 export const REMOVE_DATA = 'remove-data';
 export const REMOVE_DATA_SUCCESS = 'remove-data-success';
 export const REMOVE_DATA_FAILED = 'remove-data-failed';
+
+// Editing
+export const EDIT_ACTIVE = 'edit-active';
+export const EDIT_INACTIVE = 'edit-inactive';
