@@ -4,10 +4,11 @@ import { importElement } from './actions/imports';
 import { login, logout } from './actions/authentication';
 import { get, set, remove } from './actions/data';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
+import emitterMiddleware, { emitter } from './middleware/emitter';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
-const store = createStore(rootReducer, applyMiddleware(thunk));
+const store = createStore(rootReducer, applyMiddleware(thunk, emitterMiddleware));
 const Simpla = function Simpla(options) {
   Simpla._store = Simpla._store || store;
 
@@ -57,6 +58,7 @@ Object.assign(Simpla, {
     return store.dispatch(logout(...args));
   },
 
+  // Data
   get(...args) {
     return store.dispatch(get(...args))
       .then(action => action.response);
@@ -70,6 +72,23 @@ Object.assign(Simpla, {
   remove(...args) {
     return store.dispatch(remove(...args))
       .then(action => action.response);
+  },
+
+  // Events
+  on(...args) {
+    emitter.on(...args);
+  },
+
+  off(...args) {
+    emitter.off(...args);
+  },
+
+  once(...args) {
+    emitter.once(...args);
+  },
+
+  emit(event, data) {
+    (this._store || store).dispatch(Object.assign({}, { type: event }, data));
   }
 });
 
