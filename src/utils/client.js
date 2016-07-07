@@ -47,41 +47,32 @@ function request(options) {
       .then(response => response.json());
 };
 
+function requestWithToken(options) {
+  let token = options.token;
+
+  if (token) {
+    options.headers = Object.assign({
+      'Authorization': `Bearer ${token}`
+    }, options.headers);
+  }
+
+  return request(options);
+}
+
 export default {
-  get(url) {
-    return request({ url, method: 'GET' });
+  get(url, options) {
+    return request(Object.assign({ method: 'GET' }, options, { url }));
   },
 
-  post(url, body, token) {
-    let headers;
-
-    if (token) {
-      headers = {
-        'Authorization': `Bearer ${token}`
-      };
-    }
-
-    return request({
-      url,
-      headers,
-      body,
-      method: 'POST'
-    });
+  post(url, options) {
+    return requestWithToken(Object.assign({ method: 'POST' }, options, { url }));
   },
 
-  delete(url, token) {
-    let headers;
+  put(url, options) {
+    return requestWithToken(Object.assign({ method: 'PUT' }, options, { url }));
+  },
 
-    if (token) {
-      headers = {
-        'Authorization': `Bearer ${token}`
-      };
-    }
-
-    return request({
-      url,
-      method: 'DELETE',
-      headers
-    });
+  delete(url, options) {
+    return requestWithToken(Object.assign({ method: 'DELETE' }, options, { url }));
   }
 }

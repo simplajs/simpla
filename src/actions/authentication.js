@@ -29,11 +29,13 @@ export function login({ email, password }) {
 
     dispatch(syncLogin({ email, password }));
 
-    return client.post(`${authEndpoint}/login`, { email, password })
-      .then(
-        success => dispatch(loginSuccessful(success.token)),
-        error => dispatch(loginFailed(error))
-      );
+    return client.post(`${authEndpoint}/login`, {
+      body: { email, password }
+    })
+    .then(
+      success => dispatch(loginSuccessful(success.token)),
+      error => dispatch(loginFailed(error))
+    );
   }
 }
 
