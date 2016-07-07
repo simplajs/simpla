@@ -58,15 +58,18 @@ Object.assign(Simpla, {
   },
 
   get(...args) {
-    return store.dispatch(get(...args));
+    return store.dispatch(get(...args))
+      .then(action => action.response);
   },
 
   set(...args) {
-    return store.dispatch(set(...args));
+    return store.dispatch(set(...args))
+      .then(action => action.response);
   },
 
   remove(...args) {
-    return store.dispatch(remove(...args));
+    return store.dispatch(remove(...args))
+      .then(action => action.response);
   }
 });
 
