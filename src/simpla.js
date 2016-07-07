@@ -4,11 +4,24 @@ import { importElement } from './actions/imports';
 import { login, logout } from './actions/authentication';
 import { get, set, remove } from './actions/data';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
+import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
+import { supportDeprecatedInitializer, supportDeprecatedConfig } from './utils/deprecation';
 import emitterMiddleware, { emitter } from './middleware/emitter';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
+// Create core store
 const store = createStore(rootReducer, applyMiddleware(thunk, emitterMiddleware));
+
+// Hide Default Content
+hideDefaultContent();
+
+// Conditionally load in web components
+readyWebComponents();
+
+// Setup Polymer configuration
+configurePolymer();
+
 const Simpla = function Simpla(options) {
   Simpla._store = Simpla._store || store;
 
@@ -45,7 +58,13 @@ const Simpla = function Simpla(options) {
   }
 
   elements.forEach(element => Simpla._store.dispatch(importElement(`${base}${element}`)));
+
+  // Add in deprecated configuration
+  supportDeprecatedConfig(authEndpoint, project);
 };
+
+// Support deprecated initialization method
+supportDeprecatedInitializer(Simpla);
 
 // Add mixins
 Object.assign(Simpla, {
@@ -89,7 +108,15 @@ Object.assign(Simpla, {
 
   emit(event, data) {
     (this._store || store).dispatch(Object.assign({}, { type: event }, data));
-  }
+  },
+
+  // State
+  getState() {
+    return (this._store || store).getState();
+  },
+
+  // Backwards compatibility for previous SDK
+  client: Simpla
 });
 
 export default Simpla;
