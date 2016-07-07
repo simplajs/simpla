@@ -110,7 +110,6 @@ describe('Simpla', () => {
         Simpla._store = mockStore({ imports: {} });
 
         Simpla(options);
-        console.log(Simpla._store.getActions(), actions);
 
         // Tests for members as we don't care what order the initializations happen
         expect(Simpla._store.getActions()).to.deep.include.members(actions);

@@ -9,11 +9,11 @@ describe('importsReducer', () => {
     type: 'IMPORT_ELEMENT',
     status: 'loading'
   }, {
-    type: 'IMPORT_ELEMENT',
-    status: 'loading'
+    type: 'IMPORT_ELEMENT_SUCCESS',
+    status: 'loaded'
   }, {
-    type: 'IMPORT_ELEMENT',
-    status: 'loading'
+    type: 'IMPORT_ELEMENT_FAILED',
+    status: 'failed'
   }].forEach(({ type, status }) => {
     describe(`handling ${type}`, () => {
       it(`should set that href status to ${status}`, () => {
