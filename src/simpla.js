@@ -1,6 +1,7 @@
 import { createStore } from 'redux';
 import { setAuthEndpoint, setDataEndpoint } from './actions/options';
 import { importElement } from './actions/imports';
+import { login, logout } from './actions/authentication';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
 import rootReducer from './reducers';
 
@@ -42,5 +43,16 @@ const Simpla = function Simpla(options) {
 
   elements.forEach(element => Simpla._store.dispatch(importElement(`${base}${element}`)));
 };
+
+// Add mixins
+Object.assign(Simpla, {
+  login(...args) {
+    return store.dispatch(login(...args));
+  },
+
+  logout(...args) {
+    return store.dispatch(logout(...args));
+  }
+});
 
 export default Simpla;

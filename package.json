@@ -25,6 +25,7 @@
     "babel-eslint": "^6.1.0",
     "babel-preset-es2015-rollup": "^1.1.1",
     "browser-sync": "^2.12.5",
+    "fetch-mock": "^4.6.0",
     "gulp": "^3.9.1",
     "gulp-eslint": "^2.0.0",
     "gulp-if": "^2.0.0",
