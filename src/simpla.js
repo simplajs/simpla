@@ -1,11 +1,13 @@
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
 import { setAuthEndpoint, setDataEndpoint } from './actions/options';
 import { importElement } from './actions/imports';
 import { login, logout } from './actions/authentication';
+import { get, set, remove } from './actions/data';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
+import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
-const store = createStore(rootReducer);
+const store = createStore(rootReducer, applyMiddleware(thunk));
 const Simpla = function Simpla(options) {
   Simpla._store = Simpla._store || store;
 
@@ -46,12 +48,25 @@ const Simpla = function Simpla(options) {
 
 // Add mixins
 Object.assign(Simpla, {
+  // Authentication
   login(...args) {
     return store.dispatch(login(...args));
   },
 
   logout(...args) {
     return store.dispatch(logout(...args));
+  },
+
+  get(...args) {
+    return store.dispatch(get(...args));
+  },
+
+  set(...args) {
+    return store.dispatch(set(...args));
+  },
+
+  remove(...args) {
+    return store.dispatch(remove(...args));
   }
 });
 

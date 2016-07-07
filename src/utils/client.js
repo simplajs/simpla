@@ -35,7 +35,8 @@ function request(options) {
   let fetchOptions = Object.assign({}, options);
 
   fetchOptions.headers = Object.assign({
-    Accept: 'application/json'
+    Accept: 'application/json',
+    'Content-Type': 'application/json'
   }, fetchOptions.headers);
 
   if (options.body) {
