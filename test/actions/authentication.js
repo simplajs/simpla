@@ -1,5 +1,4 @@
 import { login, logout } from '../../src/actions/authentication';
-import { AUTH_SERVER } from '../../src/constants/options';
 import thunk from 'redux-thunk';
 import * as types from '../../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
@@ -7,9 +6,10 @@ import configureMockStore from '../__utils__/redux-mock-store';
 
 const mockStore = configureMockStore([ thunk ]);
 const TOKEN = 'some-token';
+const SERVER = 'some-server';
 
 fetchMock
-  .mock(`${AUTH_SERVER}/login`, 'POST', {
+  .mock(`${SERVER}/login`, 'POST', {
     token: TOKEN
   });
 
@@ -18,7 +18,7 @@ describe('authentication actions', () => {
     it('should request login endpoint and fire action with response token', () => {
       let store = mockStore({
             options: {
-              authEndpoint: AUTH_SERVER
+              authEndpoint: SERVER
             }
           }),
           email = 'foo@bar.com',
@@ -34,8 +34,8 @@ describe('authentication actions', () => {
 
       return store.dispatch(login({ email, password }))
         .then(() => {
-          console.log(store.getActions());
           expect(store.getActions()).to.deep.equal(expectedActions);
+          expect(JSON.parse(fetchMock.lastOptions(`${SERVER}/login`).body)).to.deep.equal({ email, password });
         });
     });
   });

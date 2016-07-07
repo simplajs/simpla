@@ -1,3 +1,5 @@
+import 'isomorphic-fetch';
+
 /**
  * Check Status and request courtesy of feathers-rest
  * See https://github.com/feathersjs/feathers-rest/blob/master/src/client/fetch.js
@@ -51,22 +53,35 @@ export default {
   },
 
   post(url, body, token) {
+    let headers;
+
+    if (token) {
+      headers = {
+        'Authorization': `Bearer ${token}`
+      };
+    }
+
     return request({
       url,
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers,
+      body,
+      method: 'POST'
     });
   },
 
   delete(url, token) {
+    let headers;
+
+    if (token) {
+      headers = {
+        'Authorization': `Bearer ${token}`
+      };
+    }
+
     return request({
       url,
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers
     });
   }
 }
