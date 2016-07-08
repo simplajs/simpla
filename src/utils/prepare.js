@@ -1,4 +1,4 @@
-import { ELEMENTS_SERVER } from './constants';
+import { ELEMENTS_SERVER } from '../constants/options';
 
 /**
  * Hides <default-content> elements by injecting a style tag into the head

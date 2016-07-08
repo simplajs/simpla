@@ -5,3 +5,6 @@ bower_components
 # Runtime
 .DS_Store
 *.log
+
+# Test Builds
+.test

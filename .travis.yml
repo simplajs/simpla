@@ -6,7 +6,7 @@ node_js:
 before_script:
 - npm install bower
 - bower install
-script: wct --plugin sauce
+script: gulp build:tests && wct --plugin sauce
 cache:
   directories:
   - node_modules
