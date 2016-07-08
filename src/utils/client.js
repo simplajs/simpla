@@ -9,26 +9,13 @@ function checkStatus(response) {
     return response;
   }
 
-  return new Promise((resolve, reject) => {
-    let body = response.body,
-        buffer = '';
-
-    body.on('data', data => buffer += data.toString());
-    body.on('error', reject);
-    body.on('end', () => {
-      let error = new Error(buffer);
-
-      try {
-        error = JSON.parse(buffer);
-      } catch (e) {
-        error.code = response.status;
-      }
-
-      error.response = response;
-
-      reject(error);
+  return Promise.resolve()
+    .then(() => response.json())
+    .then(error => {
+      error.code = error.code || response.status;
+      error.statusText = error.statusText || response.statusText;
+      return Promise.reject(error);
     });
-  });
 }
 
 function request(options) {
