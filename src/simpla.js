@@ -63,6 +63,8 @@ const Simpla = function Simpla(options) {
 
   // Add in deprecated configuration
   supportDeprecatedConfig(authEndpoint, project);
+
+  return Simpla;
 };
 
 // Support deprecated initialization method

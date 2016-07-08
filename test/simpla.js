@@ -115,6 +115,11 @@ describe('Simpla', () => {
         expect(Simpla._store.getActions()).to.deep.include.members(actions);
       });
     });
+
+    it('should return itself after init', () => {
+      let response = Simpla('');
+      expect(response).to.equal(Simpla);
+    });
   });
 
   describe('events', () => {
