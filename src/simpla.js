@@ -1,3 +1,5 @@
+import 'core-js/fn/object/assign';
+import 'core-js/fn/promise';
 import { createStore, applyMiddleware } from 'redux';
 import { setAuthEndpoint, setDataEndpoint } from './actions/options';
 import { importElement } from './actions/imports';
