@@ -48,3 +48,18 @@ export function storeToObserver(store) {
     }
   }
 }
+
+export function ensureActionMatches(expectedType) {
+  return (action) => {
+    return action.type === expectedType ? Promise.resolve(action) : Promise.reject(action);
+  }
+}
+
+export function dispatchThunkAndExpect(store, action, expectedType) {
+  return store.dispatch(action)
+    .then(ensureActionMatches(expectedType))
+    .then(
+      action => action.response,
+      action => Promise.reject(action.response)
+    );
+}

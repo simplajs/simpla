@@ -1,4 +1,4 @@
-import { storeToObserver, selectPropByPath } from '../../src/utils/helpers';
+import { storeToObserver, selectPropByPath, dispatchThunkAndExpect } from '../../src/utils/helpers';
 import { createStore } from 'redux';
 
 describe('helpers', () => {
@@ -79,6 +79,48 @@ describe('helpers', () => {
 
       expect(bazSpy.lastCall.args).to.deep.equal([ 'baz', null ]);
       expect(barSpy.callCount).to.equal(1);
+    });
+  });
+
+  describe('dispatchThunkAndExpect', () => {
+    const GOOD_TYPE = 'good-type',
+          BAD_TYPE = 'bad-type',
+          RESPONSE = 'response',
+          THUNK = 'thunk';
+
+    it('should resolve on the correct type', () => {
+      let store = {
+            dispatch: sinon.stub()
+              .returns(Promise.resolve({ type: GOOD_TYPE, response: RESPONSE }))
+          },
+          resolveSpy = sinon.spy(),
+          rejectSpy = sinon.spy();
+
+      return dispatchThunkAndExpect(store, THUNK, GOOD_TYPE)
+        .then(resolveSpy, rejectSpy)
+        .then(() => {
+          console.log(resolveSpy.firstCall, rejectSpy.callCount);
+          expect(resolveSpy.called).to.be.true;
+          expect(resolveSpy.calledWith(RESPONSE)).to.be.true;
+          expect(store.dispatch.calledWith(THUNK)).to.be.true;
+        });
+    });
+
+    it('should reject on the wrong type', () => {
+      let store = {
+            dispatch: sinon.stub()
+              .returns(Promise.resolve({ type: BAD_TYPE, response: RESPONSE }))
+          },
+          resolveSpy = sinon.spy(),
+          rejectSpy = sinon.spy();
+
+      return dispatchThunkAndExpect(store, THUNK, GOOD_TYPE)
+        .then(resolveSpy, rejectSpy)
+        .then(() => {
+          expect(rejectSpy.called).to.be.true;
+          expect(rejectSpy.calledWith(RESPONSE)).to.be.true;
+          expect(store.dispatch.calledWith(THUNK)).to.be.true;
+        });
     });
   });
 });
