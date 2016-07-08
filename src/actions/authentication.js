@@ -12,14 +12,14 @@ function syncLogin({ email, password }) {
 function loginSuccessful(token) {
   return {
     type: LOGIN_SUCCESSFUL,
-    token
+    response: token
   };
 }
 
 function loginFailed(error) {
   return {
     type: LOGIN_FAILED,
-    error
+    response: error
   };
 }
 
@@ -46,8 +46,5 @@ function syncLogout() {
 }
 
 export function logout() {
-  return (dispatch) => {
-    dispatch(syncLogout());
-    return Promise.resolve();
-  }
+  return (dispatch) => Promise.resolve().then(() => dispatch(syncLogout()));
 }

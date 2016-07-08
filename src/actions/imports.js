@@ -1,4 +1,4 @@
-import { IMPORT_ELEMENT, IMPORT_ELEMENT_SUCCESS, IMPORT_ELEMENT_FAILED } from '../constants/actionTypes';
+import { IMPORT_ELEMENT, IMPORT_ELEMENT_SUCCESSFUL, IMPORT_ELEMENT_FAILED } from '../constants/actionTypes';
 
 export function syncImportElement(href) {
   return {
@@ -16,7 +16,7 @@ export function importElementFailed(href, error) {
 
 export function importElementSuccess(href) {
   return {
-    type: IMPORT_ELEMENT_SUCCESS,
+    type: IMPORT_ELEMENT_SUCCESSFUL,
     href
   };
 }

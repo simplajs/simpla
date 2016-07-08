@@ -29,7 +29,7 @@ describe('data crud', () => {
             uid: UID,
             data: undefined
           }, {
-            type: types.GET_DATA_SUCCESS,
+            type: types.GET_DATA_SUCCESSFUL,
             uid: UID,
             response: RESPONSE
           }];
@@ -58,7 +58,7 @@ describe('data crud', () => {
             uid: UID,
             data: DATA
           }, {
-            type: types.SET_DATA_SUCCESS,
+            type: types.SET_DATA_SUCCESSFUL,
             uid: UID,
             response: RESPONSE
           }];
@@ -92,7 +92,7 @@ describe('data crud', () => {
             uid: UID,
             data: undefined
           }, {
-            type: types.REMOVE_DATA_SUCCESS,
+            type: types.REMOVE_DATA_SUCCESSFUL,
             uid: UID,
             response: {}
           }];

@@ -6,9 +6,10 @@ import { importElement } from './actions/imports';
 import { login, logout } from './actions/authentication';
 import { get, set, remove } from './actions/data';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
+import * as types from './constants/actionTypes';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
 import { supportDeprecatedInitializer, supportDeprecatedConfig } from './utils/deprecation';
-import { storeToObserver } from './utils/helpers';
+import { storeToObserver, ensureActionMatches, dispatchThunkAndExpect } from './utils/helpers';
 import { emitter } from './middleware/emitter';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
@@ -75,27 +76,24 @@ supportDeprecatedInitializer(Simpla);
 Object.assign(Simpla, {
   // Authentication
   login(...args) {
-    return store.dispatch(login(...args));
+    return dispatchThunkAndExpect(store, login(...args), types.LOGIN_SUCCESSFUL);
   },
 
   logout(...args) {
-    return store.dispatch(logout(...args));
+    return dispatchThunkAndExpect(store, logout(...args), types.LOGOUT);
   },
 
   // Data
   get(...args) {
-    return store.dispatch(get(...args))
-      .then(action => action.response);
+    return dispatchThunkAndExpect(store, get(...args), types.GET_DATA_SUCCESSFUL);
   },
 
   set(...args) {
-    return store.dispatch(set(...args))
-      .then(action => action.response);
+    return dispatchThunkAndExpect(store, set(...args), types.SET_DATA_SUCCESSFUL);
   },
 
   remove(...args) {
-    return store.dispatch(remove(...args))
-      .then(action => action.response);
+    return dispatchThunkAndExpect(store, remove(...args), types.REMOVE_DATA_SUCCESSFUL);
   },
 
   // Events

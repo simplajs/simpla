@@ -1,14 +1,14 @@
 import {
   GET_DATA,
-  GET_DATA_SUCCESS,
+  GET_DATA_SUCCESSFUL,
   GET_DATA_FAILED,
 
   SET_DATA,
-  SET_DATA_SUCCESS,
+  SET_DATA_SUCCESSFUL,
   SET_DATA_FAILED,
 
   REMOVE_DATA,
-  REMOVE_DATA_SUCCESS,
+  REMOVE_DATA_SUCCESSFUL,
   REMOVE_DATA_FAILED
 } from '../constants/actionTypes';
 import client from '../utils/client';
@@ -65,6 +65,6 @@ function generateHandler(method, types) {
   };
 }
 
-export const get = generateHandler('get', [ GET_DATA, GET_DATA_SUCCESS, GET_DATA_FAILED ]);
-export const set = generateHandler('put', [ SET_DATA, SET_DATA_SUCCESS, SET_DATA_FAILED ]);
-export const remove = generateHandler('delete', [ REMOVE_DATA, REMOVE_DATA_SUCCESS, REMOVE_DATA_FAILED ]);
+export const get = generateHandler('get', [ GET_DATA, GET_DATA_SUCCESSFUL, GET_DATA_FAILED ]);
+export const set = generateHandler('put', [ SET_DATA, SET_DATA_SUCCESSFUL, SET_DATA_FAILED ]);
+export const remove = generateHandler('delete', [ REMOVE_DATA, REMOVE_DATA_SUCCESSFUL, REMOVE_DATA_FAILED ]);
