@@ -29,7 +29,7 @@
     "eventemitter3": "^1.2.0",
     "fetch-mock": "^4.6.0",
     "gulp": "^3.9.1",
-    "gulp-eslint": "^2.0.0",
+    "gulp-eslint": "^3.0.0",
     "gulp-if": "^2.0.0",
     "gulp-notify": "^2.2.0",
     "gulp-plumber": "^1.1.0",
