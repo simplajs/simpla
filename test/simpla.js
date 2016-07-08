@@ -121,18 +121,4 @@ describe('Simpla', () => {
       expect(response).to.equal(Simpla);
     });
   });
-
-  describe('events', () => {
-    it('should convert emits into dispatches', () => {
-      let type = 'foo',
-          data = { bar: 'foo' },
-          action = Object.assign({}, data, { type });
-
-      Simpla._store = mockStore({});
-
-      Simpla.emit(type, data);
-
-      expect(Simpla._store.getActions()).to.deep.equal([ action ]);
-    });
-  });
 });

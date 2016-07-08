@@ -8,12 +8,13 @@ import { get, set, remove } from './actions/data';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
 import { supportDeprecatedInitializer, supportDeprecatedConfig } from './utils/deprecation';
-import emitterMiddleware, { emitter } from './middleware/emitter';
+import { storeToObserver } from './utils/helpers';
+import { emitter } from './middleware/emitter';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
 // Create core store
-const store = createStore(rootReducer, applyMiddleware(thunk, emitterMiddleware));
+const store = createStore(rootReducer, applyMiddleware(thunk));
 
 // Hide Default Content
 hideDefaultContent();
@@ -110,13 +111,17 @@ Object.assign(Simpla, {
     emitter.once(...args);
   },
 
-  emit(event, data) {
-    (this._store || store).dispatch(Object.assign({}, { type: event }, data));
+  emit(...args) {
+    emitter.emit(...args);
   },
 
   // State
   getState() {
     return (this._store || store).getState();
+  },
+
+  observe(...args) {
+    return storeToObserver(this._store || store).observe(...args);
   },
 
   // Backwards compatibility for previous SDK
