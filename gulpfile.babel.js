@@ -22,6 +22,7 @@ const babel = require('rollup-plugin-babel');
 const uglify = require('gulp-uglify');
 const sourcemaps = require('gulp-sourcemaps');
 const nodeGlobals = require('rollup-plugin-node-globals');
+const replace = require('rollup-plugin-replace');
 
 const wctConfig = require('./wct.conf.js');
 
@@ -43,7 +44,10 @@ const bs = browserSync.create(),
               ]
             }),
             babel(),
-            nodeGlobals()
+            nodeGlobals(),
+            replace({
+              'process.env.NODE_ENV': argv.debug ? '"development"' : '"production"'
+            })
           ],
           format: 'umd',
           moduleName: 'Simpla',
