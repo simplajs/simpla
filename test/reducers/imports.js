@@ -9,7 +9,7 @@ describe('importsReducer', () => {
     type: 'IMPORT_ELEMENT',
     status: 'loading'
   }, {
-    type: 'IMPORT_ELEMENT_SUCCESS',
+    type: 'IMPORT_ELEMENT_SUCCESSFUL',
     status: 'loaded'
   }, {
     type: 'IMPORT_ELEMENT_FAILED',

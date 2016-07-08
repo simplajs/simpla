@@ -29,7 +29,7 @@ describe('authentication actions', () => {
             password
           }, {
             type: types.LOGIN_SUCCESSFUL,
-            token: TOKEN
+            response: TOKEN
           }];
 
       return store.dispatch(login({ email, password }))

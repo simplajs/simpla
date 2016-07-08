@@ -15,7 +15,7 @@ describe('importing elements', () => {
       message: 'errored'
     }, {
       method: 'onload',
-      type: 'IMPORT_ELEMENT_SUCCESS',
+      type: 'IMPORT_ELEMENT_SUCCESSFUL',
       message: 'loaded'
     }].forEach(({ method, type, message }) => {
 
