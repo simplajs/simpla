@@ -121,4 +121,22 @@ describe('Simpla', () => {
       expect(response).to.equal(Simpla);
     });
   });
+
+  describe('controlling edit mode', () => {
+    describe('startEditing', () => {
+      Simpla._store = mockStore({});
+      Simpla.startEditing();
+      expect(Simpla._store.getActions()).to.deep.have.members([{
+        type: types.EDIT_ACTIVE
+      }]);
+    });
+
+    describe('stopEditing', () => {
+      Simpla._store = mockStore({});
+      Simpla.stopEditing();
+      expect(Simpla._store.getActions()).to.deep.have.members([{
+        type: types.EDIT_INACTIVE
+      }]);
+    });
+  });
 });

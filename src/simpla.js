@@ -3,6 +3,7 @@ import 'core-js/fn/promise';
 import { createStore, applyMiddleware } from 'redux';
 import { setAuthEndpoint, setDataEndpoint } from './actions/options';
 import { importElement } from './actions/imports';
+import { editActive, editInactive } from './actions/editing';
 import { login, logout } from './actions/authentication';
 import { get, set, remove } from './actions/data';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
@@ -111,6 +112,15 @@ Object.assign(Simpla, {
 
   emit(...args) {
     emitter.emit(...args);
+  },
+
+  // Editing
+  startEditing() {
+    (this._store || store).dispatch(editActive());
+  },
+
+  stopEditing() {
+    (this._store || store).dispatch(editInactive());
   },
 
   // State
