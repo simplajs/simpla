@@ -1,16 +1,18 @@
 import { combineReducers } from 'redux';
-import authentication from './authentication';
+import authenticated from './authenticated';
 import options from './options';
 import imports from './imports';
 import editing from './editing';
 import data from './data';
+import token from './token';
 
 const reducer = combineReducers({
-  authentication,
+  authenticated,
   options,
   imports,
   editing,
-  data
+  data,
+  token
 });
 
 export default reducer;

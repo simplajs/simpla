@@ -41,13 +41,15 @@ describe('authentication actions', () => {
   });
 
   describe('logout', () => {
-    it('should just fire a logout', () => {
+    it('should fire logout and logout successful', () => {
       let store = mockStore({});
 
       return store.dispatch(logout())
         .then(() => {
           expect(store.getActions()).to.deep.equal([{
             type: types.LOGOUT
+          }, {
+            type: types.LOGOUT_SUCCESSFUL
           }]);
         });
     });

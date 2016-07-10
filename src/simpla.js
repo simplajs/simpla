@@ -80,7 +80,7 @@ Object.assign(Simpla, {
   },
 
   logout(...args) {
-    return dispatchThunkAndExpect(store, logout(...args), types.LOGOUT);
+    return dispatchThunkAndExpect(store, logout(...args), types.LOGOUT_SUCCESSFUL);
   },
 
   // Data

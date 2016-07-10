@@ -1,4 +1,11 @@
-import { LOGIN, LOGIN_SUCCESSFUL, LOGIN_FAILED, LOGOUT } from '../constants/actionTypes';
+import {
+  LOGIN,
+  LOGIN_SUCCESSFUL,
+  LOGIN_FAILED,
+  LOGOUT,
+  LOGOUT_SUCCESSFUL,
+  LOGOUT_FAILED
+} from '../constants/actionTypes';
 import client from '../utils/client';
 
 function syncLogin({ email, password }) {
@@ -45,6 +52,21 @@ function syncLogout() {
   };
 }
 
+function logoutSuccessful() {
+  return {
+    type: LOGOUT_SUCCESSFUL
+  };
+}
+
+function logoutFailed() {
+  return {
+    type: LOGOUT_FAILED
+  };
+}
+
 export function logout() {
-  return (dispatch) => Promise.resolve().then(() => dispatch(syncLogout()));
+  return (dispatch) => {
+    dispatch(syncLogout());
+    return Promise.resolve().then(() => dispatch(logoutSuccessful()));
+  }
 }
