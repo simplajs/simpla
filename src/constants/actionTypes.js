@@ -10,7 +10,10 @@ export const SET_OPTION = 'set-option';
 export const LOGIN = 'login';
 export const LOGIN_SUCCESSFUL = 'login-successful';
 export const LOGIN_FAILED = 'login-failed';
+
 export const LOGOUT = 'logout';
+export const LOGOUT_SUCCESSFUL = 'logout-successful';
+export const LOGOUT_FAILED = 'logout-failed';
 
 // Data
 export const GET_DATA = 'get-data';

@@ -1,4 +1,4 @@
-import { LOGIN_SUCCESSFUL, LOGOUT } from '../../src/constants/actionTypes';
+import { LOGIN_SUCCESSFUL, LOGOUT_SUCCESSFUL } from '../../src/constants/actionTypes';
 import tokenReducer from '../../src/reducers/token';
 
 describe('state of token', () => {
@@ -11,9 +11,9 @@ describe('state of token', () => {
     })).to.deep.equal(token);
   });
 
-  it('should remove token on LOGOUT', () => {
+  it('should remove token on LOGOUT_SUCCESSFUL', () => {
     expect(tokenReducer(undefined, {
-      type: LOGOUT
+      type: LOGOUT_SUCCESSFUL
     })).to.deep.equal(null);
   });
 });
