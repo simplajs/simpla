@@ -34,7 +34,7 @@ describe('hashTracking', () => {
     expect(window.location.hash).to.equal('#edit');
 
     callback(false);
-    expect(window.location.hash).to.equal('');
+    expect(window.location.hash).to.not.equal('#edit');
   });
 
   it('should listen for changes on the window and update Simpla accordingly', () => {
