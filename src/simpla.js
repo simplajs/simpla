@@ -1,7 +1,7 @@
 import 'core-js/fn/object/assign';
 import 'core-js/fn/promise';
 import { createStore, applyMiddleware } from 'redux';
-import { setAuthEndpoint, setDataEndpoint } from './actions/options';
+import { setOption } from './actions/options';
 import { importElement } from './actions/imports';
 import { editActive, editInactive } from './actions/editing';
 import { login, logout } from './actions/authentication';
@@ -12,6 +12,7 @@ import { hideDefaultContent, readyWebComponents, configurePolymer } from './util
 import { supportDeprecatedInitializer, supportDeprecatedConfig } from './utils/deprecation';
 import { storeToObserver, ensureActionMatches, dispatchThunkAndExpect } from './utils/helpers';
 import { emitter } from './middleware/emitter';
+import hashTracking from './plugins/hashTracking';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
@@ -36,10 +37,6 @@ const Simpla = function Simpla(options) {
       dataEndpoint,
       elements = [];
 
-  // Initialize the auth server
-  authEndpoint = AUTH_SERVER;
-  Simpla._store.dispatch(setAuthEndpoint(authEndpoint));
-
   // Initialize data endpoint
   if (typeof options === 'string') {
     project = options;
@@ -47,8 +44,14 @@ const Simpla = function Simpla(options) {
     project = options.project;
   }
 
+  Simpla._store.dispatch(setOption('project', project));
+
+  // Initialize the auth server
+  authEndpoint = AUTH_SERVER;
+  Simpla._store.dispatch(setOption('authEndpoint', authEndpoint));
+
   dataEndpoint = `${AUTH_SERVER}/projects/${project}/items`;
-  Simpla._store.dispatch(setDataEndpoint(dataEndpoint));
+  Simpla._store.dispatch(setOption('dataEndpoint', dataEndpoint));
 
   // Initialize elements
   if (typeof options.elements === 'undefined') { // Doesn't exist, use defaults
@@ -135,5 +138,8 @@ Object.assign(Simpla, {
   // Backwards compatibility for previous SDK
   client: Simpla
 });
+
+// Init plugins
+hashTracking(Simpla);
 
 export default Simpla;
