@@ -3,13 +3,13 @@
  * 	be removed when possible
  * 	@return {undefined}
  */
-export function supportDeprecatedInitializer(init) {
+export function supportDeprecatedInitializer(Simpla) {
   let tag = document.querySelector('script[simpla-api]'),
       project = tag && tag.getAttribute('simpla-api');
 
   if (project) {
     console.warn(`The [simpla-api] attribute setup method is deprecated. Please use Simpla('${project}') instead, see https://www.simpla.io/docs/start`);
-    init(project);
+    Simpla(project);
   }
 }
 
@@ -18,11 +18,17 @@ export function supportDeprecatedInitializer(init) {
  * 	safely removed once all elements who depend on it are upgraded
  * 	@return {undefined}
  */
-export function supportDeprecatedConfig(authEndpoint, project) {
-  window.simpla = {
-    config: {
-      server: authEndpoint,
-      api: project
-    }
-  };
+export function supportDeprecatedConfig(Simpla) {
+  let projectObserver = (project) => {
+        window.simpla.config.api = project;
+      },
+      authEndpointObserver = (authEndpoint) => {
+        window.simpla.config.server = authEndpoint;
+      };
+
+  window.simpla = window.simpla || {};
+  window.simpla.config = window.simpla.config || {};
+
+  Simpla.observe('options.project', projectObserver);
+  Simpla.observe('options.authEndpoint', authEndpointObserver);
 }

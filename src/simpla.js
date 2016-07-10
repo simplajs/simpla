@@ -9,9 +9,9 @@ import { get, set, remove } from './actions/data';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
-import { supportDeprecatedInitializer, supportDeprecatedConfig } from './utils/deprecation';
 import { storeToObserver, ensureActionMatches, dispatchThunkAndExpect } from './utils/helpers';
 import { emitter } from './middleware/emitter';
+import { supportDeprecatedConfig, supportDeprecatedInitializer } from './plugins/deprecation';
 import hashTracking from './plugins/hashTracking';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
@@ -67,14 +67,8 @@ const Simpla = function Simpla(options) {
 
   elements.forEach(element => Simpla._store.dispatch(importElement(`${base}${element}`)));
 
-  // Add in deprecated configuration
-  supportDeprecatedConfig(authEndpoint, project);
-
   return Simpla;
 };
-
-// Support deprecated initialization method
-supportDeprecatedInitializer(Simpla);
 
 // Add mixins
 Object.assign(Simpla, {
@@ -140,6 +134,10 @@ Object.assign(Simpla, {
 });
 
 // Init plugins
-hashTracking(Simpla);
+[
+  hashTracking,
+  supportDeprecatedInitializer,
+  supportDeprecatedConfig
+].forEach(plugin => plugin(Simpla));
 
 export default Simpla;
