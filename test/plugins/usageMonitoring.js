@@ -50,14 +50,27 @@ describe('usage monitoring', () => {
     expect(headers['Content-Type']).to.equal('application/json');
   });
 
-  it('should set a new token in localStorage', function() {
+  it('should set a new token in localStorage', () => {
     expect(window.localStorage.getItem('sm-session')).to.be.ok;
   });
 
-  it('should update the token on beforeunload', function() {
-    let current = window.localStorage.getItem('sm-session');
+  it('should update the token on beforeunload', () => {
+    let current = window.localStorage.getItem('sm-session'),
+        lastCall,
+        listeningTo,
+        callback;
 
-    window.dispatchEvent(new Event('beforeunload'));
+    sinon.stub(window, 'addEventListener');
+    usageMonitoring();
+    lastCall = window.addEventListener.lastCall
+    window.addEventListener.restore();
+
+    expect(lastCall).to.be.ok;
+
+    [ listeningTo, callback ] = lastCall.args;
+    expect(listeningTo).to.equal('beforeunload');
+
+    callback();
     expect(window.localStorage.getItem('sm-session')).not.to.equal(current);
   });
 });
