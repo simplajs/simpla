@@ -112,7 +112,7 @@ gulp.task('test', ['build', 'build:tests', 'test:local']);
 
 gulp.task('watch:src', () => gulp.watch(['src/**/*'], () => gulprun('build', 'refresh')));
 
-gulp.task('watch:tests', () => gulp.watch(['test/**/*', 'src/**/*'], () => gulprun('build', 'build:tests')));
+gulp.task('watch:tests', () => gulp.watch(['test/**/*', 'src/**/*'], ['build:tests']));
 
 gulp.task('watch', [ 'watch:src', 'watch:tests' ]);
 
