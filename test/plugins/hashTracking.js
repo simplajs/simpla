@@ -7,8 +7,7 @@ describe('hashTracking', () => {
   beforeEach(() => {
     Simpla = {
       observe: sinon.stub(),
-      startEditing: sinon.stub(),
-      stopEditing: sinon.stub()
+      toggleEditing: sinon.stub()
     };
 
     sinon.stub(window, 'addEventListener', (ev, callback) => {
@@ -51,12 +50,12 @@ describe('hashTracking', () => {
     expect(window.addEventListener.calledWith('hashchange')).to.be.true;
 
     // Should initialize things
-    expect(Simpla.stopEditing.callCount).to.equal(1);
+    expect(Simpla.toggleEditing.lastCall.args[0]).to.be.false;
 
     hashObserver({ target: editingWindow });
-    expect(Simpla.startEditing.callCount).to.equal(1);
+    expect(Simpla.toggleEditing.lastCall.args[0]).to.be.true;
 
     hashObserver({ target: notEditingWindow });
-    expect(Simpla.stopEditing.callCount).to.equal(2);
+    expect(Simpla.toggleEditing.lastCall.args[0]).to.be.false;
   });
 });

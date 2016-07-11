@@ -4,9 +4,9 @@ export default function hashTracking(Simpla) {
   // Part one, bind from hash to Simpla
   let hashObserver = ({ target }) => {
     if (target.location.hash === HASH_EDIT) {
-      Simpla.startEditing();
+      Simpla.toggleEditing(true);
     } else {
-      Simpla.stopEditing();
+      Simpla.toggleEditing(false);
     }
   }
 

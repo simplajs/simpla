@@ -112,12 +112,8 @@ Object.assign(Simpla, {
   },
 
   // Editing
-  startEditing() {
-    (this._store || store).dispatch(editActive());
-  },
-
-  stopEditing() {
-    (this._store || store).dispatch(editInactive());
+  toggleEditing(on) {
+    (this._store || store).dispatch(on ? editActive() : editInactive());
   },
 
   // State
