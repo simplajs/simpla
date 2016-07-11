@@ -13,6 +13,7 @@ import { storeToObserver, ensureActionMatches, dispatchThunkAndExpect } from './
 import { emitter } from './middleware/emitter';
 import { supportDeprecatedConfig, supportDeprecatedInitializer } from './plugins/deprecation';
 import hashTracking from './plugins/hashTracking';
+import usageMonitoring from './plugins/usageMonitoring';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
@@ -133,7 +134,8 @@ Object.assign(Simpla, {
 [
   hashTracking,
   supportDeprecatedInitializer,
-  supportDeprecatedConfig
+  supportDeprecatedConfig,
+  usageMonitoring
 ].forEach(plugin => plugin(Simpla));
 
 export default Simpla;
