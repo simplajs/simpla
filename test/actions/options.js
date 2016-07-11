@@ -1,30 +1,17 @@
-import { setAuthEndpoint, setDataEndpoint } from '../../src/actions/options';
+import { setOption } from '../../src/actions/options';
 import { SET_OPTION } from '../../src/constants/actionTypes';
 
 describe('options action creators', () => {
-  describe('setAuthEndpoint', () => {
-    it('should create a SET_OPTION action with authEndpoint prop / value', () => {
+  describe('setOption', () => {
+    it('should create a SET_OPTION action with given prop / value', () => {
       let value = 'auth-endpoint',
+          prop = 'authEndpoint',
           expected = {
             type: SET_OPTION,
-            prop: 'authEndpoint',
+            prop,
             value
           },
-          result = setAuthEndpoint(value);
-
-      expect(result).to.deep.equal(expected);
-    });
-  });
-
-  describe('setDataEndpoint', () => {
-    it('should create a SET_OPTION action with dataEndpoint prop / value', () => {
-      let value = 'data-endpoint',
-          expected = {
-            type: SET_OPTION,
-            prop: 'dataEndpoint',
-            value
-          },
-          result = setDataEndpoint(value);
+          result = setOption(prop, value);
 
       expect(result).to.deep.equal(expected);
     });

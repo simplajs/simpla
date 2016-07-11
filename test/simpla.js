@@ -2,7 +2,7 @@ import Simpla from '../src/simpla';
 import thunk from 'redux-thunk';
 import configureMockStore from './__utils__/redux-mock-store';
 import { ELEMENTS, BASE_PATH, AUTH_SERVER } from '../src/constants/options';
-import { setAuthEndpoint, setDataEndpoint } from '../src/actions/options';
+import { setOption } from '../src/actions/options';
 import * as types from '../src/constants/actionTypes';
 
 const mockStore = configureMockStore([ thunk ]);
@@ -36,8 +36,9 @@ describe('Simpla', () => {
       caseName: 'only project key is given',
       options: project,
       actions: [
-        setAuthEndpoint(AUTH_SERVER),
-        setDataEndpoint(dataEndpoint),
+        setOption('project', project),
+        setOption('authEndpoint', AUTH_SERVER),
+        setOption('dataEndpoint', dataEndpoint),
         ...mapElementsAndBaseToActions(ELEMENTS, BASE_PATH)
       ]
     }, {
@@ -47,8 +48,9 @@ describe('Simpla', () => {
         elements: null
       },
       actions: [
-        setAuthEndpoint(AUTH_SERVER),
-        setDataEndpoint(dataEndpoint)
+        setOption('project', project),
+        setOption('authEndpoint', AUTH_SERVER),
+        setOption('dataEndpoint', dataEndpoint)
       ]
     }, {
       caseName: 'elements prop is just an array',
@@ -60,8 +62,9 @@ describe('Simpla', () => {
         ]
       },
       actions: [
-        setAuthEndpoint(AUTH_SERVER),
-        setDataEndpoint(dataEndpoint),
+        setOption('project', project),
+        setOption('authEndpoint', AUTH_SERVER),
+        setOption('dataEndpoint', dataEndpoint),
         ...mapElementsAndBaseToActions(['foo', 'bar'])
       ]
     }, {
@@ -74,8 +77,9 @@ describe('Simpla', () => {
         }
       },
       actions: [
-        setAuthEndpoint(AUTH_SERVER),
-        setDataEndpoint(dataEndpoint),
+        setOption('project', project),
+        setOption('authEndpoint', AUTH_SERVER),
+        setOption('dataEndpoint', dataEndpoint),
         ...mapElementsAndBaseToActions([ 'b', 'b/c' ], 'a/')
       ]
     }, {
@@ -87,8 +91,9 @@ describe('Simpla', () => {
         }
       },
       actions: [
-        setAuthEndpoint(AUTH_SERVER),
-        setDataEndpoint(dataEndpoint),
+        setOption('project', project),
+        setOption('authEndpoint', AUTH_SERVER),
+        setOption('dataEndpoint', dataEndpoint),
         ...mapElementsAndBaseToActions(ELEMENTS, 'a/')
       ]
     }];
@@ -112,13 +117,31 @@ describe('Simpla', () => {
         Simpla(options);
 
         // Tests for members as we don't care what order the initializations happen
-        expect(Simpla._store.getActions()).to.deep.include.members(actions);
+        expect(Simpla._store.getActions()).to.deep.includes.members(actions);
       });
     });
 
     it('should return itself after init', () => {
       let response = Simpla('');
       expect(response).to.equal(Simpla);
+    });
+  });
+
+  describe('toggleEditing', () => {
+    it('should turn editing on when given true as param', () => {
+      Simpla._store = mockStore({});
+      Simpla.toggleEditing(true);
+      expect(Simpla._store.getActions()).to.deep.have.members([{
+        type: types.EDIT_ACTIVE
+      }]);
+    });
+
+    describe('stopEditing', () => {
+      Simpla._store = mockStore({});
+      Simpla.toggleEditing(false);
+      expect(Simpla._store.getActions()).to.deep.have.members([{
+        type: types.EDIT_INACTIVE
+      }]);
     });
   });
 });
