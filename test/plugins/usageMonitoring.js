@@ -7,6 +7,8 @@ const mockStore = configureMockStore();
 const SERVER = 'some-server',
       PROJECT = 'some-project';
 
+const URL = `${SERVER}/projects/${PROJECT}/sessions`;
+
 const Simpla = {
   getState() {
     return {
@@ -18,18 +20,38 @@ const Simpla = {
   }
 }
 
-fetchMock
-  .mock(`${SERVER}/projects/${PROJECT}/sessions`, 'POST');
+const BadSimpla = {
+  getState() {
+    return {
+      options: {}
+    };
+  },
+  observe: sinon.stub().returns(sinon.stub())
+}
 
 describe('usage monitoring', () => {
   let lastOptions;
 
+  before(() => {
+    fetchMock
+      .mock(URL, 'POST');
+  });
+
+  after(() => {
+    fetchMock.restore();
+  });
+
   beforeEach(() => {
     window.localStorage.removeItem('sm-session');
+    sinon.stub(window, 'addEventListener');
 
     usageMonitoring(Simpla);
 
-    lastOptions = fetchMock.lastOptions(`${SERVER}/projects/${PROJECT}/sessions`);
+    lastOptions = fetchMock.lastOptions(URL);
+  });
+
+  afterEach(() => {
+    window.addEventListener.restore();
   });
 
   it('should call the right endpoint', () => {
@@ -54,16 +76,36 @@ describe('usage monitoring', () => {
     expect(window.localStorage.getItem('sm-session')).to.be.ok;
   });
 
+  describe('handling empty options', () => {
+    beforeEach(() => {
+      fetchMock.reset();
+      window.localStorage.removeItem('sm-session');
+      usageMonitoring(BadSimpla);
+    });
+
+    it('should not call fetch if options are undefined', () => {
+      expect(fetchMock.calls().matched).to.be.empty;
+      expect(fetchMock.calls().unmatched).to.be.empty;
+    });
+
+    it ('should call fetch after Simpla has been updated', () => {
+      let lastCall = BadSimpla.observe.lastCall,
+          [ observing, observer ] = lastCall.args;
+
+      expect(observing).to.equal('options');
+      observer({ authEndpoint: SERVER, project: PROJECT });
+      expect(fetchMock.calls().matched).to.have.lengthOf(1);
+    });
+  });
+
   it('should update the token on beforeunload', () => {
     let current = window.localStorage.getItem('sm-session'),
         lastCall,
         listeningTo,
         callback;
 
-    sinon.stub(window, 'addEventListener');
-    usageMonitoring();
+    usageMonitoring(Simpla);
     lastCall = window.addEventListener.lastCall
-    window.addEventListener.restore();
 
     expect(lastCall).to.be.ok;
 
