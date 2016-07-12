@@ -80,6 +80,14 @@ describe('helpers', () => {
       expect(bazSpy.lastCall.args).to.deep.equal([ 'baz', null ]);
       expect(barSpy.callCount).to.equal(1);
     });
+
+    it('should return a function', () => {
+      let store = createStore((state) => state),
+          observable = storeToObserver(store),
+          unobserve = observable.observe('', () => {});
+
+      expect(unobserve).to.be.a('function');
+    });
   });
 
   describe('dispatchThunkAndExpect', () => {
@@ -99,7 +107,6 @@ describe('helpers', () => {
       return dispatchThunkAndExpect(store, THUNK, GOOD_TYPE)
         .then(resolveSpy, rejectSpy)
         .then(() => {
-          console.log(resolveSpy.firstCall, rejectSpy.callCount);
           expect(resolveSpy.called).to.be.true;
           expect(resolveSpy.calledWith(RESPONSE)).to.be.true;
           expect(store.dispatch.calledWith(THUNK)).to.be.true;
