@@ -3,16 +3,14 @@ const SESSION_KEY = 'sm-session',
       INTERVAL = 10 * SECOND;
 
 export default function(Simpla) {
+
   /**
    * Ping the server at the usage endpoint
    * @return {undefined}
    */
-  function ping() {
-    let elements = document.querySelectorAll('simpla-text, simpla-img').length,
-        { authEndpoint, project } = Simpla.getState().options,
-        endpoint = `${authEndpoint}/projects/${project}/sessions`;
+  function ping(endpoint) {
+    let elements = document.querySelectorAll('simpla-text, simpla-img').length;
 
-    console.log(Simpla.getState(), endpoint);
     fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -30,7 +28,7 @@ export default function(Simpla) {
     let expiry = window.localStorage.getItem(SESSION_KEY),
         now = Date.now();
 
-    return expiry && parseInt(expiry) > now;
+    return false; //expiry && parseInt(expiry) > now;
   }
 
   /**
@@ -41,16 +39,31 @@ export default function(Simpla) {
     window.localStorage.setItem(SESSION_KEY, Date.now() + INTERVAL);
   }
 
+  function checkAndPing({ authEndpoint, project }) {
+    let endpoint = `${authEndpoint}/projects/${project}/sessions`;
+
+    if (authEndpoint && project) {
+      ping(endpoint);
+      return true;
+    }
+
+    return false;
+  }
+
   // If they're not in the session, send a ping to the server
   if (!stillInSession()) {
-    ping();
+    if (!checkAndPing(Simpla.getState().options)) {
+      let unobserve = Simpla.observe('options', (options) => {
+        if (checkAndPing(options)) {
+          unobserve();
+        }
+      });
+    }
   }
 
   // Reset the session token
   resetSession();
 
   // When they leave the site, reset the session token
-  window.addEventListener('beforeunload', function() {
-    resetSession();
-  });
+  window.addEventListener('beforeunload', resetSession);
 }

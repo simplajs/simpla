@@ -44,7 +44,7 @@ export function storeToObserver(store) {
         }
       }
 
-      store.subscribe(handleChange);
+      return store.subscribe(handleChange);
     }
   }
 }
