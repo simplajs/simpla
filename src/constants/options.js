@@ -6,7 +6,8 @@ export const ELEMENTS = [
   'simpla-img/simpla-img.html',
   'simpla-text/simpla-text.html',
   'simpla-block/simpla-block.html',
-  'sm-admin/sm-admin.html'
+  'sm-module-login/sm-module-login.html',
+  'sm-module-save/sm-module-save.html'
 ];
 
 export const BASE_PATH = `${ELEMENTS_SERVER}/`;
