@@ -25,10 +25,18 @@ export default function(Simpla) {
    * @return {Boolean} true if still in session, false otherwise
    */
   function stillInSession() {
-    let expiry = window.localStorage.getItem(SESSION_KEY),
-        now = Date.now();
+    let expiry,
+        now;
 
-    return false; //expiry && parseInt(expiry) > now;
+    try {
+      expiry = window.localStorage.getItem(SESSION_KEY);
+    } catch (e) {
+      expiry = null;
+    }
+
+    now = Date.now();
+
+    return expiry && parseInt(expiry) > now;
   }
 
   /**
@@ -36,7 +44,12 @@ export default function(Simpla) {
    * @return {undefined}
    */
   function resetSession() {
-    window.localStorage.setItem(SESSION_KEY, Date.now() + INTERVAL);
+    try {
+      window.localStorage.setItem(SESSION_KEY, Date.now() + INTERVAL);
+    } catch(e) {
+      // Fail silently, thisis low priority work and doesn't matter greatly if
+      //  we cant set
+    }
   }
 
   function checkAndPing({ authEndpoint, project }) {

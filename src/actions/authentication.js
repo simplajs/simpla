@@ -16,14 +16,14 @@ function syncLogin({ email, password }) {
   };
 }
 
-function loginSuccessful(token) {
+export function loginSuccessful(token) {
   return {
     type: LOGIN_SUCCESSFUL,
     response: token
   };
 }
 
-function loginFailed(error) {
+export function loginFailed(error) {
   return {
     type: LOGIN_FAILED,
     response: error
@@ -52,13 +52,13 @@ function syncLogout() {
   };
 }
 
-function logoutSuccessful() {
+export function logoutSuccessful() {
   return {
     type: LOGOUT_SUCCESSFUL
   };
 }
 
-function logoutFailed() {
+export function logoutFailed() {
   return {
     type: LOGOUT_FAILED
   };

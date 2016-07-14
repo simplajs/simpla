@@ -98,7 +98,7 @@ describe('usage monitoring', () => {
     });
   });
 
-  it('should update the token on beforeunload', () => {
+  it('should update the token on beforeunload', (done) => {
     let current = window.localStorage.getItem('sm-session'),
         lastCall,
         listeningTo,
@@ -112,7 +112,10 @@ describe('usage monitoring', () => {
     [ listeningTo, callback ] = lastCall.args;
     expect(listeningTo).to.equal('beforeunload');
 
-    callback();
-    expect(window.localStorage.getItem('sm-session')).not.to.equal(current);
+    setTimeout(() => {
+      callback();
+      expect(window.localStorage.getItem('sm-session')).not.to.equal(current);
+      done();
+    }, 5);
   });
 });
