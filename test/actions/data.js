@@ -21,8 +21,7 @@ describe('data crud', () => {
       let store = mockStore({
             options: {
               dataEndpoint: SERVER
-            },
-            authentication: {}
+            }
           }),
           expectedActions = [{
             type: types.GET_DATA,
@@ -49,9 +48,7 @@ describe('data crud', () => {
             options: {
               dataEndpoint: SERVER
             },
-            authentication: {
-              token: TOKEN
-            }
+            token: TOKEN
           }),
           expectedActions = [{
             type: types.SET_DATA,
@@ -83,9 +80,7 @@ describe('data crud', () => {
             options: {
               dataEndpoint: SERVER
             },
-            authentication: {
-              token: TOKEN
-            }
+            token: TOKEN
           }),
           expectedActions = [{
             type: types.REMOVE_DATA,

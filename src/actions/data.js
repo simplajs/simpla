@@ -52,8 +52,7 @@ function generateHandler(method, types) {
   let [ start, success, fail ] = generateRequestActions(types);
 
   return (uid, body) => (dispatch, getState) => {
-    let { options, authentication } = getState(),
-        { token } = authentication,
+    let { options, token } = getState(),
         endpoint = options.dataEndpoint;
 
     dispatch(start(uid, body));
