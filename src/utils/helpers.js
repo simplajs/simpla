@@ -35,12 +35,12 @@ export function storeToObserver(store) {
       }
 
       lastState = getState();
-
       handleChange = () => {
         let currentState = getState();
         if (currentState !== lastState) {
-          onChange(currentState, lastState);
+          let args = [ currentState, lastState ];
           lastState = currentState;
+          onChange(...args);
         }
       }
 

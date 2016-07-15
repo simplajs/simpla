@@ -81,6 +81,24 @@ describe('helpers', () => {
       expect(barSpy.callCount).to.equal(1);
     });
 
+    it('should ensure internal comparisons states are updated before calling observer', () => {
+      let store = { getState: sinon.stub().returns({}), subscribe: sinon.stub() },
+          observable = storeToObserver(store),
+          calls = 0,
+          subscriber;
+
+      observable.observe(() => {
+        if (calls++ > 0) {
+          throw new Error('Should only be called once if value doesnt change');
+        }
+        subscriber();
+      });
+
+      store.getState = sinon.stub().returns(null);
+      subscriber = store.subscribe.lastCall.args[0];
+      subscriber();
+    });
+
     it('should return a function', () => {
       let store = createStore((state) => state),
           observable = storeToObserver(store),
