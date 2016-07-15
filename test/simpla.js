@@ -30,15 +30,19 @@ describe('Simpla', () => {
     };
 
     const project = 'project-id',
-          dataEndpoint = `${AUTH_SERVER}/projects/${project}/items`;
+          dataEndpoint = `${AUTH_SERVER}/projects/${project}/items`,
+          standardActions = [
+            setOption('project', project),
+            setOption('authEndpoint', AUTH_SERVER),
+            setOption('dataEndpoint', dataEndpoint),
+            setOption('_useHashTracking', true)
+          ]
 
     let possibilities = [{
       caseName: 'only project key is given',
       options: project,
       actions: [
-        setOption('project', project),
-        setOption('authEndpoint', AUTH_SERVER),
-        setOption('dataEndpoint', dataEndpoint),
+        ...standardActions,
         ...mapElementsAndBaseToActions(ELEMENTS, BASE_PATH)
       ]
     }, {
@@ -48,9 +52,7 @@ describe('Simpla', () => {
         elements: null
       },
       actions: [
-        setOption('project', project),
-        setOption('authEndpoint', AUTH_SERVER),
-        setOption('dataEndpoint', dataEndpoint)
+        ...standardActions
       ]
     }, {
       caseName: 'elements prop is just an array',
@@ -62,9 +64,7 @@ describe('Simpla', () => {
         ]
       },
       actions: [
-        setOption('project', project),
-        setOption('authEndpoint', AUTH_SERVER),
-        setOption('dataEndpoint', dataEndpoint),
+        ...standardActions,
         ...mapElementsAndBaseToActions(['foo', 'bar'])
       ]
     }, {
@@ -77,9 +77,7 @@ describe('Simpla', () => {
         }
       },
       actions: [
-        setOption('project', project),
-        setOption('authEndpoint', AUTH_SERVER),
-        setOption('dataEndpoint', dataEndpoint),
+        ...standardActions,
         ...mapElementsAndBaseToActions([ 'b', 'b/c' ], 'a/')
       ]
     }, {
@@ -91,10 +89,21 @@ describe('Simpla', () => {
         }
       },
       actions: [
+        ...standardActions,
+        ...mapElementsAndBaseToActions(ELEMENTS, 'a/')
+      ]
+    }, {
+      caseName: 'disable using hash',
+      options: {
+        project,
+        elements: null,
+        _useHashTracking: false
+      },
+      actions: [
         setOption('project', project),
         setOption('authEndpoint', AUTH_SERVER),
         setOption('dataEndpoint', dataEndpoint),
-        ...mapElementsAndBaseToActions(ELEMENTS, 'a/')
+        setOption('_useHashTracking', false)
       ]
     }];
 

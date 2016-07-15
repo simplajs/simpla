@@ -1,8 +1,10 @@
 let HASH_EDIT = '#edit';
 
 export default function hashTracking(Simpla) {
+  let unobserve = () => {};
+
   // Part one, bind from hash to Simpla
-  let hashObserver = ({ target }) => {
+  function hashObserver({ target }) {
     if (target.location.hash === HASH_EDIT) {
       Simpla.toggleEditing(true);
     } else {
@@ -10,16 +12,38 @@ export default function hashTracking(Simpla) {
     }
   }
 
-  window.addEventListener('hashchange', hashObserver);
-  // Kickstart it
-  hashObserver({ target: window });
-
-  // Part two, bind from Simpla to hash
-  Simpla.observe('editing', (editing) => {
+  function updateHash(editing) {
     if (editing) {
       window.location.hash = HASH_EDIT;
     } else {
       window.location.hash = '';
     }
+  }
+
+  function startTracking() {
+    window.addEventListener('hashchange', hashObserver);
+
+    // Kickstart it
+    hashObserver({ target: window });
+
+    // Part two, bind from Simpla to hash
+    unobserve = Simpla.observe('editing', updateHash);
+  }
+
+  function stopTracking() {
+    window.removeEventListener('hashchange', hashObserver);
+    unobserve();
+  }
+
+  Simpla.observe('options._useHashTracking', (shouldTrack) => {
+    if (shouldTrack) {
+      startTracking();
+    } else {
+      stopTracking();
+    }
   });
+
+  if (Simpla.getState().options._useHashTracking) {
+    startTracking();
+  }
 }

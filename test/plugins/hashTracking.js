@@ -2,22 +2,35 @@ import hashTracking from '../../src/plugins/hashTracking';
 
 describe('hashTracking', () => {
   let Simpla,
-      hashObserver;
+      hashObserver,
+      stateStub = sinon.stub().returns({ options: { _useHashTracking: true } }),
+      unobserve = sinon.stub();
 
   beforeEach(() => {
     Simpla = {
-      observe: sinon.stub(),
-      toggleEditing: sinon.stub()
+      observe: sinon.stub().returns(unobserve),
+      toggleEditing: sinon.stub(),
+      getState: stateStub
     };
 
     sinon.stub(window, 'addEventListener', (ev, callback) => {
       hashObserver = callback;
+    });
+
+    sinon.stub(window, 'removeEventListener', () => {
+      hashObserver = undefined;
     });
   });
 
   afterEach(() => {
     window.location.hash = '';
     window.addEventListener.restore();
+    window.removeEventListener.restore();
+
+    Simpla.observe.reset();
+    Simpla.toggleEditing.reset();
+    Simpla.getState = stateStub;
+    stateStub.reset();
   });
 
   it('should observe editing and change hash accordingly', () => {
@@ -25,15 +38,32 @@ describe('hashTracking', () => {
         callback;
 
     hashTracking(Simpla);
-    [ property, callback ] = Simpla.observe.lastCall.args;
-
-    expect(property).to.equal('editing');
+    [ property, callback ] = Simpla.observe.withArgs('editing').lastCall.args;
 
     callback(true);
     expect(window.location.hash).to.equal('#edit');
 
     callback(false);
     expect(window.location.hash).to.not.equal('#edit');
+  });
+
+  it('should not run if _useHashTracking is false', () => {
+    let property,
+        callback;
+
+    Simpla.getState = sinon.stub().returns({ options: { _useHashTracking: false } });
+    hashTracking(Simpla);
+    [ property, callback ] = Simpla.observe.lastCall.args;
+
+    expect(property).to.equal('options._useHashTracking');
+
+    callback(true);
+    expect(Simpla.observe.lastCall.args[0]).to.equal('editing');
+    expect(hashObserver).to.be.defined;
+
+    callback(false);
+    expect(unobserve.called).to.be.true;
+    expect(hashObserver).to.be.undefined;
   });
 
   it('should listen for changes on the window and update Simpla accordingly', () => {

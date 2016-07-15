@@ -34,8 +34,6 @@ const Simpla = function Simpla(options) {
 
   let project,
       base = '',
-      authEndpoint,
-      dataEndpoint,
       elements = [];
 
   // Initialize data endpoint
@@ -47,12 +45,15 @@ const Simpla = function Simpla(options) {
 
   Simpla._store.dispatch(setOption('project', project));
 
-  // Initialize the auth server
-  authEndpoint = AUTH_SERVER;
-  Simpla._store.dispatch(setOption('authEndpoint', authEndpoint));
+  // Initialize endpoints
+  Simpla._store.dispatch(setOption('authEndpoint', AUTH_SERVER));
+  Simpla._store.dispatch(setOption('dataEndpoint', `${AUTH_SERVER}/projects/${project}/items`));
 
-  dataEndpoint = `${AUTH_SERVER}/projects/${project}/items`;
-  Simpla._store.dispatch(setOption('dataEndpoint', dataEndpoint));
+  if (typeof options._useHashTracking !== 'undefined') {
+    Simpla._store.dispatch(setOption('_useHashTracking', options._useHashTracking));
+  } else {
+    Simpla._store.dispatch(setOption('_useHashTracking', true));
+  }
 
   // Initialize elements
   if (typeof options.elements === 'undefined') { // Doesn't exist, use defaults
