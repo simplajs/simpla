@@ -5,10 +5,12 @@ module.exports = {
       disabled: true,
       browsers: [
         'mac/chrome',
+        'windows/chrome',
         'mac/firefox',
+        'windows/firefox',
         'mac/safari',
         'any/iPhone',
-        'android/chrome',
+        'any/android',
         'windows 10/internet explorer',
         'windows 10/MicrosoftEdge',
       ]
