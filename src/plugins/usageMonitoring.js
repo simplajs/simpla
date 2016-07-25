@@ -63,15 +63,30 @@ export default function(Simpla) {
     return false;
   }
 
-  // If they're not in the session, send a ping to the server
-  if (!stillInSession()) {
-    if (!checkAndPing(Simpla.getState().options)) {
-      let unobserve = Simpla.observe('options', (options) => {
-        if (checkAndPing(options)) {
-          unobserve();
-        }
-      });
+  function run() {
+    // If they're not in the session, send a ping to the server
+    if (!stillInSession()) {
+      if (!checkAndPing(Simpla.getState().options)) {
+        let unobserve = Simpla.observe('options', (options) => {
+          if (checkAndPing(options)) {
+            unobserve();
+          }
+        });
+      }
     }
+  }
+
+  let documentIsReady = () => document.readyState === 'interactive' || document.readyState === 'complete';
+  if (documentIsReady()) {
+    run();
+  } else {
+    let listener = () => {
+      if (documentIsReady()) {
+        run();
+        document.removeEventListener('readystatechange', listener);
+      }
+    };
+    document.addEventListener('readystatechange', listener)
   }
 
   // Reset the session token
