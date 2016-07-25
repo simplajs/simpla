@@ -1,6 +1,6 @@
 {
   "name": "simpla",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Dynamic content, without the CMS",
   "main": "simpla.js",
   "scripts": {
