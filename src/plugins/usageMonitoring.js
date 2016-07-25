@@ -74,6 +74,9 @@ export default function(Simpla) {
         });
       }
     }
+
+    // Reset the session token
+    resetSession();
   }
 
   let documentIsReady = () => document.readyState === 'interactive' || document.readyState === 'complete';
@@ -88,9 +91,6 @@ export default function(Simpla) {
     };
     document.addEventListener('readystatechange', listener)
   }
-
-  // Reset the session token
-  resetSession();
 
   // When they leave the site, reset the session token
   window.addEventListener('beforeunload', resetSession);
