@@ -12,6 +12,12 @@ describe('helpers', () => {
         }
       })).to.equal('qux');
     });
+
+    it('should return undefined if selecting deep unknown', () => {
+      expect(selectPropByPath('foo.bar.baz', {
+        foo: {}
+      })).to.be.undefined;
+    });
   });
 
   describe('storeToObserver', () => {

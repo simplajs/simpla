@@ -2,6 +2,10 @@ export function selectPropByPath(path, obj) {
   let selector,
       numberSelector;
 
+  if (typeof obj === 'undefined') {
+    return obj;
+  }
+
   if (typeof path === 'string') {
     return selectPropByPath(path.split('.'), obj);
   }
