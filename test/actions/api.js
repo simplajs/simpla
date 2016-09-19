@@ -1,4 +1,4 @@
-import { get, set, remove } from '../../src/actions/data';
+import { get, set, remove } from '../../src/actions/api';
 import thunk from 'redux-thunk';
 import * as types from '../../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
