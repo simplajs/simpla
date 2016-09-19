@@ -41,6 +41,7 @@ const bs = browserSync.create(),
               exclude: [
                 './node_modules/process-es6/browser.js',
                 './node_modules/rollup-plugin-node-globals/src/global.js',
+                './node_modules/symbol-observable/es/index.js'
               ]
             }),
             babel(),
