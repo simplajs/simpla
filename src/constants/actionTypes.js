@@ -16,6 +16,7 @@ export const LOGOUT_SUCCESSFUL = 'logout-successful';
 export const LOGOUT_FAILED = 'logout-failed';
 
 // Data state
+export const GET_DATA_STATE = 'get-data-state';
 export const SET_DATA_STATE = 'set-data-state';
 export const REMOVE_DATA_STATE = 'remove-data-state';
 
