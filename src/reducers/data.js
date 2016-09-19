@@ -1,4 +1,4 @@
-import { UPDATE_DATA_STATE } from '../constants/actionTypes';
+import { SET_DATA_STATE, REMOVE_DATA_STATE } from '../constants/actionTypes';
 
 const INITIAL_STATE = {};
 
@@ -15,8 +15,10 @@ function setIn(state, path, data) {
 
 export default function data(state = INITIAL_STATE, action) {
   switch (action.type) {
-  case UPDATE_DATA_STATE:
+  case SET_DATA_STATE:
     return setIn(state, action.uid.split('.'), action.data);
+  case REMOVE_DATA_STATE:
+    return setIn(state, action.uid.split('.'), null);
   default:
     return state;
   }
