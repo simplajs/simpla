@@ -3,19 +3,20 @@ import {
   GET_DATA_SUCCESSFUL,
   SET_DATA,
   SET_DATA_SUCCESSFUL,
-  REMOVE_DATA
+  REMOVE_DATA,
+  REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
 import { DATA_PREFIX } from '../constants/state';
 import { selectPropByPath } from '../utils/helpers';
 
-function getData(uid) {
+export function getData(uid) {
   return {
     type: GET_DATA,
     uid
   };
 }
 
-function getDataSuccessful(uid, response) {
+export function getDataSuccessful(uid, response) {
   return {
     type: GET_DATA_SUCCESSFUL,
     response,
@@ -23,7 +24,7 @@ function getDataSuccessful(uid, response) {
   }
 }
 
-function setData(uid, data) {
+export function setData(uid, data) {
   return {
     type: SET_DATA,
     uid,
@@ -31,7 +32,7 @@ function setData(uid, data) {
   };
 }
 
-function setDataSuccessful(uid, response) {
+export function setDataSuccessful(uid, response) {
   return {
     type: SET_DATA_SUCCESSFUL,
     response,
@@ -39,14 +40,14 @@ function setDataSuccessful(uid, response) {
   };
 }
 
-function removeData(uid) {
+export function removeData(uid) {
   return {
     type: REMOVE_DATA,
     uid
   };
 }
 
-function removeDataSuccessful(uid) {
+export function removeDataSuccessful(uid) {
   return {
     type: REMOVE_DATA_SUCCESSFUL,
     uid
@@ -76,6 +77,12 @@ export function set(uid, data) {
       .then(() => dispatch(setDataSuccessful(uid, data)));
   };
 }
-export const remove = (uid) => (dispatch, getState) => {
 
-};
+export function remove(uid, data) {
+  return (dispatch, getState) => {
+    dispatch(removeData(uid));
+
+    return Promise.resolve()
+      .then(() => dispatch(removeDataSuccessful(uid)));
+  };
+}

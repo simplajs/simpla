@@ -1,6 +1,15 @@
-import { get, set, remove } from '../../src/actions/data';
+import {
+  get,
+  getData,
+  getDataSuccessful,
+  set,
+  setData,
+  setDataSuccessful,
+  remove,
+  removeData,
+  removeDataSuccessful
+} from '../../src/actions/data';
 import thunk from 'redux-thunk';
-import * as types from '../../src/constants/actionTypes';
 import configureMockStore from '../__utils__/redux-mock-store';
 
 const mockStore = configureMockStore([ thunk ]);
@@ -22,14 +31,10 @@ describe('data actions', () => {
 
     it('should get value in the state', () => {
       return dataInState.then((response) => {
-        expect(store.getActions()).to.deep.equal([{
-          type: types.GET_DATA,
-          uid: UID_FOR_STORED
-        }, {
-          type: types.GET_DATA_SUCCESSFUL,
-          uid: UID_FOR_STORED,
-          response: STORED_AT_UID
-        }]);
+        expect(store.getActions()).to.deep.equal([
+          getData(UID_FOR_STORED),
+          getDataSuccessful(UID_FOR_STORED, STORED_AT_UID)
+        ]);
       });
     });
   });
@@ -40,20 +45,25 @@ describe('data actions', () => {
 
       return store.dispatch(set(UID_FOR_STORED, STORED_AT_UID))
         .then(() => {
-          expect(store.getActions()).to.deep.equal([{
-            type: types.SET_DATA,
-            uid: UID_FOR_STORED,
-            data: STORED_AT_UID
-          }, {
-            type: types.SET_DATA_SUCCESSFUL,
-            uid: UID_FOR_STORED,
-            response: STORED_AT_UID
-          }]);
+          expect(store.getActions()).to.deep.equal([
+            setData(UID_FOR_STORED, STORED_AT_UID),
+            setDataSuccessful(UID_FOR_STORED, STORED_AT_UID)
+          ]);
         });
     });
   });
 
   describe('remove', () => {
+    it('should fire off remove and remove successful', () => {
+      let store = mockStore({});
 
+      return store.dispatch(remove(UID_FOR_STORED))
+        .then(() => {
+          expect(store.getActions()).to.deep.equal([
+            removeData(UID_FOR_STORED),
+            removeDataSuccessful(UID_FOR_STORED)
+          ]);
+        });
+    });
   });
 });
