@@ -1,11 +1,11 @@
 import dataReducer from '../../src/reducers/data';
-import { SET_DATA_STATE, REMOVE_DATA_STATE } from '../../src/constants/actionTypes';
+import { SET_DATA, REMOVE_DATA } from '../../src/constants/actionTypes';
 
 describe('dataReducer', () => {
-  describe('handling SET_DATA_STATE', () => {
+  describe('handling SET_DATA', () => {
     it('should update the state path by the given uid and data', () => {
       let state = dataReducer({}, {
-        type: SET_DATA_STATE,
+        type: SET_DATA,
         uid: 'foo.bar.baz',
         data: { qux: 'foo' }
       });
@@ -16,7 +16,7 @@ describe('dataReducer', () => {
     it('should add a clone, not a reference', () => {
       let data = { baz: 'qux' },
           state = dataReducer({}, {
-            type: SET_DATA_STATE,
+            type: SET_DATA,
             uid: 'foo.bar',
             data
           });
@@ -26,10 +26,10 @@ describe('dataReducer', () => {
     });
   });
 
-  describe('handling REMOVE_DATA_STATE', () => {
+  describe('handling REMOVE_DATA', () => {
     it('should set data to null when removing from state', () => {
       let state = dataReducer({ foo: { bar: { baz: true } } }, {
-        type: REMOVE_DATA_STATE,
+        type: REMOVE_DATA,
         uid: 'foo.bar'
       });
 

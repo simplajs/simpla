@@ -15,11 +15,6 @@ export const LOGOUT = 'logout';
 export const LOGOUT_SUCCESSFUL = 'logout-successful';
 export const LOGOUT_FAILED = 'logout-failed';
 
-// Data state
-export const GET_DATA_STATE = 'get-data-state';
-export const SET_DATA_STATE = 'set-data-state';
-export const REMOVE_DATA_STATE = 'remove-data-state';
-
 // Data
 export const GET_DATA = 'get-data';
 export const GET_DATA_SUCCESSFUL = 'get-data-successful';
@@ -32,6 +27,19 @@ export const SET_DATA_FAILED = 'set-data-failed';
 export const REMOVE_DATA = 'remove-data';
 export const REMOVE_DATA_SUCCESSFUL = 'remove-data-successful';
 export const REMOVE_DATA_FAILED = 'remove-data-failed';
+
+// Data + API
+export const GET_DATA_FROM_API = 'get-data-from-api';
+export const GET_DATA_FROM_API_SUCCESSFUL = 'get-data-from-api-successful';
+export const GET_DATA_FROM_API_FAILED = 'get-data-from-api-failed';
+
+export const SET_DATA_TO_API = 'set-data-to-api';
+export const SET_DATA_TO_API_SUCCESSFUL = 'set-data-to-api-successful';
+export const SET_DATA_TO_API_FAILED = 'set-data-to-api-failed';
+
+export const REMOVE_DATA_FROM_API = 'remove-data-from-api';
+export const REMOVE_DATA_FROM_API_SUCCESSFUL = 'remove-data-from-api-successful';
+export const REMOVE_DATA_FROM_API_FAILED = 'remove-data-from-api-failed';
 
 // Editing
 export const EDIT_ACTIVE = 'edit-active';

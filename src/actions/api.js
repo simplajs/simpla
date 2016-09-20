@@ -1,15 +1,15 @@
 import {
-  GET_DATA,
-  GET_DATA_SUCCESSFUL,
-  GET_DATA_FAILED,
+  GET_DATA_FROM_API,
+  GET_DATA_FROM_API_SUCCESSFUL,
+  GET_DATA_FROM_API_FAILED,
 
-  SET_DATA,
-  SET_DATA_SUCCESSFUL,
-  SET_DATA_FAILED,
+  SET_DATA_TO_API,
+  SET_DATA_TO_API_SUCCESSFUL,
+  SET_DATA_TO_API_FAILED,
 
-  REMOVE_DATA,
-  REMOVE_DATA_SUCCESSFUL,
-  REMOVE_DATA_FAILED
+  REMOVE_DATA_FROM_API,
+  REMOVE_DATA_FROM_API_SUCCESSFUL,
+  REMOVE_DATA_FROM_API_FAILED
 } from '../constants/actionTypes';
 import client from '../utils/client';
 import { selectPropByPath } from '../utils/helpers';
@@ -65,6 +65,6 @@ function generateHandler(method, types) {
   };
 }
 
-export const get = generateHandler('get', [ GET_DATA, GET_DATA_SUCCESSFUL, GET_DATA_FAILED ]);
-export const set = generateHandler('put', [ SET_DATA, SET_DATA_SUCCESSFUL, SET_DATA_FAILED ]);
-export const remove = generateHandler('delete', [ REMOVE_DATA, REMOVE_DATA_SUCCESSFUL, REMOVE_DATA_FAILED ]);
+export const get = generateHandler('get', [ GET_DATA_FROM_API, GET_DATA_FROM_API_SUCCESSFUL, GET_DATA_FROM_API_FAILED ]);
+export const set = generateHandler('put', [ SET_DATA_TO_API, SET_DATA_TO_API_SUCCESSFUL, SET_DATA_TO_API_FAILED ]);
+export const remove = generateHandler('delete', [ REMOVE_DATA_FROM_API, REMOVE_DATA_FROM_API_SUCCESSFUL, REMOVE_DATA_FROM_API_FAILED ]);

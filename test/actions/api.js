@@ -24,18 +24,18 @@ describe('data crud', () => {
             }
           }),
           expectedActions = [{
-            type: types.GET_DATA,
+            type: types.GET_DATA_FROM_API,
             uid: UID,
             data: undefined
           }, {
-            type: types.GET_DATA_SUCCESSFUL,
+            type: types.GET_DATA_FROM_API_SUCCESSFUL,
             uid: UID,
             response: RESPONSE
           }];
 
       return store.dispatch(get(UID))
         .then(() => {
-          expect(store.getActions()).to.deep.equal(expectedActions)
+          expect(store.getActions()).to.deep.include.members(expectedActions)
         });
     });
   });
@@ -51,11 +51,11 @@ describe('data crud', () => {
             token: TOKEN
           }),
           expectedActions = [{
-            type: types.SET_DATA,
+            type: types.SET_DATA_TO_API,
             uid: UID,
             data: DATA
           }, {
-            type: types.SET_DATA_SUCCESSFUL,
+            type: types.SET_DATA_TO_API_SUCCESSFUL,
             uid: UID,
             response: RESPONSE
           }];
@@ -66,7 +66,7 @@ describe('data crud', () => {
               body = JSON.parse(lastOptions.body),
               { headers, method } = lastOptions;
 
-          expect(store.getActions()).to.deep.equal(expectedActions)
+          expect(store.getActions()).to.deep.include.members(expectedActions)
           expect(body).to.deep.equal(DATA);
           expect(method).to.equal('PUT');
           expect(headers['Authorization'].split(' ')[1]).to.equal(TOKEN);
@@ -83,11 +83,11 @@ describe('data crud', () => {
             token: TOKEN
           }),
           expectedActions = [{
-            type: types.REMOVE_DATA,
+            type: types.REMOVE_DATA_FROM_API,
             uid: UID,
             data: undefined
           }, {
-            type: types.REMOVE_DATA_SUCCESSFUL,
+            type: types.REMOVE_DATA_FROM_API_SUCCESSFUL,
             uid: UID,
             response: {}
           }];
@@ -96,7 +96,7 @@ describe('data crud', () => {
         .then(() => {
           let { method, headers } = fetchMock.lastOptions(`${SERVER}/${UID}`);
 
-          expect(store.getActions()).to.deep.equal(expectedActions)
+          expect(store.getActions()).to.deep.include.members(expectedActions)
           expect(method).to.equal('DELETE');
           expect(headers['Authorization'].split(' ')[1]).to.equal(TOKEN);
         });
