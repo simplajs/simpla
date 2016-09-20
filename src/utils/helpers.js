@@ -59,8 +59,12 @@ export function ensureActionMatches(expectedType) {
   }
 }
 
-export function dispatchThunkAndExpect(store, action, expectedType) {
-  return store.dispatch(action)
+export function dispatchThunkAndExpect(store, ...args) {
+  return runDispatchAndExpect(store.dispatch, ...args);
+}
+
+export function runDispatchAndExpect(dispatch, action, expectedType) {
+  return dispatch(action)
     .then(ensureActionMatches(expectedType))
     .then(
       action => action.response,

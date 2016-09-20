@@ -1,13 +1,15 @@
 import {
   GET_DATA,
   GET_DATA_SUCCESSFUL,
+  GET_DATA_FROM_API_SUCCESSFUL,
   SET_DATA,
   SET_DATA_SUCCESSFUL,
   REMOVE_DATA,
   REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
 import { DATA_PREFIX } from '../constants/state';
-import { selectPropByPath } from '../utils/helpers';
+import { selectPropByPath, runDispatchAndExpect } from '../utils/helpers';
+import { get as getFromApi } from './api';
 
 export function getData(uid) {
   return {
@@ -57,15 +59,24 @@ export function removeDataSuccessful(uid) {
 export function get(uid) {
   return (dispatch, getState) => {
     let state,
-        stored;
+        stored,
+        fetchData;
 
     dispatch(getData(uid));
 
     state = getState();
     stored = selectPropByPath(`${DATA_PREFIX}.${uid}`, state);
 
-    return Promise.resolve()
-      .then(() => dispatch(getDataSuccessful(uid, stored)));
+
+    if (typeof stored === 'undefined') {
+      fetchData = runDispatchAndExpect(dispatch, getFromApi(uid), GET_DATA_FROM_API_SUCCESSFUL)
+        .then((response) => runDispatchAndExpect(dispatch, set(uid, response), SET_DATA_SUCCESSFUL));
+    } else {
+      fetchData = Promise.resolve(stored);
+    }
+
+    return fetchData
+      .then((response) => dispatch(getDataSuccessful(uid, response)));
   };
 }
 
