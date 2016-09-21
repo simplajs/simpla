@@ -5,6 +5,7 @@ import imports from './imports';
 import editing from './editing';
 import data from './data';
 import token from './token';
+import save from './save';
 
 const reducer = combineReducers({
   authenticated,
@@ -12,7 +13,8 @@ const reducer = combineReducers({
   imports,
   editing,
   data,
-  token
+  token,
+  save
 });
 
 export default reducer;
