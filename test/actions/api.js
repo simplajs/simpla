@@ -10,12 +10,18 @@ const SERVER = 'some-server';
 const UID = 'some.uid.to.something';
 const RESPONSE = { foo: 'bar' };
 
-fetchMock
-  .mock(`${SERVER}/${UID}`, 'GET', RESPONSE)
-  .mock(`${SERVER}/${UID}`, 'PUT', RESPONSE)
-  .mock(`${SERVER}/${UID}`, 'DELETE', {});
-
 describe('data crud', () => {
+  beforeEach(() => {
+    fetchMock
+      .mock(`${SERVER}/${UID}`, 'GET', RESPONSE)
+      .mock(`${SERVER}/${UID}`, 'PUT', RESPONSE)
+      .mock(`${SERVER}/${UID}`, 'DELETE', {});
+  });
+
+  afterEach(() => {
+    fetchMock.restore();
+  });
+
   describe('get', () => {
     it('should GET the correct endpoint and dispatch get action', () => {
       let store = mockStore({
@@ -62,10 +68,10 @@ describe('data crud', () => {
 
       return store.dispatch(set(UID, DATA))
         .then(() => {
+          console.log(fetchMock.calls());
           let lastOptions = fetchMock.lastOptions(`${SERVER}/${UID}`),
               body = JSON.parse(lastOptions.body),
               { headers, method } = lastOptions;
-
           expect(store.getActions()).to.deep.include.members(expectedActions)
           expect(body).to.deep.equal(DATA);
           expect(method).to.equal('PUT');
