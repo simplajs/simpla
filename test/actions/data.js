@@ -1,14 +1,5 @@
-import {
-  get,
-  getData,
-  getDataSuccessful,
-  set,
-  setData,
-  setDataSuccessful,
-  remove,
-  removeData,
-  removeDataSuccessful
-} from '../../src/actions/data';
+import * as dataActions from '../../src/actions/data';
+import * as apiActions from '../../src/actions/api';
 import * as types from '../../src/constants/actionTypes';
 import thunk from 'redux-thunk';
 import configureMockStore from '../__utils__/redux-mock-store';
@@ -35,11 +26,11 @@ describe('data actions', () => {
     it('should get value in the state', () => {
       let store = mockStore({ data });
 
-      return store.dispatch(get(UID_FOR_STORED))
+      return store.dispatch(dataActions.get(UID_FOR_STORED))
         .then(() => {
           expect(store.getActions()).to.deep.equal([
-            getData(UID_FOR_STORED),
-            getDataSuccessful(UID_FOR_STORED, STORED_AT_UID)
+            dataActions.getData(UID_FOR_STORED),
+            dataActions.getDataSuccessful(UID_FOR_STORED, STORED_AT_UID)
           ]);
         });
     });
@@ -52,26 +43,15 @@ describe('data actions', () => {
         data
       });
 
-      return store.dispatch(get(UID_FOR_NOT_STORED))
+      return store.dispatch(dataActions.get(UID_FOR_NOT_STORED))
         .then(() => {
           expect(store.getActions()).to.deep.include.members([
-            getData(UID_FOR_NOT_STORED),
-            {
-              type: types.GET_DATA_FROM_API,
-              uid: UID_FOR_NOT_STORED,
-              data: undefined
-            }, {
-              type: types.GET_DATA_FROM_API_SUCCESSFUL,
-              uid: UID_FOR_NOT_STORED,
-              response: RESPONSE
-            },
-            setData(UID_FOR_NOT_STORED, RESPONSE),
-            setDataSuccessful(UID_FOR_NOT_STORED, RESPONSE),
-            {
-              type: types.GET_DATA_SUCCESSFUL,
-              uid: UID_FOR_NOT_STORED,
-              response: RESPONSE
-            }
+            dataActions.getData(UID_FOR_NOT_STORED),
+            apiActions.getData(UID_FOR_NOT_STORED),
+            apiActions.getDataSuccessful(UID_FOR_NOT_STORED, RESPONSE),
+            dataActions.setData(UID_FOR_NOT_STORED, RESPONSE),
+            dataActions.setDataSuccessful(UID_FOR_NOT_STORED, RESPONSE),
+            dataActions.getDataSuccessful(UID_FOR_NOT_STORED, RESPONSE)
           ]);
         });
     });
@@ -81,11 +61,11 @@ describe('data actions', () => {
     it('should fire off set and set successful', () => {
       let store = mockStore({});
 
-      return store.dispatch(set(UID_FOR_STORED, STORED_AT_UID))
+      return store.dispatch(dataActions.set(UID_FOR_STORED, STORED_AT_UID))
         .then(() => {
           expect(store.getActions()).to.deep.equal([
-            setData(UID_FOR_STORED, STORED_AT_UID),
-            setDataSuccessful(UID_FOR_STORED, STORED_AT_UID)
+            dataActions.setData(UID_FOR_STORED, STORED_AT_UID),
+            dataActions.setDataSuccessful(UID_FOR_STORED, STORED_AT_UID)
           ]);
         });
     });
@@ -95,11 +75,11 @@ describe('data actions', () => {
     it('should fire off remove and remove successful', () => {
       let store = mockStore({});
 
-      return store.dispatch(remove(UID_FOR_STORED))
+      return store.dispatch(dataActions.remove(UID_FOR_STORED))
         .then(() => {
           expect(store.getActions()).to.deep.equal([
-            removeData(UID_FOR_STORED),
-            removeDataSuccessful(UID_FOR_STORED)
+            dataActions.removeData(UID_FOR_STORED),
+            dataActions.removeDataSuccessful(UID_FOR_STORED)
           ]);
         });
     });

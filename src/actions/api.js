@@ -41,17 +41,15 @@ function formatAndRun({ uid, endpoint: dataEndpoint, token, method, body }) {
   });
 }
 
-function generateRequestActions(types) {
+function generateRequestActions(start, success, fail) {
   return [
-    (uid, data) => ({ type: types[0], uid, data }),
-    (uid, response) => ({ type: types[1], uid, response }),
-    (uid, error) => ({ type: types[2], uid, error })
+    (uid, data) => ({ type: start, uid, data }),
+    (uid, response) => ({ type: success, uid, response }),
+    (uid, error) => ({ type: fail, uid, error })
   ];
 }
 
-function generateHandler(method, types) {
-  let [ start, success, fail ] = generateRequestActions(types);
-
+function generateHandler(method, [ start, success, fail ]) {
   return (uid, body) => (dispatch, getState) => {
     let { options, token } = getState(),
         endpoint = options.dataEndpoint;
@@ -65,6 +63,24 @@ function generateHandler(method, types) {
   };
 }
 
-export const get = generateHandler('get', [ GET_DATA_FROM_API, GET_DATA_FROM_API_SUCCESSFUL, GET_DATA_FROM_API_FAILED ]);
-export const set = generateHandler('put', [ SET_DATA_TO_API, SET_DATA_TO_API_SUCCESSFUL, SET_DATA_TO_API_FAILED ]);
-export const remove = generateHandler('delete', [ REMOVE_DATA_FROM_API, REMOVE_DATA_FROM_API_SUCCESSFUL, REMOVE_DATA_FROM_API_FAILED ]);
+export const [
+  getData,
+  getDataSuccessful,
+  getDataFailed
+] = generateRequestActions(GET_DATA_FROM_API, GET_DATA_FROM_API_SUCCESSFUL, GET_DATA_FROM_API_FAILED);
+
+export const [
+  setData,
+  setDataSuccessful,
+  setDataFailed
+] = generateRequestActions(SET_DATA_TO_API, SET_DATA_TO_API_SUCCESSFUL, SET_DATA_TO_API_FAILED);
+
+export const [
+  removeData,
+  removeDataSuccessful,
+  removeDataFailed
+] = generateRequestActions(REMOVE_DATA_FROM_API, REMOVE_DATA_FROM_API_SUCCESSFUL, REMOVE_DATA_FROM_API_FAILED);
+
+export const get = generateHandler('get', [ getData, getDataSuccessful, getDataFailed ]);
+export const set = generateHandler('put', [ setData, setDataSuccessful, setDataFailed ]);
+export const remove = generateHandler('delete', [ removeData, removeDataSuccessful, removeDataFailed ]);
