@@ -15,6 +15,11 @@ export const LOGOUT = 'logout';
 export const LOGOUT_SUCCESSFUL = 'logout-successful';
 export const LOGOUT_FAILED = 'logout-failed';
 
+// Saving
+export const SAVE = 'save';
+export const SAVE_SUCCESSFUL = 'save-successful';
+export const SAVE_FAILED = 'save-failed';
+
 // Data
 export const GET_DATA = 'get-data';
 export const GET_DATA_SUCCESSFUL = 'get-data-successful';

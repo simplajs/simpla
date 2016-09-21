@@ -6,6 +6,7 @@ import { importElement } from './actions/imports';
 import { editActive, editInactive } from './actions/editing';
 import { login, logout } from './actions/authentication';
 import { get, set, remove } from './actions/data';
+import save from './actions/save';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
@@ -94,6 +95,10 @@ Object.assign(Simpla, {
 
   remove(...args) {
     return dispatchThunkAndExpect(store, remove(...args), types.REMOVE_DATA_SUCCESSFUL);
+  },
+
+  save(...args) {
+    return dispatchThunkAndExpect(store, save(...args), types.SAVE_SUCCESSFUL);
   },
 
   // Events
