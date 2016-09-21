@@ -3391,6 +3391,15 @@ var require$$0$12 = Object.freeze({
                   }
 
                   /**
+                   * Clone's the given object using JSON.parse(JSON.stringify(...));
+                   * @param  {Object} object Object should be JSON compatible
+                   * @return {Object}        Clone of given object
+                   */
+                  function clone(object) {
+                    return JSON.parse(JSON.stringify(object));
+                  }
+
+                  /**
                    * Check if uid is invalid. If invalid, returns message why, otherwise returns
                    * 	false
                    * @param  {String} uid
@@ -4274,10 +4283,6 @@ var require$$0$12 = Object.freeze({
 
                   var INITIAL_STATE$1 = {};
 
-                  function clone(data) {
-                    return JSON.parse(JSON.stringify(data));
-                  }
-
                   function setIn(state, path, data) {
                     var key = path[0],
                         value = path.length === 1 ? clone(data) : setIn(state[key] || {}, path.slice(1), data);
@@ -4346,13 +4351,13 @@ var require$$0$12 = Object.freeze({
                       case GET_DATA_FROM_API_SUCCESSFUL:
                       case SET_DATA_TO_API_SUCCESSFUL:
                       case REMOVE_DATA_FROM_API_SUCCESSFUL:
-                        remote = action.response || null;
+                        remote = clone(action.response || null);
                         changed = isDifferent(remote, local);
 
                         return Object.assign({}, state, { remote: remote, changed: changed });
                       case SET_DATA_SUCCESSFUL:
                       case REMOVE_DATA_SUCCESSFUL:
-                        local = action.response || null;
+                        local = clone(action.response || null);
                         changed = isDifferent(remote, local);
 
                         return Object.assign({}, state, { local: local, changed: changed });

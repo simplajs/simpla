@@ -1,10 +1,7 @@
 import { SET_DATA, REMOVE_DATA } from '../constants/actionTypes';
+import { clone } from '../utils/helpers';
 
 const INITIAL_STATE = {};
-
-function clone(data) {
-  return JSON.parse(JSON.stringify(data));
-}
 
 function setIn(state, path, data) {
   let key = path[0],

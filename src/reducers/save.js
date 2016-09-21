@@ -6,6 +6,7 @@ import {
   SET_DATA_SUCCESSFUL,
   REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
+import { clone } from '../utils/helpers';
 
 /**
  * Check if two object are different. Uses JSON stringify to check
@@ -35,13 +36,13 @@ function reducePart(state = {}, action) {
     case GET_DATA_FROM_API_SUCCESSFUL:
     case SET_DATA_TO_API_SUCCESSFUL:
     case REMOVE_DATA_FROM_API_SUCCESSFUL:
-      remote = action.response || null;
+      remote = clone(action.response || null);
       changed = isDifferent(remote, local);
 
       return Object.assign({}, state, { remote, changed });
     case SET_DATA_SUCCESSFUL:
     case REMOVE_DATA_SUCCESSFUL:
-      local = action.response || null;
+      local = clone(action.response || null);
       changed = isDifferent(remote, local);
 
       return Object.assign({}, state, { local, changed });

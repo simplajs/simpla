@@ -44,4 +44,12 @@ describe('state of save', () => {
     expect(changed[UID].changed).to.be.true;
     expect(original[UID].changed).to.be.false;
   });
+
+  it(`shouldn't pass object references in`, () => {
+    let data = { foo: 'bar' },
+        state = saveReducer({}, dataActions.setDataSuccessful(UID, data));
+
+    data.foo = 'baz';
+    expect(state[UID].local.foo).to.equal('bar');
+  });
 });
