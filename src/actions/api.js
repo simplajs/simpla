@@ -27,7 +27,7 @@ function isInvalid(uid) {
 }
 
 function formatAndRun({ uid, endpoint: dataEndpoint, token, method, body }) {
-  const endpoint = `${dataEndpoint}/${uid}`,
+  const endpoint = `${dataEndpoint}/${encodeURIComponent(uid)}`,
         invalid = isInvalid(uid),
         args = [ endpoint ];
 

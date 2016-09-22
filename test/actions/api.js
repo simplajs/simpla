@@ -1,4 +1,4 @@
-import { get, set, remove } from '../../src/actions/api';
+import { get, set, remove, getDataSuccessful } from '../../src/actions/api';
 import thunk from 'redux-thunk';
 import * as types from '../../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
@@ -9,11 +9,14 @@ const TOKEN = 'some-token';
 const SERVER = 'some-server';
 const UID = 'some.uid.to.something';
 const RESPONSE = { foo: 'bar' };
+const HASH_UID = 'some#place.something';
+const URI_SAFE_HASH_UID = 'some%23place.something';
 
 describe('data crud', () => {
   beforeEach(() => {
     fetchMock
       .mock(`${SERVER}/${UID}`, 'GET', RESPONSE)
+      .mock(`${SERVER}/${URI_SAFE_HASH_UID}`, 'GET', RESPONSE)
       .mock(`${SERVER}/${UID}`, 'PUT', RESPONSE)
       .mock(`${SERVER}/${UID}`, 'DELETE', {});
   });
@@ -42,6 +45,19 @@ describe('data crud', () => {
       return store.dispatch(get(UID))
         .then(() => {
           expect(store.getActions()).to.deep.include.members(expectedActions)
+        });
+    });
+
+    it('should encode uri components in url', () => {
+      let store = mockStore({
+            options: {
+              dataEndpoint: SERVER
+            }
+          });
+
+      return store.dispatch(get(HASH_UID))
+        .then(() => {
+          expect(store.getActions()).to.deep.include(getDataSuccessful(HASH_UID, RESPONSE));
         });
     });
   });
