@@ -1,4 +1,14 @@
-import { get, set, remove, getDataSuccessful } from '../../src/actions/api';
+import {
+  get,
+  getData,
+  getDataSuccessful,
+  set,
+  setData,
+  setDataSuccessful,
+  remove,
+  removeData,
+  removeDataSuccessful
+} from '../../src/actions/api';
 import thunk from 'redux-thunk';
 import * as types from '../../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
@@ -32,15 +42,10 @@ describe('data crud', () => {
               dataEndpoint: SERVER
             }
           }),
-          expectedActions = [{
-            type: types.GET_DATA_FROM_API,
-            uid: UID,
-            data: undefined
-          }, {
-            type: types.GET_DATA_FROM_API_SUCCESSFUL,
-            uid: UID,
-            response: RESPONSE
-          }];
+          expectedActions = [
+            getData(UID),
+            getDataSuccessful(UID, RESPONSE)
+          ];
 
       return store.dispatch(get(UID))
         .then(() => {
@@ -72,22 +77,17 @@ describe('data crud', () => {
             },
             token: TOKEN
           }),
-          expectedActions = [{
-            type: types.SET_DATA_TO_API,
-            uid: UID,
-            data: DATA
-          }, {
-            type: types.SET_DATA_TO_API_SUCCESSFUL,
-            uid: UID,
-            response: RESPONSE
-          }];
+          expectedActions = [
+            setData(UID, DATA),
+            setDataSuccessful(UID, RESPONSE)
+          ];
 
       return store.dispatch(set(UID, DATA))
         .then(() => {
-          console.log(fetchMock.calls());
           let lastOptions = fetchMock.lastOptions(`${SERVER}/${UID}`),
               body = JSON.parse(lastOptions.body),
               { headers, method } = lastOptions;
+
           expect(store.getActions()).to.deep.include.members(expectedActions)
           expect(body).to.deep.equal(DATA);
           expect(method).to.equal('PUT');
@@ -104,15 +104,10 @@ describe('data crud', () => {
             },
             token: TOKEN
           }),
-          expectedActions = [{
-            type: types.REMOVE_DATA_FROM_API,
-            uid: UID,
-            data: undefined
-          }, {
-            type: types.REMOVE_DATA_FROM_API_SUCCESSFUL,
-            uid: UID,
-            response: {}
-          }];
+          expectedActions = [
+            removeData(UID),
+            removeDataSuccessful(UID, {})
+          ];
 
       return store.dispatch(remove(UID))
         .then(() => {
