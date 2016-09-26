@@ -26,7 +26,7 @@ const BadSimpla = {
       options: {}
     };
   },
-  observe: sinon.stub().returns(sinon.stub())
+  observeState: sinon.stub().returns(sinon.stub())
 }
 
 describe('usage monitoring', () => {
@@ -89,7 +89,7 @@ describe('usage monitoring', () => {
     });
 
     it ('should call fetch after Simpla has been updated', () => {
-      let lastCall = BadSimpla.observe.lastCall,
+      let lastCall = BadSimpla.observeState.lastCall,
           [ observing, observer ] = lastCall.args;
 
       expect(observing).to.equal('options');

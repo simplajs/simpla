@@ -101,6 +101,13 @@ Object.assign(Simpla, {
     return dispatchThunkAndExpect(store, save(...args), types.SAVE_SUCCESSFUL);
   },
 
+  observe(...args) {
+    let callback = args.pop(),
+        path = args[0] ? `data.${args[0]}` : 'data';
+
+    return storeToObserver(this._store || store).observe(path, callback);
+  },
+
   // Events
   on(...args) {
     emitter.on(...args);
@@ -128,7 +135,7 @@ Object.assign(Simpla, {
     return (this._store || store).getState();
   },
 
-  observe(...args) {
+  observeState(...args) {
     return storeToObserver(this._store || store).observe(...args);
   },
 

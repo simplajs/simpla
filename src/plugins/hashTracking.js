@@ -27,7 +27,7 @@ export default function hashTracking(Simpla) {
     hashObserver({ target: window });
 
     // Part two, bind from Simpla to hash
-    unobserve = Simpla.observe('editing', updateHash);
+    unobserve = Simpla.observeState('editing', updateHash);
   }
 
   function stopTracking() {
@@ -35,7 +35,7 @@ export default function hashTracking(Simpla) {
     unobserve();
   }
 
-  Simpla.observe('options._useHashTracking', (shouldTrack) => {
+  Simpla.observeState('options._useHashTracking', (shouldTrack) => {
     if (shouldTrack) {
       startTracking();
     } else {

@@ -8,7 +8,7 @@ describe('hashTracking', () => {
 
   beforeEach(() => {
     Simpla = {
-      observe: sinon.stub().returns(unobserve),
+      observeState: sinon.stub().returns(unobserve),
       toggleEditing: sinon.stub(),
       getState: stateStub
     };
@@ -27,7 +27,7 @@ describe('hashTracking', () => {
     window.addEventListener.restore();
     window.removeEventListener.restore();
 
-    Simpla.observe.reset();
+    Simpla.observeState.reset();
     Simpla.toggleEditing.reset();
     Simpla.getState = stateStub;
     stateStub.reset();
@@ -38,7 +38,7 @@ describe('hashTracking', () => {
         callback;
 
     hashTracking(Simpla);
-    [ property, callback ] = Simpla.observe.withArgs('editing').lastCall.args;
+    [ property, callback ] = Simpla.observeState.withArgs('editing').lastCall.args;
 
     callback(true);
     expect(window.location.hash).to.equal('#edit');
@@ -53,12 +53,12 @@ describe('hashTracking', () => {
 
     Simpla.getState = sinon.stub().returns({ options: { _useHashTracking: false } });
     hashTracking(Simpla);
-    [ property, callback ] = Simpla.observe.lastCall.args;
+    [ property, callback ] = Simpla.observeState.lastCall.args;
 
     expect(property).to.equal('options._useHashTracking');
 
     callback(true);
-    expect(Simpla.observe.lastCall.args[0]).to.equal('editing');
+    expect(Simpla.observeState.lastCall.args[0]).to.equal('editing');
     expect(hashObserver).to.be.defined;
 
     callback(false);
