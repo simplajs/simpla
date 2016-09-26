@@ -8,11 +8,11 @@ import token from './token';
 import save from './save';
 
 const reducer = combineReducers({
+  _data: data,
+  _imports: imports,
   authenticated,
   options,
-  imports,
   editing,
-  data,
   token,
   save
 });

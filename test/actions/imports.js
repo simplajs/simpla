@@ -20,7 +20,7 @@ describe('importing elements', () => {
     }].forEach(({ method, type, message }) => {
 
       it(`fires ${type} when ${message}`, () => {
-        const store = mockStore({ imports: {} }),
+        const store = mockStore({ _imports: {} }),
               href = 'foo';
 
         sinon.stub(document, 'createElement')

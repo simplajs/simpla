@@ -121,7 +121,7 @@ describe('Simpla', () => {
 
     possibilities.forEach(({ options, actions, caseName }) => {
       it(`should dispatch the correct actions when ${caseName}`, () => {
-        Simpla._store = mockStore({ imports: {} });
+        Simpla._store = mockStore({ _imports: {} });
 
         Simpla(options);
 

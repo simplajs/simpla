@@ -23,7 +23,7 @@ export function importElementSuccess(href) {
 
 export function importElement(href) {
   return (dispatch, getState) => {
-    let { imports } = getState(),
+    let { _imports: imports } = getState(),
         link;
 
     link = document.createElement('link');

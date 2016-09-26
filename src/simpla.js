@@ -103,7 +103,7 @@ Object.assign(Simpla, {
 
   observe(...args) {
     let callback = args.pop(),
-        path = args[0] ? `data.${args[0]}` : 'data';
+        path = args[0] ? `_data.${args[0]}` : '_data';
 
     return storeToObserver(this._store || store).observe(path, callback);
   },
