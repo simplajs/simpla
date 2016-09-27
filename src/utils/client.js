@@ -19,12 +19,14 @@ function checkStatus(response) {
 }
 
 function request(options) {
-  let fetchOptions = Object.assign({}, options);
+  let fetchOptions = Object.assign({}, options),
+      defaults = { Accept: 'application/json' };
 
-  fetchOptions.headers = Object.assign({
-    Accept: 'application/json',
-    'Content-Type': 'application/json'
-  }, fetchOptions.headers);
+  if (options.method !== 'GET') {
+    defaults['Content-Type'] = 'application/json';
+  }
+
+  fetchOptions.headers = Object.assign({}, defaults, fetchOptions.headers);
 
   if (options.body) {
     fetchOptions.body = JSON.stringify(options.body);
