@@ -10,7 +10,6 @@ import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
 import { storeToObserver, ensureActionMatches, dispatchThunkAndExpect } from './utils/helpers';
-import { emitter } from './middleware/emitter';
 import { supportDeprecatedConfig, supportDeprecatedInitializer } from './plugins/deprecation';
 import hashTracking from './plugins/hashTracking';
 import usageMonitoring from './plugins/usageMonitoring';
@@ -94,23 +93,6 @@ Object.assign(Simpla, {
 
   remove(...args) {
     return dispatchThunkAndExpect(store, remove(...args), types.REMOVE_DATA_SUCCESSFUL);
-  },
-
-  // Events
-  on(...args) {
-    emitter.on(...args);
-  },
-
-  off(...args) {
-    emitter.off(...args);
-  },
-
-  once(...args) {
-    emitter.once(...args);
-  },
-
-  emit(...args) {
-    emitter.emit(...args);
   },
 
   // Editing
