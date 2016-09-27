@@ -37,12 +37,7 @@ const bs = browserSync.create(),
               jsnext: true,
               browser: true,
             }),
-            commonJs({
-              exclude: [
-                './node_modules/process-es6/browser.js',
-                './node_modules/rollup-plugin-node-globals/src/global.js',
-              ]
-            }),
+            commonJs(),
             babel(),
             nodeGlobals(),
             replace({
