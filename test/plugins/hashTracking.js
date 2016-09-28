@@ -9,7 +9,7 @@ describe('hashTracking', () => {
   beforeEach(() => {
     Simpla = {
       observeState: sinon.stub().returns(unobserve),
-      toggleEditing: sinon.stub(),
+      toggleEditable: sinon.stub(),
       getState: stateStub
     };
 
@@ -28,17 +28,17 @@ describe('hashTracking', () => {
     window.removeEventListener.restore();
 
     Simpla.observeState.reset();
-    Simpla.toggleEditing.reset();
+    Simpla.toggleEditable.reset();
     Simpla.getState = stateStub;
     stateStub.reset();
   });
 
-  it('should observe editing and change hash accordingly', () => {
+  it('should observe editable and change hash accordingly', () => {
     let property,
         callback;
 
     hashTracking(Simpla);
-    [ property, callback ] = Simpla.observeState.withArgs('editing').lastCall.args;
+    [ property, callback ] = Simpla.observeState.withArgs('editable').lastCall.args;
 
     callback(true);
     expect(window.location.hash).to.equal('#edit');
@@ -58,7 +58,7 @@ describe('hashTracking', () => {
     expect(property).to.equal('options._useHashTracking');
 
     callback(true);
-    expect(Simpla.observeState.lastCall.args[0]).to.equal('editing');
+    expect(Simpla.observeState.lastCall.args[0]).to.equal('editable');
     expect(hashObserver).to.be.defined;
 
     callback(false);
@@ -67,10 +67,10 @@ describe('hashTracking', () => {
   });
 
   it('should listen for changes on the window and update Simpla accordingly', () => {
-    let editingWindow = {
+    let editableWindow = {
           location: { hash: '#edit' }
         },
-        notEditingWindow = {
+        notEditableWindow = {
           location: { hash: '' }
         };
 
@@ -80,12 +80,12 @@ describe('hashTracking', () => {
     expect(window.addEventListener.calledWith('hashchange')).to.be.true;
 
     // Should initialize things
-    expect(Simpla.toggleEditing.lastCall.args[0]).to.be.false;
+    expect(Simpla.toggleEditable.lastCall.args[0]).to.be.false;
 
-    hashObserver({ target: editingWindow });
-    expect(Simpla.toggleEditing.lastCall.args[0]).to.be.true;
+    hashObserver({ target: editableWindow });
+    expect(Simpla.toggleEditable.lastCall.args[0]).to.be.true;
 
-    hashObserver({ target: notEditingWindow });
-    expect(Simpla.toggleEditing.lastCall.args[0]).to.be.false;
+    hashObserver({ target: notEditableWindow });
+    expect(Simpla.toggleEditable.lastCall.args[0]).to.be.false;
   });
 });

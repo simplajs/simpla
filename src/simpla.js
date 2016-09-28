@@ -3,7 +3,7 @@ import 'core-js/fn/promise';
 import { createStore, applyMiddleware } from 'redux';
 import { setOption } from './actions/options';
 import { importElement } from './actions/imports';
-import { editActive, editInactive } from './actions/editing';
+import { editActive, editInactive } from './actions/editable';
 import { login, logout } from './actions/authentication';
 import { get, set, remove } from './actions/data';
 import save from './actions/save';
@@ -125,8 +125,8 @@ Object.assign(Simpla, {
     emitter.emit(...args);
   },
 
-  // Editing
-  toggleEditing(on) {
+  // Editable
+  toggleEditable(on) {
     (this._store || store).dispatch(on ? editActive() : editInactive());
   },
 

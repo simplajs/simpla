@@ -46,6 +46,6 @@ export const REMOVE_DATA_FROM_API = 'remove-data-from-api';
 export const REMOVE_DATA_FROM_API_SUCCESSFUL = 'remove-data-from-api-successful';
 export const REMOVE_DATA_FROM_API_FAILED = 'remove-data-from-api-failed';
 
-// Editing
+// Editable
 export const EDIT_ACTIVE = 'edit-active';
 export const EDIT_INACTIVE = 'edit-inactive';

@@ -6,14 +6,14 @@ export default function hashTracking(Simpla) {
   // Part one, bind from hash to Simpla
   function hashObserver({ target }) {
     if (target.location.hash === HASH_EDIT) {
-      Simpla.toggleEditing(true);
+      Simpla.toggleEditable(true);
     } else {
-      Simpla.toggleEditing(false);
+      Simpla.toggleEditable(false);
     }
   }
 
-  function updateHash(editing) {
-    if (editing) {
+  function updateHash(editable) {
+    if (editable) {
       window.location.hash = HASH_EDIT;
     } else {
       window.location.hash = '';
@@ -27,7 +27,7 @@ export default function hashTracking(Simpla) {
     hashObserver({ target: window });
 
     // Part two, bind from Simpla to hash
-    unobserve = Simpla.observeState('editing', updateHash);
+    unobserve = Simpla.observeState('editable', updateHash);
   }
 
   function stopTracking() {
