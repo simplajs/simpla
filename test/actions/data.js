@@ -1,6 +1,7 @@
 import * as dataActions from '../../src/actions/data';
 import * as apiActions from '../../src/actions/api';
 import * as types from '../../src/constants/actionTypes';
+import { INVALID_DATA } from '../../src/constants/errors';
 import thunk from 'redux-thunk';
 import configureMockStore from '../__utils__/redux-mock-store';
 import fetchMock from 'fetch-mock';
@@ -8,11 +9,11 @@ import fetchMock from 'fetch-mock';
 const mockStore = configureMockStore([ thunk ]);
 
 const UID_FOR_STORED = 'foo.bar';
-const STORED_AT_UID = 'baz';
-
+const STORED_AT_UID = { data: { foo: 'baz' } };
+const BAD_DATA = { foo: 'bar' };
 const SERVER = 'some-server';
 const UID_FOR_NOT_STORED = 'some.uid.to.something';
-const RESPONSE = { foo: 'bar' };
+const RESPONSE = { data: { foo: 'bar' } };
 
 fetchMock
   .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'GET', RESPONSE)
@@ -67,6 +68,21 @@ describe('data actions', () => {
             dataActions.setData(UID_FOR_STORED, STORED_AT_UID),
             dataActions.setDataSuccessful(UID_FOR_STORED, STORED_AT_UID)
           ]);
+        });
+    });
+
+    it('should fail if data doesnt match correct structure', () => {
+      let store = mockStore({});
+
+      return store.dispatch(dataActions.set(UID_FOR_STORED, BAD_DATA))
+        .then(() => {
+          throw Error('Set should have errored');
+        })
+        .catch((err) => {
+          expect(store.getActions()).to.deep.equal([
+            dataActions.setData(UID_FOR_STORED, BAD_DATA),
+            dataActions.setDataFailed(UID_FOR_STORED, new Error(INVALID_DATA))
+          ])
         });
     });
   });

@@ -1,4 +1,4 @@
-import { SET_DATA, REMOVE_DATA } from '../constants/actionTypes';
+import { SET_DATA_SUCCESSFUL, REMOVE_DATA_SUCCESSFUL } from '../constants/actionTypes';
 import { clone } from '../utils/helpers';
 
 const INITIAL_STATE = {};
@@ -12,9 +12,9 @@ function setIn(state, path, data) {
 
 export default function data(state = INITIAL_STATE, action) {
   switch (action.type) {
-  case SET_DATA:
-    return setIn(state, action.uid.split('.'), action.data);
-  case REMOVE_DATA:
+  case SET_DATA_SUCCESSFUL:
+    return setIn(state, action.uid.split('.'), action.response);
+  case REMOVE_DATA_SUCCESSFUL:
     return setIn(state, action.uid.split('.'), null);
   default:
     return state;

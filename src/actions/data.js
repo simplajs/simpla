@@ -4,11 +4,13 @@ import {
   GET_DATA_FROM_API_SUCCESSFUL,
   SET_DATA,
   SET_DATA_SUCCESSFUL,
+  SET_DATA_FAILED,
   REMOVE_DATA,
   REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
 import { DATA_PREFIX } from '../constants/state';
-import { selectPropByPath, runDispatchAndExpect } from '../utils/helpers';
+import { INVALID_DATA } from '../constants/errors';
+import { selectPropByPath, runDispatchAndExpect, dataIsValid } from '../utils/helpers';
 import { get as getFromApi } from './api';
 
 export function getData(uid) {
@@ -38,6 +40,14 @@ export function setDataSuccessful(uid, response) {
   return {
     type: SET_DATA_SUCCESSFUL,
     response,
+    uid
+  };
+}
+
+export function setDataFailed(uid, error) {
+  return {
+    type: SET_DATA_SUCCESSFUL,
+    response: error,
     uid
   };
 }
@@ -82,10 +92,14 @@ export function get(uid) {
 
 export function set(uid, data) {
   return (dispatch, getState) => {
+    let action;
+
     dispatch(setData(uid, data));
 
+    action = dataIsValid(data) ? setDataSuccessful(uid, data) : setDataFailed(uid, new Error(INVALID_DATA));
+
     return Promise.resolve()
-      .then(() => dispatch(setDataSuccessful(uid, data)));
+      .then(() => dispatch(action));
   };
 }
 

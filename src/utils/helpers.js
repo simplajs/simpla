@@ -80,3 +80,14 @@ export function runDispatchAndExpect(dispatch, action, expectedType) {
 export function clone(object) {
   return JSON.parse(JSON.stringify(object));
 }
+
+export function dataIsValid(data) {
+  let whitelist = [ 'type', 'data' ],
+      props = Object.keys(data || {});
+
+  if (props.length === 0) {
+    return false;
+  }
+
+  return props.every(prop => whitelist.indexOf(prop) !== -1);
+}
