@@ -136,10 +136,10 @@ describe('Simpla', () => {
     });
   });
 
-  describe('toggleEditable', () => {
+  describe('editable', () => {
     it('should turn editable on when given true as param', () => {
       Simpla._store = mockStore({});
-      Simpla.toggleEditable(true);
+      Simpla.editable(true);
       expect(Simpla._store.getActions()).to.deep.have.members([{
         type: types.EDIT_ACTIVE
       }]);
@@ -147,7 +147,7 @@ describe('Simpla', () => {
 
     describe('stopEditable', () => {
       Simpla._store = mockStore({});
-      Simpla.toggleEditable(false);
+      Simpla.editable(false);
       expect(Simpla._store.getActions()).to.deep.have.members([{
         type: types.EDIT_INACTIVE
       }]);

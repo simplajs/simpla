@@ -126,7 +126,7 @@ Object.assign(Simpla, {
   },
 
   // Editable
-  toggleEditable(on) {
+  editable(on) {
     (this._store || store).dispatch(on ? editActive() : editInactive());
   },
 

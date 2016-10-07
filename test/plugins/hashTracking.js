@@ -9,7 +9,7 @@ describe('hashTracking', () => {
   beforeEach(() => {
     Simpla = {
       observeState: sinon.stub().returns(unobserve),
-      toggleEditable: sinon.stub(),
+      editable: sinon.stub(),
       getState: stateStub
     };
 
@@ -28,7 +28,7 @@ describe('hashTracking', () => {
     window.removeEventListener.restore();
 
     Simpla.observeState.reset();
-    Simpla.toggleEditable.reset();
+    Simpla.editable.reset();
     Simpla.getState = stateStub;
     stateStub.reset();
   });
@@ -80,12 +80,12 @@ describe('hashTracking', () => {
     expect(window.addEventListener.calledWith('hashchange')).to.be.true;
 
     // Should initialize things
-    expect(Simpla.toggleEditable.lastCall.args[0]).to.be.false;
+    expect(Simpla.editable.lastCall.args[0]).to.be.false;
 
     hashObserver({ target: editableWindow });
-    expect(Simpla.toggleEditable.lastCall.args[0]).to.be.true;
+    expect(Simpla.editable.lastCall.args[0]).to.be.true;
 
     hashObserver({ target: notEditableWindow });
-    expect(Simpla.toggleEditable.lastCall.args[0]).to.be.false;
+    expect(Simpla.editable.lastCall.args[0]).to.be.false;
   });
 });

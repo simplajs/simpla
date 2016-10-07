@@ -6,9 +6,9 @@ export default function hashTracking(Simpla) {
   // Part one, bind from hash to Simpla
   function hashObserver({ target }) {
     if (target.location.hash === HASH_EDIT) {
-      Simpla.toggleEditable(true);
+      Simpla.editable(true);
     } else {
-      Simpla.toggleEditable(false);
+      Simpla.editable(false);
     }
   }
 
