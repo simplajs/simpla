@@ -35,7 +35,7 @@ describe('Simpla', () => {
             setOption('project', project),
             setOption('authEndpoint', AUTH_SERVER),
             setOption('dataEndpoint', dataEndpoint),
-            setOption('_useHashTracking', true)
+            setOption('hashTracking', true)
           ]
 
     let possibilities = [{
@@ -97,13 +97,13 @@ describe('Simpla', () => {
       options: {
         project,
         elements: null,
-        _useHashTracking: false
+        hashTracking: false
       },
       actions: [
         setOption('project', project),
         setOption('authEndpoint', AUTH_SERVER),
         setOption('dataEndpoint', dataEndpoint),
-        setOption('_useHashTracking', false)
+        setOption('hashTracking', false)
       ]
     }];
 

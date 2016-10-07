@@ -35,7 +35,7 @@ export default function hashTracking(Simpla) {
     unobserve();
   }
 
-  Simpla.observeState('config._useHashTracking', (shouldTrack) => {
+  Simpla.observeState('config.hashTracking', (shouldTrack) => {
     if (shouldTrack) {
       startTracking();
     } else {
@@ -43,7 +43,7 @@ export default function hashTracking(Simpla) {
     }
   });
 
-  if (Simpla.getState().config._useHashTracking) {
+  if (Simpla.getState().config.hashTracking) {
     startTracking();
   }
 }

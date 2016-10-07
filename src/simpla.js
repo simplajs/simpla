@@ -50,10 +50,10 @@ const Simpla = function Simpla(options) {
   Simpla._store.dispatch(setOption('authEndpoint', AUTH_SERVER));
   Simpla._store.dispatch(setOption('dataEndpoint', `${AUTH_SERVER}/projects/${project}/items`));
 
-  if (typeof options._useHashTracking !== 'undefined') {
-    Simpla._store.dispatch(setOption('_useHashTracking', options._useHashTracking));
+  if (typeof options.hashTracking !== 'undefined') {
+    Simpla._store.dispatch(setOption('hashTracking', options.hashTracking));
   } else {
-    Simpla._store.dispatch(setOption('_useHashTracking', true));
+    Simpla._store.dispatch(setOption('hashTracking', true));
   }
 
   // Initialize elements
