@@ -11,7 +11,7 @@ const reducer = combineReducers({
   _data: data,
   _imports: imports,
   authenticated,
-  options,
+  config: options,
   editable,
   token,
   save

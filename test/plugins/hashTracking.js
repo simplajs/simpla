@@ -3,7 +3,7 @@ import hashTracking from '../../src/plugins/hashTracking';
 describe('hashTracking', () => {
   let Simpla,
       hashObserver,
-      stateStub = sinon.stub().returns({ options: { _useHashTracking: true } }),
+      stateStub = sinon.stub().returns({ config: { _useHashTracking: true } }),
       unobserve = sinon.stub();
 
   beforeEach(() => {
@@ -51,11 +51,11 @@ describe('hashTracking', () => {
     let property,
         callback;
 
-    Simpla.getState = sinon.stub().returns({ options: { _useHashTracking: false } });
+    Simpla.getState = sinon.stub().returns({ config: { _useHashTracking: false } });
     hashTracking(Simpla);
     [ property, callback ] = Simpla.observeState.lastCall.args;
 
-    expect(property).to.equal('options._useHashTracking');
+    expect(property).to.equal('config._useHashTracking');
 
     callback(true);
     expect(Simpla.observeState.lastCall.args[0]).to.equal('editable');

@@ -12,7 +12,7 @@ const URL = `${SERVER}/projects/${PROJECT}/sessions`;
 const Simpla = {
   getState() {
     return {
-      options: {
+      config: {
         authEndpoint: SERVER,
         project: PROJECT
       }
@@ -23,7 +23,7 @@ const Simpla = {
 const BadSimpla = {
   getState() {
     return {
-      options: {}
+      config: {}
     };
   },
   observeState: sinon.stub().returns(sinon.stub())
@@ -76,14 +76,14 @@ describe('usage monitoring', () => {
     expect(window.localStorage.getItem('sm-session')).to.be.ok;
   });
 
-  describe('handling empty options', () => {
+  describe('handling empty config', () => {
     beforeEach(() => {
       fetchMock.reset();
       window.localStorage.removeItem('sm-session');
       usageMonitoring(BadSimpla);
     });
 
-    it('should not call fetch if options are undefined', () => {
+    it('should not call fetch if config are undefined', () => {
       expect(fetchMock.calls().matched).to.be.empty;
       expect(fetchMock.calls().unmatched).to.be.empty;
     });
@@ -92,7 +92,7 @@ describe('usage monitoring', () => {
       let lastCall = BadSimpla.observeState.lastCall,
           [ observing, observer ] = lastCall.args;
 
-      expect(observing).to.equal('options');
+      expect(observing).to.equal('config');
       observer({ authEndpoint: SERVER, project: PROJECT });
       expect(fetchMock.calls().matched).to.have.lengthOf(1);
     });

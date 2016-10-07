@@ -66,9 +66,9 @@ export default function(Simpla) {
   function run() {
     // If they're not in the session, send a ping to the server
     if (!stillInSession()) {
-      if (!checkAndPing(Simpla.getState().options)) {
-        let unobserve = Simpla.observeState('options', (options) => {
-          if (checkAndPing(options)) {
+      if (!checkAndPing(Simpla.getState().config)) {
+        let unobserve = Simpla.observeState('config', (config) => {
+          if (checkAndPing(config)) {
             unobserve();
           }
         });

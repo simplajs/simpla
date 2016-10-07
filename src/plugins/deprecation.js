@@ -29,6 +29,6 @@ export function supportDeprecatedConfig(Simpla) {
   window.simpla = window.simpla || {};
   window.simpla.config = window.simpla.config || {};
 
-  Simpla.observeState('options.project', projectObserver);
-  Simpla.observeState('options.authEndpoint', authEndpointObserver);
+  Simpla.observeState('config.project', projectObserver);
+  Simpla.observeState('config.authEndpoint', authEndpointObserver);
 }
