@@ -32,7 +32,7 @@ export function loginFailed(error) {
 
 export function login({ email, password }) {
   return (dispatch, getState) => {
-    let { authEndpoint } = getState().options;
+    let { authEndpoint } = getState().config;
 
     dispatch(syncLogin({ email, password }));
 

@@ -85,6 +85,18 @@ describe('data actions', () => {
           ])
         });
     });
+
+    it('should accept any data if validate is set to false', () => {
+      let store = mockStore({});
+
+      return store.dispatch(dataActions.set(UID_FOR_STORED, BAD_DATA, false))
+        .then(() => {
+          expect(store.getActions()).to.deep.equal([
+            dataActions.setData(UID_FOR_STORED, BAD_DATA),
+            dataActions.setDataSuccessful(UID_FOR_STORED, BAD_DATA)
+          ]);
+        });
+    });
   });
 
   describe('remove', () => {

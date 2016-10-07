@@ -80,7 +80,7 @@ export function get(uid) {
 
     if (typeof stored === 'undefined') {
       fetchData = runDispatchAndExpect(dispatch, getFromApi(uid), GET_DATA_FROM_API_SUCCESSFUL)
-        .then((response) => runDispatchAndExpect(dispatch, set(uid, response), SET_DATA_SUCCESSFUL));
+        .then((response) => runDispatchAndExpect(dispatch, set(uid, response, false), SET_DATA_SUCCESSFUL));
     } else {
       fetchData = Promise.resolve(stored);
     }
@@ -90,13 +90,17 @@ export function get(uid) {
   };
 }
 
-export function set(uid, data) {
+export function set(uid, data, validate = true) {
   return (dispatch, getState) => {
     let action;
 
     dispatch(setData(uid, data));
 
-    action = dataIsValid(data) ? setDataSuccessful(uid, data) : setDataFailed(uid, new Error(INVALID_DATA));
+    if (validate && !dataIsValid(data)) {
+      action = setDataFailed(uid, new Error(INVALID_DATA));
+    } else {
+      action = setDataSuccessful(uid, data);
+    }
 
     return Promise.resolve()
       .then(() => dispatch(action));

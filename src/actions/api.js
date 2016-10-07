@@ -51,8 +51,8 @@ function generateRequestActions(start, success, fail) {
 
 function generateHandler(method, [ start, success, fail ]) {
   return (uid, body) => (dispatch, getState) => {
-    let { options, token } = getState(),
-        endpoint = options.dataEndpoint;
+    let { config, token } = getState(),
+        endpoint = config.dataEndpoint;
 
     dispatch(start(uid, body));
     return formatAndRun({ method, uid, body, endpoint, token })
