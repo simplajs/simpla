@@ -48,7 +48,7 @@ describe('save actions', () => {
 
   beforeEach(() => {
     store = mockStore({
-      options: {
+      config: {
         dataEndpoint: SERVER
       },
       token: TOKEN,

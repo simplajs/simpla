@@ -38,7 +38,7 @@ describe('data actions', () => {
 
     it('should get values from API if no value is in state', () => {
       let store = mockStore({
-        options: {
+        config: {
           dataEndpoint: SERVER
         },
         data

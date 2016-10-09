@@ -38,7 +38,7 @@ describe('data crud', () => {
   describe('get', () => {
     it('should GET the correct endpoint and dispatch get action', () => {
       let store = mockStore({
-            options: {
+            config: {
               dataEndpoint: SERVER
             }
           }),
@@ -55,7 +55,7 @@ describe('data crud', () => {
 
     it('should encode uri components in url', () => {
       let store = mockStore({
-            options: {
+            config: {
               dataEndpoint: SERVER
             }
           });
@@ -72,7 +72,7 @@ describe('data crud', () => {
 
     it('should PUT to the correct endpoint and dispatch set actions', () => {
       let store = mockStore({
-            options: {
+            config: {
               dataEndpoint: SERVER
             },
             token: TOKEN
@@ -99,7 +99,7 @@ describe('data crud', () => {
   describe('remove', () => {
     it('should DELETE the right endpoint', () => {
       let store = mockStore({
-            options: {
+            config: {
               dataEndpoint: SERVER
             },
             token: TOKEN

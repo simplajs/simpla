@@ -17,7 +17,7 @@ describe('authentication actions', () => {
   describe('login', () => {
     it('should request login endpoint and fire action with response token', () => {
       let store = mockStore({
-            options: {
+            config: {
               authEndpoint: SERVER
             }
           }),
