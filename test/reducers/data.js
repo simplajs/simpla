@@ -1,26 +1,92 @@
-import dataReducer from '../../src/reducers/data';
+import { hierachy, content } from '../../src/reducers/data';
 import { setDataSuccessful, removeDataSuccessful } from '../../src/actions/data';
 
 describe('dataReducer', () => {
-  describe('handling SET_DATA', () => {
-    it('should update the state path by the given uid and data', () => {
-      let state = dataReducer({}, setDataSuccessful('foo.bar.baz', { qux: 'foo' }));
-      expect(state.foo.bar.baz).to.deep.equal({ qux: 'foo' });
+  describe('setting data', () => {
+    describe('hierachy', () => {
+      it('should build a tree based on UID given', () => {
+        let state = hierachy(undefined, setDataSuccessful('foo.bar.baz', {}));
+        expect(state.foo.bar.baz).to.be.defined;
+      });
+
+      it('shouldnt disturb other branches of the tree', () => {
+        let state = hierachy({
+          foo: {
+            bar: {
+              baz: {}
+            }
+          },
+          baz: {
+            qux: {}
+          }
+        }, setDataSuccessful('foo.qux', {}));
+
+        expect(state).to.deep.equal({
+          foo: {
+            bar: {
+              baz: {}
+            },
+            qux: {}
+          },
+          baz: {
+            qux: {}
+          }
+        });
+      });
     });
 
-    it('should add a clone, not a reference', () => {
-      let data = { baz: 'qux' },
-          state = dataReducer({}, setDataSuccessful('foo.bar', data));
+    describe('content', () => {
+      it('should create a flat map of uids to their data', () => {
+        let state = content({}, setDataSuccessful('foo.bar', {}));
+        expect(state['foo.bar']).to.deep.equal({});
+      });
 
-      data.baz = 'nope';
-      expect(state.foo.bar.baz).to.deep.equal('qux');
+      it('should store deep copies of the data', () => {
+        let data = { foo: { bar: 'baz' } },
+            state = content({}, setDataSuccessful('foo', data));
+
+        data.foo.bar = 'qux';
+        expect(state['foo'].foo.bar).to.equal('baz');
+      });
     });
   });
 
-  describe('handling REMOVE_DATA', () => {
-    it('should set data to null when removing from state', () => {
-      let state = dataReducer({ foo: { bar: { baz: true } } }, removeDataSuccessful('foo.bar'));
-      expect(state.foo.bar).to.equal(null);
+  describe('removing data', () => {
+    describe('hierachy', () => {
+      it('should remove the tree at that point', () => {
+        let state = hierachy({
+          foo: {
+            bar: {
+              baz: {}
+            }
+          }
+        }, removeDataSuccessful('foo.bar'));
+
+        expect(state.foo.bar).to.be.undefined;
+      });
+
+      it('should do nothing if it cant find that section of the tree', () => {
+        let state = hierachy({
+          foo: {}
+        }, removeDataSuccessful('foo.bar.baz'));
+
+        expect(state.foo.bar).to.be.undefined;
+      });
+    });
+
+    describe('content', () => {
+      it('should set content at that point to null', () => {
+        let state = content({
+          ['foo.bar']: {}
+        }, removeDataSuccessful('foo.bar'));
+
+        expect(state['foo.bar']).to.equal(null);
+      });
+
+      it('should set to null even it didnt exist before', () => {
+        let state = content({}, removeDataSuccessful('foo.bar'));
+        expect(state['foo.bar']).to.equal(null);
+      });
     });
   });
 });
