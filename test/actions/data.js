@@ -22,10 +22,14 @@ fetchMock
 
 describe('data actions', () => {
   describe('get', () => {
-    const data = { foo: { bar: STORED_AT_UID } };
+    const data = {
+      content: {
+        [ UID_FOR_STORED ]: STORED_AT_UID
+      }
+    };
 
     it('should get value in the state', () => {
-      let store = mockStore({ data });
+      let store = mockStore({ [ DATA_PREFIX ]: data });
 
       return store.dispatch(dataActions.get(UID_FOR_STORED))
         .then(() => {

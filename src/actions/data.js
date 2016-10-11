@@ -10,7 +10,7 @@ import {
 } from '../constants/actionTypes';
 import { DATA_PREFIX } from '../constants/state';
 import { INVALID_DATA } from '../constants/errors';
-import { selectPropByPath, runDispatchAndExpect, dataIsValid } from '../utils/helpers';
+import { selectDataFromState, runDispatchAndExpect, dataIsValid } from '../utils/helpers';
 import { get as getFromApi } from './api';
 
 export function getData(uid) {
@@ -75,8 +75,7 @@ export function get(uid) {
     dispatch(getData(uid));
 
     state = getState();
-    stored = selectPropByPath(`${DATA_PREFIX}.${uid}`, state);
-
+    stored = selectDataFromState(uid, state);
 
     if (typeof stored === 'undefined') {
       fetchData = runDispatchAndExpect(dispatch, getFromApi(uid), GET_DATA_FROM_API_SUCCESSFUL)

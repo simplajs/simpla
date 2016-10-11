@@ -1,5 +1,6 @@
 import Simpla from '../src/simpla';
 import thunk from 'redux-thunk';
+import rootReducer from '../src/reducers/';
 import configureMockStore from './__utils__/redux-mock-store';
 import { ELEMENTS, BASE_PATH, AUTH_SERVER } from '../src/constants/options';
 import { setOption } from '../src/actions/options';
@@ -151,6 +152,72 @@ describe('Simpla', () => {
       expect(Simpla._store.getActions()).to.deep.have.members([{
         type: types.EDIT_INACTIVE
       }]);
+    });
+  });
+
+  describe('content methods', () => {
+    const foo = { data: { foo: '' } },
+          fooBar = { data: { foo: 'bar' } },
+          fooBarWithKids = Object.assign({}, fooBar, { children: [] }),
+          fooBaz = { data: { foo: 'baz' } },
+          fooBazWithKids = Object.assign({}, fooBaz, { children: [] }),
+          fooWithKids = Object.assign({}, foo, {
+            children: [ fooBarWithKids, fooBazWithKids ]
+          });
+
+    beforeEach(() => {
+      return Simpla.remove('foo')
+        .then(() => Promise.all([
+          Simpla.set('foo', foo),
+          Simpla.set('foo.bar', fooBar),
+          Simpla.set('foo.baz', fooBaz)
+        ]));
+    });
+
+    it('should be able to get leaf node', () => {
+      return Simpla.get('foo.bar')
+        .then(data => {
+          expect(data).to.deep.equal(fooBarWithKids);
+        });
+    });
+
+    it('should be able to get the children', () => {
+      return Simpla.get('foo')
+        .then(response => {
+          console.log(response);
+          expect(response).to.deep.equal(fooWithKids);
+        });
+    });
+
+    it('should be able to remove data', () => {
+      return Simpla.get('foo.bar')
+        .then(response => {
+          expect(response).to.not.be.null;
+        })
+        .then(() => Simpla.remove('foo.bar'))
+        .then(() => Simpla.get('foo.bar'))
+        .then(response => {
+          expect(response).to.be.null;
+        });
+    });
+
+    it('should be able to observe data', () => {
+      let spy = sinon.spy();
+
+      Simpla.observe('foo.bar', spy);
+
+      return Simpla.set('foo.bar', { data: { foo: 'bloop' } })
+        .then(() => {
+          expect(spy.calledWith({ data: { foo: 'bloop' }, children: [] })).to.be.true;
+        });
+    });
+
+    xit('should be able to observe children data changes', () => {
+
+    });
+
+    xit('should be able to observe additions / removals to children', () => {
+
     });
   });
 });

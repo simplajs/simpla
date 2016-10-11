@@ -1,3 +1,5 @@
+import { DATA_PREFIX } from '../constants/state';
+
 export function selectPropByPath(path, obj) {
   let selector,
       numberSelector;
@@ -22,6 +24,30 @@ export function selectPropByPath(path, obj) {
   }
 
   return selectPropByPath(path.slice(1), obj[selector]);
+}
+
+export function selectDataFromState(uid, state) {
+  let hierachy = selectPropByPath(uid, state[DATA_PREFIX].hierachy),
+      children = hierachy ? Object.keys(hierachy) : undefined,
+      data;
+
+  if (children) {
+    children = children
+      .map(sid => uid.split('.').concat(sid).join('.'))
+      .map(uid => selectDataFromState(uid, state));
+  }
+
+  data = state[DATA_PREFIX].content[uid];
+
+  if (data === null && !children) {
+    return null;
+  }
+
+  if (typeof data === 'undefined' && !children) {
+    return;
+  }
+
+  return Object.assign({}, data, children ? { children } : undefined);
 }
 
 export function storeToObserver(store) {
