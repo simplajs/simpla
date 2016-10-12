@@ -184,7 +184,6 @@ describe('Simpla', () => {
     it('should be able to get the children', () => {
       return Simpla.get('foo')
         .then(response => {
-          console.log(response);
           expect(response).to.deep.equal(fooWithKids);
         });
     });
@@ -201,23 +200,62 @@ describe('Simpla', () => {
         });
     });
 
-    it('should be able to observe data', () => {
-      let spy = sinon.spy();
+    describe('observing', () => {
+      let spy,
+          unobserve;
 
-      Simpla.observe('foo.bar', spy);
+      beforeEach(() => {
+        spy = sinon.spy();
+        delete Simpla._store;
+        unobserve = Simpla.observe('foo.bar', spy);
+      });
 
-      return Simpla.set('foo.bar', { data: { foo: 'bloop' } })
-        .then(() => {
-          expect(spy.calledWith({ data: { foo: 'bloop' }, children: [] })).to.be.true;
-        });
-    });
+      afterEach(() => {
+        unobserve && unobserve();
+      });
 
-    xit('should be able to observe children data changes', () => {
+      it('should be able to observe data', () => {
+        return Simpla.set('foo.bar', { data: { foo: 'bloop' } })
+          .then(() => Simpla.get('foo.bar'))
+          .then((data) => {
+            expect(spy.lastCall.calledWith(data)).to.be.true;
+          });
+      });
 
-    });
+      it('should be able to observe children additions / changes changes', () => {
+        return Simpla.set('foo.bar.baz', { data: { foo: 'barbaz' } })
+          .then(() => Simpla.get('foo.bar'))
+          .then((data) => {
+            expect(spy.lastCall.calledWith(data)).to.be.true;
+          })
+          .then(() => Simpla.set('foo.bar.baz', { data: { foo: 'barbing' } }))
+          .then(() => Simpla.get('foo.bar'))
+          .then((data) => {
+            expect(spy.lastCall.calledWith(data)).to.be.true;
+          });
+      });
 
-    xit('should be able to observe additions / removals to children', () => {
+      it('should be able to observe removals to children', () => {
+        return Simpla.set('foo.bar.baz', { data: { foo: 'barbaz' } })
+          .then(() => Simpla.remove('foo.bar.baz'))
+          .then(() => Simpla.get('foo.bar'))
+          .then((data) => {
+            expect(spy.lastCall.calledWith(data)).to.be.true;
+          })
+      });
 
+      xit('should be able to observe the root by not passing anything', () => {
+        let rootSpy = sinon.spy(),
+            rootUnobserve;
+
+        rootUnobserve = Simpla.observe(spy);
+
+        return Simpla.set('foo', { data: { foo: 'foo!!'} })
+          .then(() => Simpla.get('.'))
+          .then(data => {
+            expect(rootSpy.lastCall.calledWith(data)).to.be.true;
+          });
+      });
     });
   });
 });

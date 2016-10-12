@@ -8,6 +8,7 @@ import { login, logout } from './actions/authentication';
 import { get, set, remove } from './actions/data';
 import save from './actions/save';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
+import { DATA_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
 import { storeToObserver, ensureActionMatches, dispatchThunkAndExpect } from './utils/helpers';
@@ -103,9 +104,10 @@ Object.assign(Simpla, {
 
   observe(...args) {
     let callback = args.pop(),
-        path = args[0] ? `_data.${args[0]}` : '_data';
+        path = args[0] ? `${DATA_PREFIX}.hierachy.${args[0]}` : `${DATA_PREFIX}.hierachy`,
+        wrappedCallback = () => this.get(args[0]).then(callback);
 
-    return storeToObserver(this._store || store).observe(path, callback);
+    return storeToObserver(this._store || store).observe(path, wrappedCallback);
   },
 
   // Events

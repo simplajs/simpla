@@ -2,6 +2,7 @@ import * as dataActions from '../../src/actions/data';
 import * as apiActions from '../../src/actions/api';
 import * as types from '../../src/constants/actionTypes';
 import { INVALID_DATA } from '../../src/constants/errors';
+import { DATA_PREFIX } from '../../src/constants/state';
 import thunk from 'redux-thunk';
 import configureMockStore from '../__utils__/redux-mock-store';
 import fetchMock from 'fetch-mock';
