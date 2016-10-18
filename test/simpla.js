@@ -31,7 +31,7 @@ describe('Simpla', () => {
     };
 
     const project = 'project-id',
-          dataEndpoint = `${AUTH_SERVER}/projects/${project}/items`,
+          dataEndpoint = `${AUTH_SERVER}/projects/${project}/content`,
           standardActions = [
             setOption('project', project),
             setOption('authEndpoint', AUTH_SERVER),

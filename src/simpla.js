@@ -49,7 +49,7 @@ const Simpla = function Simpla(options) {
 
   // Initialize endpoints
   Simpla._store.dispatch(setOption('authEndpoint', AUTH_SERVER));
-  Simpla._store.dispatch(setOption('dataEndpoint', `${AUTH_SERVER}/projects/${project}/items`));
+  Simpla._store.dispatch(setOption('dataEndpoint', `${AUTH_SERVER}/projects/${project}/content`));
 
   if (typeof options.hashTracking !== 'undefined') {
     Simpla._store.dispatch(setOption('hashTracking', options.hashTracking));
