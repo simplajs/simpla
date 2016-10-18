@@ -106,6 +106,21 @@ describe('Simpla', () => {
         setOption('dataEndpoint', dataEndpoint),
         setOption('hashTracking', false)
       ]
+    }, {
+      caseName: 'set custom endpoints',
+      options: {
+        project,
+        elements: null,
+        hashTracking: false,
+        _dataEndpoint: 'foo-data',
+        _authEndpoint: 'foo-auth'
+      },
+      actions: [
+        setOption('project', project),
+        setOption('authEndpoint', 'foo-auth'),
+        setOption('dataEndpoint', 'foo-data'),
+        setOption('hashTracking', false)
+      ]
     }];
 
     before(() => {
