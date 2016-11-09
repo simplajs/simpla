@@ -170,6 +170,63 @@ describe('Simpla', () => {
     });
   });
 
+  describe('state methods', () => {
+    const ROOT = {
+      foo: {
+        bar: 'baz',
+      },
+      bar: {
+        qux: 'baz'
+      }
+    };
+
+    beforeEach(() => {
+      Simpla._store = mockStore(ROOT);
+    })
+
+    describe('getState', () => {
+      it('should return root state if no argument given', () => {
+        expect(Simpla.getState()).to.equal(ROOT);
+      });
+
+      it('should return a substate if given a path', () => {
+        expect(Simpla.getState('foo')).to.equal(ROOT.foo);
+      });
+
+      it('should return undefined if path leads to undefined', () => {
+        expect(Simpla.getState('foo.bing')).to.be.undefined;
+      });
+    });
+
+    describe('observeState', () => {
+      let spy,
+          unobserve;
+
+      beforeEach(() => {
+        spy = sinon.spy();
+        delete Simpla._store;
+        Simpla.editable(false);
+      });
+
+      afterEach(() => {
+        unobserve && unobserve();
+      });
+
+      it('should be able to observe root tree', () => {
+        unobserve = Simpla.observeState(spy);
+        Simpla.editable(true);
+        expect(spy.called).to.be.true;
+      });
+
+      it('should observe changes to substate if given a path', () => {
+        unobserve = Simpla.observeState('editable', spy);
+        Simpla.editable(true);
+        expect(spy.called).to.be.true;
+        expect(spy.calledWith(true)).to.be.true;
+      });
+    });
+  });
+
   describe('content methods', () => {
     const foo = { data: { foo: '' } },
           fooBar = { data: { foo: 'bar' } },
@@ -259,6 +316,11 @@ describe('Simpla', () => {
           })
       });
 
+      /**
+       * This is currently disabled as with the new data structure, it may not
+       *  make much sense to have Simpla.get('.') and as such isn't yet implemented
+       * What should Simpla.get('.') even return?
+       */
       xit('should be able to observe the root by not passing anything', () => {
         let rootSpy = sinon.spy(),
             rootUnobserve;

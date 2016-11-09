@@ -11,7 +11,7 @@ import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
 import { DATA_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
-import { storeToObserver, ensureActionMatches, dispatchThunkAndExpect } from './utils/helpers';
+import { storeToObserver, ensureActionMatches, dispatchThunkAndExpect, selectPropByPath } from './utils/helpers';
 import { emitter } from './middleware/emitter';
 import { supportDeprecatedConfig, supportDeprecatedInitializer } from './plugins/deprecation';
 import hashTracking from './plugins/hashTracking';
@@ -133,8 +133,9 @@ Object.assign(Simpla, {
   },
 
   // State
-  getState() {
-    return (this._store || store).getState();
+  getState(path) {
+    let state = (this._store || store).getState();
+    return path ? selectPropByPath(path, state) : state;
   },
 
   observeState(...args) {
