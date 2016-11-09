@@ -23,17 +23,19 @@ function request(options) {
 
   fetchOptions.headers = Object.assign({
     Accept: 'application/json',
-    'Content-Type': 'application/json'
   }, fetchOptions.headers);
 
   if (options.body) {
     fetchOptions.body = JSON.stringify(options.body);
+    fetchOptions.headers = Object.assign({
+      'Content-Type': 'application/json'
+    }, fetchOptions.headers);
   }
 
   return fetch(options.url, fetchOptions)
       .then(checkStatus)
       .then(response => response.json());
-};
+}
 
 function requestWithToken(options) {
   let token = options.token;
