@@ -4,11 +4,13 @@ describe('hashTracking', () => {
   let Simpla,
       hashObserver,
       stateStub = sinon.stub().returns({ config: { hashTracking: true } }),
-      unobserve = sinon.stub();
+      observer = {
+        unobserve: sinon.stub()
+      };
 
   beforeEach(() => {
     Simpla = {
-      observeState: sinon.stub().returns(unobserve),
+      observeState: sinon.stub().returns(observer),
       editable: sinon.stub(),
       getState: stateStub
     };
@@ -62,7 +64,7 @@ describe('hashTracking', () => {
     expect(hashObserver).to.be.defined;
 
     callback(false);
-    expect(unobserve.called).to.be.true;
+    expect(observer.unobserve.called).to.be.true;
     expect(hashObserver).to.be.undefined;
   });
 

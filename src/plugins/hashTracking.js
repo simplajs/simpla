@@ -1,7 +1,7 @@
 let HASH_EDIT = '#edit';
 
 export default function hashTracking(Simpla) {
-  let unobserve = () => {};
+  let observer = { unobserve: () => {} };
 
   // Part one, bind from hash to Simpla
   function hashObserver({ target }) {
@@ -27,12 +27,12 @@ export default function hashTracking(Simpla) {
     hashObserver({ target: window });
 
     // Part two, bind from Simpla to hash
-    unobserve = Simpla.observeState('editable', updateHash);
+    observer = Simpla.observeState('editable', updateHash);
   }
 
   function stopTracking() {
     window.removeEventListener('hashchange', hashObserver);
-    unobserve();
+    observer.unobserve();
   }
 
   Simpla.observeState('config.hashTracking', (shouldTrack) => {
