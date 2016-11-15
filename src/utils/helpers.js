@@ -82,7 +82,9 @@ export function storeToObserver(store) {
         }
       }
 
-      return store.subscribe(handleChange);
+      return {
+        unobserve: store.subscribe(handleChange)
+      };
     }
   }
 }

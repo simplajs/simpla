@@ -26,7 +26,7 @@ const BadSimpla = {
       config: {}
     };
   },
-  observeState: sinon.stub().returns(sinon.stub())
+  observeState: sinon.stub().returns({ unobserve: sinon.stub() })
 }
 
 describe('usage monitoring', () => {

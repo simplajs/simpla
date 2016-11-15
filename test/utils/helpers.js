@@ -105,12 +105,12 @@ describe('helpers', () => {
       subscriber();
     });
 
-    it('should return a function', () => {
+    it('should return an observer object', () => {
       let store = createStore((state) => state),
           observable = storeToObserver(store),
-          unobserve = observable.observe('', () => {});
+          observer = observable.observe('', () => {});
 
-      expect(unobserve).to.be.a('function');
+      expect(observer.unobserve).to.be.a('function');
     });
   });
 
@@ -165,7 +165,7 @@ describe('helpers', () => {
       expect(dataIsValid(null)).to.be.false;
     });
 
-    it(`should accept objects the include the keys 'type' and 'data'`, () => {
+    it('should accept objects the include the keys \'type\' and \'data\'', () => {
       expect(dataIsValid({ type: 'foo' })).to.be.true;
       expect(dataIsValid({ data: 'foo' })).to.be.true;
       expect(dataIsValid({ type: 'foo', data: 'bar' })).to.be.true;

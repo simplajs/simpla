@@ -213,13 +213,13 @@ describe('Simpla', () => {
       });
 
       it('should be able to observe root tree', () => {
-        unobserve = Simpla.observeState(spy);
+        ({ unobserve } = Simpla.observeState(spy));
         Simpla.editable(true);
         expect(spy.called).to.be.true;
       });
 
       it('should observe changes to substate if given a path', () => {
-        unobserve = Simpla.observeState('editable', spy);
+        ({ unobserve } = Simpla.observeState('editable', spy));
         Simpla.editable(true);
         expect(spy.called).to.be.true;
         expect(spy.calledWith(true)).to.be.true;
@@ -279,7 +279,7 @@ describe('Simpla', () => {
       beforeEach(() => {
         spy = sinon.spy();
         delete Simpla._store;
-        unobserve = Simpla.observe('foo.bar', spy);
+        ({ unobserve } = Simpla.observe('foo.bar', spy));
       });
 
       afterEach(() => {
