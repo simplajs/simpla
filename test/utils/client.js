@@ -7,7 +7,6 @@ const UID = 'some.uid.to.something';
 const RESPONSE = { foo: 'bar' };
 const EMPTY_UID = 'some.uid.to.nowhere';
 const EMPTY_RESPONSE = {
-  body: null,
   status: 204,
   sendAsJson: false
 };
