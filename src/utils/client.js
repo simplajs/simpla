@@ -34,7 +34,7 @@ function request(options) {
 
   return fetch(options.url, fetchOptions)
       .then(checkStatus)
-      .then(response => response.json());
+      .then(response => response.status === 204 ? null : response.json());
 }
 
 function requestWithToken(options) {
