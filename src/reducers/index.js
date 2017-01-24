@@ -1,3 +1,4 @@
+import { DATA_PREFIX, QUERIES_PREFIX } from '../constants/state';
 import { combineReducers } from 'redux';
 import authenticated from './authenticated';
 import options from './options';
@@ -9,9 +10,9 @@ import token from './token';
 import save from './save';
 
 const reducer = combineReducers({
-  _data: data,
+  [ DATA_PREFIX ]: data,
+  [ QUERIES_PREFIX ]: queries,
   _imports: imports,
-  _queries: queries,
   authenticated,
   config: options,
   editable,
