@@ -40,14 +40,20 @@ const PARENT_QUERY_ITEMS = [{
   data: {}
 }];
 
-fetchMock
-  .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'GET', RESPONSE)
-  .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'PUT', RESPONSE)
-  .mock(`${SERVER}/?parent=foo`, 'GET', { items: PARENT_QUERY_ITEMS })
-  .mock(`${SERVER}/`, 'GET', { items: BLANK_QUERY_ITEMS })
-  .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'DELETE', {});
-
 describe('data actions', () => {
+  beforeEach(() => {
+    fetchMock
+      .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'GET', RESPONSE)
+      .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'PUT', RESPONSE)
+      .mock(`${SERVER}/?parent=foo`, 'GET', { items: PARENT_QUERY_ITEMS })
+      .mock(`${SERVER}/`, 'GET', { items: BLANK_QUERY_ITEMS })
+      .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'DELETE', {});
+  });
+
+  afterEach(() => {
+    fetchMock.restore();
+  });
+
   describe('find', () => {
     let initialState,
         store;
