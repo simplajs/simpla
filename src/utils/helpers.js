@@ -28,34 +28,13 @@ export function selectPropByPath(path, obj) {
 
 export function selectDataFromState(uid, state) {
   let dataState = state[DATA_PREFIX],
-      hierachy,
-      children,
       data;
 
   if (dataState) {
-    hierachy = selectPropByPath(uid, dataState.hierachy);
     data = state[DATA_PREFIX].content[uid];
   }
 
-  if (hierachy) {
-    children = Object.keys(hierachy);
-  }
-
-  if (children) {
-    children = children
-      .map(sid => uid.split('.').concat(sid).join('.'))
-      .map(uid => selectDataFromState(uid, state));
-  }
-
-  if (data === null && !children) {
-    return null;
-  }
-
-  if (typeof data === 'undefined' && !children) {
-    return;
-  }
-
-  return Object.assign({}, data, children ? { children } : undefined);
+  return data;
 }
 
 export function storeToObserver(store) {
