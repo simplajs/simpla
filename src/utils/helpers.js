@@ -138,7 +138,11 @@ export function dataIsValid(data) {
 }
 
 export function toQueryParams(query = {}) {
+  // Sort alphabetically, so that when caching it will always be the same key
+  let alphabetically = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+
   return Object.keys(query)
+    .sort(alphabetically)
     .reduce((working, param) => {
       let value = query[param],
           prefix;

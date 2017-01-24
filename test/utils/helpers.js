@@ -189,13 +189,25 @@ describe('helpers', () => {
   describe('toQueryParams', () => {
     it('should take a simple key value JS object and turn into query string', () => {
       let asObj = { foo: 'bar', baz: 'qux bang' },
-          asString = '?foo=bar&baz=qux%20bang';
+          asString = '?baz=qux%20bang&foo=bar';
 
       expect(toQueryParams(asObj)).to.equal(asString);
     });
 
     it('should return an empty string on empty objects', () => {
       expect(toQueryParams({})).to.equal('');
+    });
+
+    it('should stringify always in the same order', () => {
+      let queryString = '?baz=qux&foo=bar',
+          queryObjects = [
+            { foo: 'bar', baz: 'qux' },
+            { baz: 'qux', foo: 'bar' }
+          ];
+
+      queryObjects.forEach((queryObject) => {
+        expect(toQueryParams(queryObject)).to.equal(queryString);
+      });
     });
   });
 
