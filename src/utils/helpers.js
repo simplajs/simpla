@@ -1,4 +1,4 @@
-import { DATA_PREFIX } from '../constants/state';
+import { DATA_PREFIX, QUERIES_PREFIX } from '../constants/state';
 
 export function selectPropByPath(path, obj) {
   let selector,
@@ -155,4 +155,9 @@ export function toQueryParams(query = {}) {
 
       return `${prefix}${param}=${encodeURIComponent(value)}`;
     }, '');
+}
+
+export function hasRunQuery(query, state) {
+  const queryState = state[QUERIES_PREFIX];
+  return !!(queryState && queryState[toQueryParams(query)]);
 }

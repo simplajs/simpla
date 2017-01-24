@@ -16,7 +16,8 @@ import {
   selectDataFromState,
   runDispatchAndExpect,
   dataIsValid,
-  findDataInState
+  findDataInState,
+  hasRunQuery
 } from '../utils/helpers';
 import { get as getFromApi, find as findFromApi } from './api';
 
@@ -91,7 +92,8 @@ export function removeDataSuccessful(uid) {
 export function find(query) {
   return (dispatch, getState) => {
     let storeResponse,
-        storeItemInState;
+        storeItemInState,
+        findLocallyAndReturn;
 
     dispatch(findData(query));
 
@@ -110,10 +112,19 @@ export function find(query) {
       );
     };
 
+    findLocallyAndReturn = () => {
+      return Promise.resolve()
+        .then(() => findDataInState(query, getState()))
+        .then(response => dispatch(findDataSuccessful(query, response)));
+    }
+
+    if (hasRunQuery(query, getState())) {
+      return findLocallyAndReturn();
+    }
+
     return runDispatchAndExpect(dispatch, findFromApi(query), FIND_DATA_FROM_API_SUCCESSFUL)
       .then(storeResponse)
-      .then(() => findDataInState(query, getState()))
-      .then(response => dispatch(findDataSuccessful(query, response)));
+      .then(findLocallyAndReturn);
   };
 }
 
