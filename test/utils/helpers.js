@@ -1,4 +1,10 @@
-import { storeToObserver, selectPropByPath, dispatchThunkAndExpect, dataIsValid } from '../../src/utils/helpers';
+import {
+  storeToObserver,
+  selectPropByPath,
+  dispatchThunkAndExpect,
+  dataIsValid,
+  toQueryParams
+} from '../../src/utils/helpers';
 import { createStore } from 'redux';
 
 describe('helpers', () => {
@@ -173,6 +179,19 @@ describe('helpers', () => {
 
     it('should deny objects with extra props', () => {
       expect(dataIsValid({ type: 'foo', foo: 'bar' })).to.be.false;
+    });
+  });
+
+  describe('toQueryParams', () => {
+    it('should take a simple key value JS object and turn into query string', () => {
+      let asObj = { foo: 'bar', baz: 'qux bang' },
+          asString = '?foo=bar&baz=qux%20bang';
+
+      expect(toQueryParams(asObj)).to.equal(asString);
+    });
+
+    it('should return an empty string on empty objects', () => {
+      expect(toQueryParams({})).to.equal('');
     });
   });
 });

@@ -106,3 +106,19 @@ export function dataIsValid(data) {
 
   return props.every(prop => whitelist.indexOf(prop) !== -1);
 }
+
+export function toQueryParams(query = {}) {
+  return Object.keys(query)
+    .reduce((working, param) => {
+      let value = query[param],
+          prefix;
+
+      if (!working) {
+        prefix = '?';
+      } else {
+        prefix = `${working}&`;
+      }
+
+      return `${prefix}${param}=${encodeURIComponent(value)}`;
+    }, '');
+}
