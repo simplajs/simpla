@@ -7,6 +7,7 @@ import {
   GET_DATA_FROM_API_SUCCESSFUL,
   SET_DATA,
   SET_DATA_SUCCESSFUL,
+  SET_DATA_FAILED,
   REMOVE_DATA,
   REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
@@ -67,7 +68,7 @@ export function setDataSuccessful(uid, response) {
 
 export function setDataFailed(uid, error) {
   return {
-    type: SET_DATA_SUCCESSFUL,
+    type: SET_DATA_FAILED,
     response: error,
     uid
   };
@@ -98,7 +99,16 @@ export function find(query) {
       return runDispatchAndExpect(dispatch, set(item.uid, item, false), SET_DATA_SUCCESSFUL)
     };
 
-    storeResponse = (response) => Promise.all(response.items.map(storeItemInState));
+    storeResponse = (response) => {
+      let state = getState(),
+          itemNotInState = ({ id }) => typeof selectDataFromState(id, state) === 'undefined';
+
+      return Promise.all(
+        response.items
+          .filter(itemNotInState)
+          .map(storeItemInState)
+      );
+    };
 
     return runDispatchAndExpect(dispatch, findFromApi(query), FIND_DATA_FROM_API_SUCCESSFUL)
       .then(storeResponse)

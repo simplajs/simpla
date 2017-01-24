@@ -43,10 +43,9 @@ export function findDataInState(query, state) {
       content,
       hierarchy;
 
-  if (!state[DATA_PREFIX]) {
+  if (!dataState) {
     return [];
   }
-
 
   ({ content, hierarchy } = dataState);
 

@@ -49,18 +49,20 @@ fetchMock
 
 describe('data actions', () => {
   describe('find', () => {
-    let store;
+    let initialState,
+        store;
 
     beforeEach(() => {
-      store = mockStore({
+      initialState = {
         config: {
           dataEndpoint: SERVER
         },
-        [ DATA_PREFIX ]: {
-          content: FIND_CONTENT,
-          hierarchy: FIND_HIERARCHY
+        [DATA_PREFIX]: {
+          content: {},
+          hierarchy: {}
         }
-      });
+      };
+      store = mockStore(initialState);
     });
 
     it('should return all data in state if no params', () => {
@@ -77,7 +79,9 @@ describe('data actions', () => {
                 dataActions.setDataSuccessful(item.uid, item)
               ];
             }, []),
-            dataActions.findDataSuccessful(BLANK_QUERY, { items: BLANK_QUERY_ITEMS })
+            // NOTE: Items is empty because the state is empty; no reducers are
+            //  on the mock store
+            dataActions.findDataSuccessful(BLANK_QUERY, { items: [] })
           ];
 
           expect(store.getActions()).to.deep.include.members(toInclude);
@@ -98,7 +102,38 @@ describe('data actions', () => {
                 dataActions.setDataSuccessful(item.uid, item)
               ];
             }, []),
-            dataActions.findDataSuccessful(PARENT_QUERY, { items: PARENT_QUERY_ITEMS })
+            // NOTE: Items is empty because the state is empty; no reducers are
+            //  on the mock store
+            dataActions.findDataSuccessful(PARENT_QUERY, { items: [] })
+          ]);
+        });
+    });
+
+    it('shouldnt overwrite the state if already stored', () => {
+      // Partially fill buffer
+      let [ firstItem, secondItem ] = BLANK_QUERY_ITEMS;
+      initialState[DATA_PREFIX] = {
+        content: {
+          [ firstItem.id ]: firstItem
+        },
+        hierarchy: {
+          [ firstItem.id ]: {}
+        }
+      };
+
+      store = mockStore(initialState);
+
+      return store.dispatch(dataActions.find(BLANK_QUERY))
+        .then(() => {
+          expect(store.getActions()).to.deep.equal([
+            dataActions.findData(BLANK_QUERY),
+            apiActions.findData(BLANK_QUERY),
+            apiActions.findDataSuccessful(BLANK_QUERY, { items: BLANK_QUERY_ITEMS }),
+            dataActions.setData(secondItem.uid, secondItem),
+            dataActions.setDataSuccessful(secondItem.uid, secondItem),
+            // NOTE: There're no reducers on the state, therefore it only returns what
+            //  matches in the state at the start
+            dataActions.findDataSuccessful(BLANK_QUERY, { items: [ firstItem ] })
           ]);
         });
     });
