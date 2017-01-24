@@ -10,7 +10,7 @@ describe('state of save', () => {
   it('should handle updates to the Remote API', () => {
     let actions = [
           [ apiActions.getDataSuccessful(UID, RESPONSE), RESPONSE ],
-          [ apiActions.setDataSuccessful(UID, RESPONSE), RESPONSE ],
+          [ apiActions.setDataSuccessful(UID, null, RESPONSE), RESPONSE ],
           [ apiActions.removeDataSuccessful(UID), null ]
         ];
 

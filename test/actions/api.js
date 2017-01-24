@@ -79,7 +79,7 @@ describe('data crud', () => {
           }),
           expectedActions = [
             setData(UID, DATA),
-            setDataSuccessful(UID, RESPONSE)
+            setDataSuccessful(UID, DATA, RESPONSE)
           ];
 
       return store.dispatch(set(UID, DATA))
