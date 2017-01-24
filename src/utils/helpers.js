@@ -31,10 +31,41 @@ export function selectDataFromState(uid, state) {
       data;
 
   if (dataState) {
-    data = state[DATA_PREFIX].content[uid];
+    data = dataState.content[uid];
   }
 
   return data;
+}
+
+export function findDataInState(query, state) {
+  let dataState = state[DATA_PREFIX],
+      items = [],
+      content,
+      hierarchy;
+
+  if (!state[DATA_PREFIX]) {
+    return [];
+  }
+
+
+  ({ content, hierarchy } = dataState);
+
+  // Parent filter
+  if (query.parent) {
+    let childObject = selectPropByPath(query.parent, hierarchy);
+
+    if (childObject) {
+      let children = Object.keys(childObject)
+        .map(id => content[`${query.parent}.${id}`]);
+
+      items = children;
+    }
+  } else {
+    items = Object.keys(content)
+      .map(uid => content[uid]);
+  }
+
+  return { items };
 }
 
 export function storeToObserver(store) {

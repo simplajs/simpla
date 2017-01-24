@@ -1,17 +1,38 @@
 import {
+  FIND_DATA,
+  FIND_DATA_SUCCESSFUL,
+  FIND_DATA_FROM_API_SUCCESSFUL,
   GET_DATA,
   GET_DATA_SUCCESSFUL,
   GET_DATA_FROM_API_SUCCESSFUL,
   SET_DATA,
   SET_DATA_SUCCESSFUL,
-  SET_DATA_FAILED,
   REMOVE_DATA,
   REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
-import { DATA_PREFIX } from '../constants/state';
 import { INVALID_DATA } from '../constants/errors';
-import { selectDataFromState, runDispatchAndExpect, dataIsValid } from '../utils/helpers';
-import { get as getFromApi } from './api';
+import {
+  selectDataFromState,
+  runDispatchAndExpect,
+  dataIsValid,
+  findDataInState
+} from '../utils/helpers';
+import { get as getFromApi, find as findFromApi } from './api';
+
+export function findData(query) {
+  return {
+    type: FIND_DATA,
+    query
+  };
+}
+
+export function findDataSuccessful(query, response) {
+  return {
+    type: FIND_DATA_SUCCESSFUL,
+    query,
+    response
+  };
+}
 
 export function getData(uid) {
   return {
@@ -63,6 +84,26 @@ export function removeDataSuccessful(uid) {
   return {
     type: REMOVE_DATA_SUCCESSFUL,
     uid
+  };
+}
+
+export function find(query) {
+  return (dispatch, getState) => {
+    let storeResponse,
+        storeItemInState;
+
+    dispatch(findData(query));
+
+    storeItemInState = (item) => {
+      return runDispatchAndExpect(dispatch, set(item.uid, item, false), SET_DATA_SUCCESSFUL)
+    };
+
+    storeResponse = (response) => Promise.all(response.items.map(storeItemInState));
+
+    return runDispatchAndExpect(dispatch, findFromApi(query), FIND_DATA_FROM_API_SUCCESSFUL)
+      .then(storeResponse)
+      .then(() => findDataInState(query, getState()))
+      .then(response => dispatch(findDataSuccessful(query, response)));
   };
 }
 

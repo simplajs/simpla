@@ -16,12 +16,94 @@ const SERVER = 'some-server';
 const UID_FOR_NOT_STORED = 'some.uid.to.something';
 const RESPONSE = { data: { foo: 'bar' } };
 
+// Find Data
+const FIND_CONTENT = {
+  'foo': { id: 'foo', data: {} },
+  'foo.bar': { id: 'foo.bar', data: {} }
+};
+const FIND_HIERARCHY = {
+  foo: {
+    bar: null
+  }
+};
+const BLANK_QUERY = {};
+const BLANK_QUERY_ITEMS = [{
+  id: 'foo',
+  data: {}
+}, {
+  id: 'foo.bar',
+  data: {}
+}];
+const PARENT_QUERY = { parent: 'foo' };
+const PARENT_QUERY_ITEMS = [{
+  id: 'foo.bar',
+  data: {}
+}];
+
 fetchMock
   .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'GET', RESPONSE)
   .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'PUT', RESPONSE)
+  .mock(`${SERVER}/?parent=foo`, 'GET', { items: PARENT_QUERY_ITEMS })
+  .mock(`${SERVER}/`, 'GET', { items: BLANK_QUERY_ITEMS })
   .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'DELETE', {});
 
 describe('data actions', () => {
+  describe('find', () => {
+    let store;
+
+    beforeEach(() => {
+      store = mockStore({
+        config: {
+          dataEndpoint: SERVER
+        },
+        [ DATA_PREFIX ]: {
+          content: FIND_CONTENT,
+          hierarchy: FIND_HIERARCHY
+        }
+      });
+    });
+
+    it('should return all data in state if no params', () => {
+      return store.dispatch(dataActions.find(BLANK_QUERY))
+        .then(() => {
+          let toInclude = [
+            dataActions.findData(BLANK_QUERY),
+            apiActions.findData(BLANK_QUERY),
+            apiActions.findDataSuccessful(BLANK_QUERY, { items: BLANK_QUERY_ITEMS }),
+            ...BLANK_QUERY_ITEMS.reduce((actions, item) => {
+              return [
+                ...actions,
+                dataActions.setData(item.uid, item),
+                dataActions.setDataSuccessful(item.uid, item)
+              ];
+            }, []),
+            dataActions.findDataSuccessful(BLANK_QUERY, { items: BLANK_QUERY_ITEMS })
+          ];
+
+          expect(store.getActions()).to.deep.include.members(toInclude);
+        });
+    });
+
+    it('should add query param when filtering by parent', () => {
+      return store.dispatch(dataActions.find(PARENT_QUERY))
+        .then(() => {
+          expect(store.getActions()).to.deep.include.members([
+            dataActions.findData(PARENT_QUERY),
+            apiActions.findData(PARENT_QUERY),
+            apiActions.findDataSuccessful(PARENT_QUERY, { items: PARENT_QUERY_ITEMS }),
+            ...PARENT_QUERY_ITEMS.reduce((actions, item) => {
+              return [
+                ...actions,
+                dataActions.setData(item.uid, item),
+                dataActions.setDataSuccessful(item.uid, item)
+              ];
+            }, []),
+            dataActions.findDataSuccessful(PARENT_QUERY, { items: PARENT_QUERY_ITEMS })
+          ]);
+        });
+    });
+  });
+
   describe('get', () => {
     const data = {
       content: {

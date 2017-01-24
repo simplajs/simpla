@@ -1,4 +1,8 @@
 import {
+  FIND_DATA_FROM_API,
+  FIND_DATA_FROM_API_SUCCESSFUL,
+  FIND_DATA_FROM_API_FAILED,
+
   GET_DATA_FROM_API,
   GET_DATA_FROM_API_SUCCESSFUL,
   GET_DATA_FROM_API_FAILED,
@@ -12,7 +16,7 @@ import {
   REMOVE_DATA_FROM_API_FAILED
 } from '../constants/actionTypes';
 import client from '../utils/client';
-import { selectPropByPath } from '../utils/helpers';
+import { toQueryParams } from '../utils/helpers';
 
 /**
  * Check if uid is invalid. If invalid, returns message why, otherwise returns
@@ -26,9 +30,9 @@ function isInvalid(uid) {
   }
 }
 
-function formatAndRun({ uid, endpoint: dataEndpoint, token, method, body }) {
-  const endpoint = `${dataEndpoint}/${encodeURIComponent(uid)}`,
-        invalid = isInvalid(uid),
+function formatAndRun({ uid = '', query, endpoint: dataEndpoint, token, method, body }) {
+  const endpoint = `${dataEndpoint}/${encodeURIComponent(uid)}${toQueryParams(query)}`,
+        invalid = !query && isInvalid(uid),
         args = [ endpoint ];
 
   if (invalid) {
@@ -84,3 +88,41 @@ export const [
 export const get = generateHandler('get', [ getData, getDataSuccessful, getDataFailed ]);
 export const set = generateHandler('put', [ setData, setDataSuccessful, setDataFailed ]);
 export const remove = generateHandler('delete', [ removeData, removeDataSuccessful, removeDataFailed ]);
+
+export const findData = (query) => {
+  return {
+    type: FIND_DATA_FROM_API,
+    query
+  };
+};
+
+export const findDataSuccessful = (query, response) => {
+  return {
+    type: FIND_DATA_FROM_API_SUCCESSFUL,
+    query,
+    response
+  };
+};
+
+export const findDataFailed = (query, error) => {
+  return {
+    type: FIND_DATA_FROM_API_FAILED,
+    query,
+    error
+  };
+};
+
+
+export function find(query) {
+  return (dispatch, getState) => {
+    let { config, token } = getState(),
+        endpoint = config.dataEndpoint;
+
+    dispatch(findData(query));
+    return formatAndRun({ method: 'get', query, endpoint, token })
+      .then(
+        response => dispatch(findDataSuccessful(query, response)),
+        error => dispatch(findDataSuccessful(query, error))
+      );
+  };
+}
