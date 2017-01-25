@@ -1,4 +1,7 @@
 import {
+  FIND_DATA,
+  FIND_DATA_SUCCESSFUL,
+  FIND_DATA_FROM_API_SUCCESSFUL,
   GET_DATA,
   GET_DATA_SUCCESSFUL,
   GET_DATA_FROM_API_SUCCESSFUL,
@@ -8,10 +11,30 @@ import {
   REMOVE_DATA,
   REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
-import { DATA_PREFIX } from '../constants/state';
 import { INVALID_DATA } from '../constants/errors';
-import { selectDataFromState, runDispatchAndExpect, dataIsValid } from '../utils/helpers';
-import { get as getFromApi } from './api';
+import {
+  selectDataFromState,
+  runDispatchAndExpect,
+  dataIsValid,
+  findDataInState,
+  hasRunQuery
+} from '../utils/helpers';
+import { get as getFromApi, find as findFromApi } from './api';
+
+export function findData(query) {
+  return {
+    type: FIND_DATA,
+    query
+  };
+}
+
+export function findDataSuccessful(query, response) {
+  return {
+    type: FIND_DATA_SUCCESSFUL,
+    query,
+    response
+  };
+}
 
 export function getData(uid) {
   return {
@@ -46,7 +69,7 @@ export function setDataSuccessful(uid, response) {
 
 export function setDataFailed(uid, error) {
   return {
-    type: SET_DATA_SUCCESSFUL,
+    type: SET_DATA_FAILED,
     response: error,
     uid
   };
@@ -63,6 +86,45 @@ export function removeDataSuccessful(uid) {
   return {
     type: REMOVE_DATA_SUCCESSFUL,
     uid
+  };
+}
+
+export function find(query) {
+  return (dispatch, getState) => {
+    let storeResponse,
+        storeItemInState,
+        findLocallyAndReturn;
+
+    dispatch(findData(query));
+
+    storeItemInState = (item) => {
+      return runDispatchAndExpect(dispatch, set(item.uid, item, false), SET_DATA_SUCCESSFUL)
+    };
+
+    storeResponse = (response) => {
+      let state = getState(),
+          itemNotInState = ({ id }) => typeof selectDataFromState(id, state) === 'undefined';
+
+      return Promise.all(
+        response.items
+          .filter(itemNotInState)
+          .map(storeItemInState)
+      );
+    };
+
+    findLocallyAndReturn = () => {
+      return Promise.resolve()
+        .then(() => findDataInState(query, getState()))
+        .then(response => dispatch(findDataSuccessful(query, response)));
+    }
+
+    if (hasRunQuery(query, getState())) {
+      return findLocallyAndReturn();
+    }
+
+    return runDispatchAndExpect(dispatch, findFromApi(query), FIND_DATA_FROM_API_SUCCESSFUL)
+      .then(storeResponse)
+      .then(findLocallyAndReturn);
   };
 }
 

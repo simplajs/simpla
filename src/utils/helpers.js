@@ -1,4 +1,4 @@
-import { DATA_PREFIX } from '../constants/state';
+import { DATA_PREFIX, QUERIES_PREFIX } from '../constants/state';
 
 export function selectPropByPath(path, obj) {
   let selector,
@@ -28,34 +28,43 @@ export function selectPropByPath(path, obj) {
 
 export function selectDataFromState(uid, state) {
   let dataState = state[DATA_PREFIX],
-      hierachy,
-      children,
       data;
 
   if (dataState) {
-    hierachy = selectPropByPath(uid, dataState.hierachy);
-    data = state[DATA_PREFIX].content[uid];
+    data = dataState.content[uid];
   }
 
-  if (hierachy) {
-    children = Object.keys(hierachy);
+  return data;
+}
+
+export function findDataInState(query, state) {
+  let dataState = state[DATA_PREFIX],
+      items = [],
+      content,
+      hierarchy;
+
+  if (!dataState) {
+    return [];
   }
 
-  if (children) {
-    children = children
-      .map(sid => uid.split('.').concat(sid).join('.'))
-      .map(uid => selectDataFromState(uid, state));
+  ({ content, hierarchy } = dataState);
+
+  // Parent filter
+  if (query.parent) {
+    let childObject = selectPropByPath(query.parent, hierarchy);
+
+    if (childObject) {
+      let children = Object.keys(childObject)
+        .map(id => content[`${query.parent}.${id}`]);
+
+      items = children;
+    }
+  } else {
+    items = Object.keys(content)
+      .map(uid => content[uid]);
   }
 
-  if (data === null && !children) {
-    return null;
-  }
-
-  if (typeof data === 'undefined' && !children) {
-    return;
-  }
-
-  return Object.assign({}, data, children ? { children } : undefined);
+  return { items };
 }
 
 export function storeToObserver(store) {
@@ -126,4 +135,29 @@ export function dataIsValid(data) {
   }
 
   return props.every(prop => whitelist.indexOf(prop) !== -1);
+}
+
+export function toQueryParams(query = {}) {
+  // Sort alphabetically, so that when caching it will always be the same key
+  let alphabetically = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+
+  return Object.keys(query)
+    .sort(alphabetically)
+    .reduce((working, param) => {
+      let value = query[param],
+          prefix;
+
+      if (!working) {
+        prefix = '?';
+      } else {
+        prefix = `${working}&`;
+      }
+
+      return `${prefix}${param}=${encodeURIComponent(value)}`;
+    }, '');
+}
+
+export function hasRunQuery(query, state) {
+  const queryState = state[QUERIES_PREFIX];
+  return !!(queryState && queryState[toQueryParams(query)]);
 }

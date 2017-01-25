@@ -1,4 +1,8 @@
 import {
+  FIND_DATA_FROM_API,
+  FIND_DATA_FROM_API_SUCCESSFUL,
+  FIND_DATA_FROM_API_FAILED,
+
   GET_DATA_FROM_API,
   GET_DATA_FROM_API_SUCCESSFUL,
   GET_DATA_FROM_API_FAILED,
@@ -12,7 +16,7 @@ import {
   REMOVE_DATA_FROM_API_FAILED
 } from '../constants/actionTypes';
 import client from '../utils/client';
-import { selectPropByPath } from '../utils/helpers';
+import { toQueryParams } from '../utils/helpers';
 
 /**
  * Check if uid is invalid. If invalid, returns message why, otherwise returns
@@ -26,12 +30,11 @@ function isInvalid(uid) {
   }
 }
 
-function formatAndRun({ uid, endpoint: dataEndpoint, token, method, body }) {
-  const endpoint = `${dataEndpoint}/${encodeURIComponent(uid)}`,
-        invalid = isInvalid(uid),
-        args = [ endpoint ];
+function formatAndRun({ uid = '', validateUid = true, query, endpoint: dataEndpoint, token, method, body }) {
+  const endpoint = `${dataEndpoint}/${encodeURIComponent(uid)}${toQueryParams(query)}`,
+        invalid = isInvalid(uid);
 
-  if (invalid) {
+  if (validateUid && invalid) {
     return Promise.reject(new Error(invalid));
   }
 
@@ -41,46 +44,40 @@ function formatAndRun({ uid, endpoint: dataEndpoint, token, method, body }) {
   });
 }
 
-function generateRequestActions(start, success, fail) {
-  return [
-    (uid, data) => ({ type: start, uid, data }),
-    (uid, response) => ({ type: success, uid, response }),
-    (uid, error) => ({ type: fail, uid, error })
-  ];
-}
-
-function generateHandler(method, [ start, success, fail ]) {
-  return (uid, body) => (dispatch, getState) => {
+function generateHandler(method, paramsToObj, [ start, success, fail ], validateUid) {
+  return (...args) => (dispatch, getState) => {
     let { config, token } = getState(),
-        endpoint = config.dataEndpoint;
+        endpoint = config.dataEndpoint,
+        options;
 
-    dispatch(start(uid, body));
-    return formatAndRun({ method, uid, body, endpoint, token })
+    options = Object.assign({ method, endpoint, token, validateUid }, paramsToObj(...args));
+
+    dispatch(start(...args));
+    return formatAndRun(options)
       .then(
-        response => dispatch(success(uid, response)),
-        error => dispatch(fail(uid, error))
+        response => dispatch(success(...args, response)),
+        error => dispatch(fail(...args, error))
       );
   };
 }
 
-export const [
-  getData,
-  getDataSuccessful,
-  getDataFailed
-] = generateRequestActions(GET_DATA_FROM_API, GET_DATA_FROM_API_SUCCESSFUL, GET_DATA_FROM_API_FAILED);
+export const findData = (query) => ({ type: FIND_DATA_FROM_API, query });
+export const findDataSuccessful = (query, response) => ({ type: FIND_DATA_FROM_API_SUCCESSFUL, query, response });
+export const findDataFailed = (query, error) => ({ type: FIND_DATA_FROM_API_FAILED, query, error });
 
-export const [
-  setData,
-  setDataSuccessful,
-  setDataFailed
-] = generateRequestActions(SET_DATA_TO_API, SET_DATA_TO_API_SUCCESSFUL, SET_DATA_TO_API_FAILED);
+export const getData = (uid) => ({ type: GET_DATA_FROM_API, uid });
+export const getDataSuccessful = (uid, response) => ({ type: GET_DATA_FROM_API_SUCCESSFUL, uid, response });
+export const getDataFailed = (uid, error) => ({ type:  GET_DATA_FROM_API_FAILED, uid, error });
 
-export const [
-  removeData,
-  removeDataSuccessful,
-  removeDataFailed
-] = generateRequestActions(REMOVE_DATA_FROM_API, REMOVE_DATA_FROM_API_SUCCESSFUL, REMOVE_DATA_FROM_API_FAILED);
+export const setData = (uid, body) => ({ type: SET_DATA_TO_API, uid, body });
+export const setDataSuccessful = (uid, body, response) => ({ type: SET_DATA_TO_API_SUCCESSFUL, uid, body, response });
+export const setDataFailed = (uid, body, error) => ({ type:  SET_DATA_TO_API_FAILED, uid, body, error });
 
-export const get = generateHandler('get', [ getData, getDataSuccessful, getDataFailed ]);
-export const set = generateHandler('put', [ setData, setDataSuccessful, setDataFailed ]);
-export const remove = generateHandler('delete', [ removeData, removeDataSuccessful, removeDataFailed ]);
+export const removeData = (uid) => ({ type: REMOVE_DATA_FROM_API, uid });
+export const removeDataSuccessful = (uid, response) => ({ type: REMOVE_DATA_FROM_API_SUCCESSFUL, uid, response });
+export const removeDataFailed = (uid, error) => ({ type:  REMOVE_DATA_FROM_API_FAILED, uid, error });
+
+export const get = generateHandler('get', (uid) => ({ uid }), [ getData, getDataSuccessful, getDataFailed ]);
+export const set = generateHandler('put', (uid, body) => ({ uid, body }), [ setData, setDataSuccessful, setDataFailed ]);
+export const remove = generateHandler('delete', (uid) => ({ uid }), [ removeData, removeDataSuccessful, removeDataFailed ]);
+export const find = generateHandler('get', (query) => ({ query }), [ findData, findDataSuccessful, findDataFailed ], false);

@@ -11,7 +11,7 @@ import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
 import { DATA_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
-import { storeToObserver, ensureActionMatches, dispatchThunkAndExpect, selectPropByPath } from './utils/helpers';
+import { storeToObserver, dispatchThunkAndExpect, selectPropByPath } from './utils/helpers';
 import { emitter } from './middleware/emitter';
 import { supportDeprecatedConfig, supportDeprecatedInitializer } from './plugins/deprecation';
 import hashTracking from './plugins/hashTracking';
@@ -86,6 +86,10 @@ Object.assign(Simpla, {
   },
 
   // Data
+  find(...args) {
+    return dispatchThunkAndExpect(store, find(...args), types.FIND_DATA_SUCCESSFUL);
+  },
+
   get(...args) {
     return dispatchThunkAndExpect(store, get(...args), types.GET_DATA_SUCCESSFUL);
   },

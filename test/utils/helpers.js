@@ -1,4 +1,14 @@
-import { storeToObserver, selectPropByPath, dispatchThunkAndExpect, dataIsValid } from '../../src/utils/helpers';
+import {
+  storeToObserver,
+  selectPropByPath,
+  dispatchThunkAndExpect,
+  dataIsValid,
+  toQueryParams,
+  findDataInState
+} from '../../src/utils/helpers';
+import {
+  DATA_PREFIX
+} from '../../src/constants/state';
 import { createStore } from 'redux';
 
 describe('helpers', () => {
@@ -173,6 +183,81 @@ describe('helpers', () => {
 
     it('should deny objects with extra props', () => {
       expect(dataIsValid({ type: 'foo', foo: 'bar' })).to.be.false;
+    });
+  });
+
+  describe('toQueryParams', () => {
+    it('should take a simple key value JS object and turn into query string', () => {
+      let asObj = { foo: 'bar', baz: 'qux bang' },
+          asString = '?baz=qux%20bang&foo=bar';
+
+      expect(toQueryParams(asObj)).to.equal(asString);
+    });
+
+    it('should return an empty string on empty objects', () => {
+      expect(toQueryParams({})).to.equal('');
+    });
+
+    it('should stringify always in the same order', () => {
+      let queryString = '?baz=qux&foo=bar',
+          queryObjects = [
+            { foo: 'bar', baz: 'qux' },
+            { baz: 'qux', foo: 'bar' }
+          ];
+
+      queryObjects.forEach((queryObject) => {
+        expect(toQueryParams(queryObject)).to.equal(queryString);
+      });
+    });
+  });
+
+  describe('findDataInState', () => {
+    let state = {
+      [ DATA_PREFIX ]: {
+        content: {
+          [ 'foo' ]: {
+            id: 'foo',
+            data: {}
+          },
+
+          [ 'foo.bar' ]: {
+            id: 'foo.bar',
+            data: {}
+          }
+        },
+        hierarchy: {
+          foo: {
+            bar: {}
+          }
+        }
+      }
+    };
+
+    describe('general find', () => {
+      it('should return all items', () => {
+        let query = {};
+        expect(findDataInState(query, state)).to.deep.equal({
+          items: [{
+            id: 'foo',
+            data: {}
+          }, {
+            id: 'foo.bar',
+            data: {}
+          }]
+        });
+      });
+    });
+
+    describe('parent scoped find', () => {
+      it('should return only those below the parent uid', () => {
+        let query = { parent: 'foo' };
+        expect(findDataInState(query, state)).to.deep.equal({
+          items: [{
+            id: 'foo.bar',
+            data: {}
+          }]
+        });
+      });
     });
   });
 });

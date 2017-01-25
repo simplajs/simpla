@@ -230,12 +230,7 @@ describe('Simpla', () => {
   describe('content methods', () => {
     const foo = { data: { foo: '' } },
           fooBar = { data: { foo: 'bar' } },
-          fooBarWithKids = Object.assign({}, fooBar, { children: [] }),
-          fooBaz = { data: { foo: 'baz' } },
-          fooBazWithKids = Object.assign({}, fooBaz, { children: [] }),
-          fooWithKids = Object.assign({}, foo, {
-            children: [ fooBarWithKids, fooBazWithKids ]
-          });
+          fooBaz = { data: { foo: 'baz' } };
 
     beforeEach(() => {
       return Simpla.remove('foo')
@@ -249,14 +244,7 @@ describe('Simpla', () => {
     it('should be able to get leaf node', () => {
       return Simpla.get('foo.bar')
         .then(data => {
-          expect(data).to.deep.equal(fooBarWithKids);
-        });
-    });
-
-    it('should be able to get the children', () => {
-      return Simpla.get('foo')
-        .then(response => {
-          expect(response).to.deep.equal(fooWithKids);
+          expect(data).to.deep.equal(fooBar);
         });
     });
 
@@ -305,15 +293,6 @@ describe('Simpla', () => {
           .then((data) => {
             expect(spy.lastCall.calledWith(data)).to.be.true;
           });
-      });
-
-      it('should be able to observe removals to children', () => {
-        return Simpla.set('foo.bar.baz', { data: { foo: 'barbaz' } })
-          .then(() => Simpla.remove('foo.bar.baz'))
-          .then(() => Simpla.get('foo.bar'))
-          .then((data) => {
-            expect(spy.lastCall.calledWith(data)).to.be.true;
-          })
       });
 
       /**

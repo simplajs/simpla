@@ -8,12 +8,18 @@ const mockStore = configureMockStore([ thunk ]);
 const TOKEN = 'some-token';
 const SERVER = 'some-server';
 
-fetchMock
-  .mock(`${SERVER}/login`, 'POST', {
-    token: TOKEN
+describe('authentication actions', () => {
+  beforeEach(() => {
+    fetchMock
+      .mock(`${SERVER}/login`, 'POST', {
+        token: TOKEN
+      });
   });
 
-describe('authentication actions', () => {
+  afterEach(() => {
+    fetchMock.restore();
+  });
+
   describe('login', () => {
     it('should request login endpoint and fire action with response token', () => {
       let store = mockStore({

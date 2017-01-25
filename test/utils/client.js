@@ -18,6 +18,10 @@ describe('client', () => {
       .mock(`${SERVER}/${EMPTY_UID}`, 'GET', EMPTY_RESPONSE);
   });
 
+  afterEach(() => {
+    fetchMock.restore();
+  });
+
   it('should not request w/ content-type on GETs', () => {
     client.get(`${SERVER}/${UID}`);
 

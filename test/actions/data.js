@@ -2,7 +2,8 @@ import * as dataActions from '../../src/actions/data';
 import * as apiActions from '../../src/actions/api';
 import * as types from '../../src/constants/actionTypes';
 import { INVALID_DATA } from '../../src/constants/errors';
-import { DATA_PREFIX } from '../../src/constants/state';
+import { DATA_PREFIX, QUERIES_PREFIX } from '../../src/constants/state';
+import { toQueryParams } from '../../src/utils/helpers';
 import thunk from 'redux-thunk';
 import configureMockStore from '../__utils__/redux-mock-store';
 import fetchMock from 'fetch-mock';
@@ -16,12 +17,169 @@ const SERVER = 'some-server';
 const UID_FOR_NOT_STORED = 'some.uid.to.something';
 const RESPONSE = { data: { foo: 'bar' } };
 
-fetchMock
-  .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'GET', RESPONSE)
-  .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'PUT', RESPONSE)
-  .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'DELETE', {});
+// Find Data
+const FIND_CONTENT = {
+  'foo': { id: 'foo', data: {} },
+  'foo.bar': { id: 'foo.bar', data: {} }
+};
+const FIND_HIERARCHY = {
+  foo: {
+    bar: null
+  }
+};
+const BLANK_QUERY = {};
+const BLANK_QUERY_ITEMS = [{
+  id: 'foo',
+  data: {}
+}, {
+  id: 'foo.bar',
+  data: {}
+}];
+const PARENT_QUERY = { parent: 'foo' };
+const PARENT_QUERY_STRING = toQueryParams({ parent: 'foo' });
+const PARENT_QUERY_ITEMS = [{
+  id: 'foo.bar',
+  data: {}
+}];
 
 describe('data actions', () => {
+  beforeEach(() => {
+    fetchMock
+      .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'GET', RESPONSE)
+      .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'PUT', RESPONSE)
+      .mock(`${SERVER}/${PARENT_QUERY_STRING}`, 'GET', { items: PARENT_QUERY_ITEMS })
+      .mock(`${SERVER}/`, 'GET', { items: BLANK_QUERY_ITEMS })
+      .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'DELETE', {});
+  });
+
+  afterEach(() => {
+    fetchMock.restore();
+  });
+
+  describe('find', () => {
+    let initialState,
+        store;
+
+    beforeEach(() => {
+      initialState = {
+        config: {
+          dataEndpoint: SERVER
+        },
+        [DATA_PREFIX]: {
+          content: {},
+          hierarchy: {}
+        }
+      };
+      store = mockStore(initialState);
+    });
+
+    it('should return all data in state if no params', () => {
+      return store.dispatch(dataActions.find(BLANK_QUERY))
+        .then(() => {
+          let toInclude = [
+            dataActions.findData(BLANK_QUERY),
+            apiActions.findData(BLANK_QUERY),
+            apiActions.findDataSuccessful(BLANK_QUERY, { items: BLANK_QUERY_ITEMS }),
+            ...BLANK_QUERY_ITEMS.reduce((actions, item) => {
+              return [
+                ...actions,
+                dataActions.setData(item.uid, item),
+                dataActions.setDataSuccessful(item.uid, item)
+              ];
+            }, []),
+            // NOTE: Items is empty because the state is empty; no reducers are
+            //  on the mock store
+            dataActions.findDataSuccessful(BLANK_QUERY, { items: [] })
+          ];
+
+          expect(store.getActions()).to.deep.include.members(toInclude);
+        });
+    });
+
+    it('should add query param when filtering by parent', () => {
+      return store.dispatch(dataActions.find(PARENT_QUERY))
+        .then(() => {
+          expect(store.getActions()).to.deep.include.members([
+            dataActions.findData(PARENT_QUERY),
+            apiActions.findData(PARENT_QUERY),
+            apiActions.findDataSuccessful(PARENT_QUERY, { items: PARENT_QUERY_ITEMS }),
+            ...PARENT_QUERY_ITEMS.reduce((actions, item) => {
+              return [
+                ...actions,
+                dataActions.setData(item.uid, item),
+                dataActions.setDataSuccessful(item.uid, item)
+              ];
+            }, []),
+            // NOTE: Items is empty because the state is empty; no reducers are
+            //  on the mock store
+            dataActions.findDataSuccessful(PARENT_QUERY, { items: [] })
+          ]);
+        });
+    });
+
+    it('shouldnt overwrite the state if already stored', () => {
+      // Partially fill buffer
+      let [ firstItem, secondItem ] = BLANK_QUERY_ITEMS;
+      initialState[DATA_PREFIX] = {
+        content: {
+          [ firstItem.id ]: firstItem
+        },
+        hierarchy: {
+          [ firstItem.id ]: {}
+        }
+      };
+
+      store = mockStore(initialState);
+
+      return store.dispatch(dataActions.find(BLANK_QUERY))
+        .then(() => {
+          expect(store.getActions()).to.deep.include.members([
+            dataActions.findData(BLANK_QUERY),
+            apiActions.findData(BLANK_QUERY),
+            apiActions.findDataSuccessful(BLANK_QUERY, { items: BLANK_QUERY_ITEMS }),
+            dataActions.setData(secondItem.uid, secondItem),
+            dataActions.setDataSuccessful(secondItem.uid, secondItem),
+            // NOTE: There're no reducers on the state, therefore it only returns what
+            //  matches in the state at the start
+            dataActions.findDataSuccessful(BLANK_QUERY, { items: [ firstItem ] })
+          ]);
+
+          expect(store.getActions()).not.to.deep.include.members([
+            dataActions.setData(firstItem.uid, firstItem),
+            dataActions.setDataSuccessful(firstItem.uid, firstItem),
+          ]);
+        });
+    });
+
+    it('should just return whats in the state if the query has already run', () => {
+      initialState[QUERIES_PREFIX] = {
+        [ PARENT_QUERY_STRING ]: true
+      };
+
+      store = mockStore(initialState);
+
+      return store.dispatch(dataActions.find(PARENT_QUERY))
+        .then(() => {
+          expect(store.getActions()).not.to.deep.include.members([
+            apiActions.findData(PARENT_QUERY),
+            apiActions.findDataSuccessful(PARENT_QUERY, { items: PARENT_QUERY_ITEMS }),
+            ...PARENT_QUERY_ITEMS.reduce((actions, item) => {
+              return [
+                ...actions,
+                dataActions.setData(item.uid, item),
+                dataActions.setDataSuccessful(item.uid, item)
+              ];
+            }, [])
+          ]);
+
+          expect(store.getActions()).to.deep.include.members([
+            dataActions.findData(PARENT_QUERY),
+            dataActions.findDataSuccessful(PARENT_QUERY, { items: [] })
+          ]);
+        });
+    });
+  });
+
   describe('get', () => {
     const data = {
       content: {
