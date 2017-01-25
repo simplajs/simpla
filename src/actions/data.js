@@ -89,7 +89,7 @@ export function removeDataSuccessful(uid) {
   };
 }
 
-export function find(query) {
+export function find(query = {}) {
   return (dispatch, getState) => {
     let storeResponse,
         storeItemInState,
@@ -98,7 +98,7 @@ export function find(query) {
     dispatch(findData(query));
 
     storeItemInState = (item) => {
-      return runDispatchAndExpect(dispatch, set(item.uid, item, false), SET_DATA_SUCCESSFUL)
+      return runDispatchAndExpect(dispatch, set(item.id, item, false), SET_DATA_SUCCESSFUL)
     };
 
     storeResponse = (response) => {

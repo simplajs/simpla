@@ -5,7 +5,7 @@ import { setOption } from './actions/options';
 import { importElement } from './actions/imports';
 import { editActive, editInactive } from './actions/editable';
 import { login, logout } from './actions/authentication';
-import { get, set, remove } from './actions/data';
+import { get, set, remove, find } from './actions/data';
 import save from './actions/save';
 import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
 import { DATA_PREFIX } from './constants/state';

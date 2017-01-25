@@ -83,8 +83,8 @@ describe('data actions', () => {
             ...BLANK_QUERY_ITEMS.reduce((actions, item) => {
               return [
                 ...actions,
-                dataActions.setData(item.uid, item),
-                dataActions.setDataSuccessful(item.uid, item)
+                dataActions.setData(item.id, item),
+                dataActions.setDataSuccessful(item.id, item)
               ];
             }, []),
             // NOTE: Items is empty because the state is empty; no reducers are
@@ -106,8 +106,8 @@ describe('data actions', () => {
             ...PARENT_QUERY_ITEMS.reduce((actions, item) => {
               return [
                 ...actions,
-                dataActions.setData(item.uid, item),
-                dataActions.setDataSuccessful(item.uid, item)
+                dataActions.setData(item.id, item),
+                dataActions.setDataSuccessful(item.id, item)
               ];
             }, []),
             // NOTE: Items is empty because the state is empty; no reducers are
@@ -137,16 +137,16 @@ describe('data actions', () => {
             dataActions.findData(BLANK_QUERY),
             apiActions.findData(BLANK_QUERY),
             apiActions.findDataSuccessful(BLANK_QUERY, { items: BLANK_QUERY_ITEMS }),
-            dataActions.setData(secondItem.uid, secondItem),
-            dataActions.setDataSuccessful(secondItem.uid, secondItem),
+            dataActions.setData(secondItem.id, secondItem),
+            dataActions.setDataSuccessful(secondItem.id, secondItem),
             // NOTE: There're no reducers on the state, therefore it only returns what
             //  matches in the state at the start
             dataActions.findDataSuccessful(BLANK_QUERY, { items: [ firstItem ] })
           ]);
 
           expect(store.getActions()).not.to.deep.include.members([
-            dataActions.setData(firstItem.uid, firstItem),
-            dataActions.setDataSuccessful(firstItem.uid, firstItem),
+            dataActions.setData(firstItem.id, firstItem),
+            dataActions.setDataSuccessful(firstItem.id, firstItem),
           ]);
         });
     });
@@ -166,8 +166,8 @@ describe('data actions', () => {
             ...PARENT_QUERY_ITEMS.reduce((actions, item) => {
               return [
                 ...actions,
-                dataActions.setData(item.uid, item),
-                dataActions.setDataSuccessful(item.uid, item)
+                dataActions.setData(item.id, item),
+                dataActions.setDataSuccessful(item.id, item)
               ];
             }, [])
           ]);
