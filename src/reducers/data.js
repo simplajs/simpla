@@ -27,7 +27,7 @@ function pruneAt(state, path) {
   return state;
 }
 
-export function hierachy(state = {}, action) {
+export function hierarchy(state = {}, action) {
   switch (action.type) {
   case SET_DATA_SUCCESSFUL:
     return markAt(state, action.uid.split('.'), {});
@@ -49,4 +49,4 @@ export function content(state = {}, action) {
   }
 }
 
-export default combineReducers({ hierachy, content });
+export default combineReducers({ hierarchy, content });

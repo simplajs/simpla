@@ -108,7 +108,7 @@ Object.assign(Simpla, {
 
   observe(...args) {
     let callback = args.pop(),
-        path = args[0] ? `${DATA_PREFIX}.hierachy.${args[0]}` : `${DATA_PREFIX}.hierachy`,
+        path = args[0] ? `${DATA_PREFIX}.hierarchy.${args[0]}` : `${DATA_PREFIX}.hierarchy`,
         wrappedCallback = () => this.get(args[0]).then(callback);
 
     return storeToObserver(this._store || store).observe(path, wrappedCallback);

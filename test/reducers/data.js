@@ -1,16 +1,16 @@
-import { hierachy, content } from '../../src/reducers/data';
+import { hierarchy, content } from '../../src/reducers/data';
 import { setDataSuccessful, removeDataSuccessful } from '../../src/actions/data';
 
 describe('dataReducer', () => {
   describe('setting data', () => {
-    describe('hierachy', () => {
+    describe('hierarchy', () => {
       it('should build a tree based on UID given', () => {
-        let state = hierachy(undefined, setDataSuccessful('foo.bar.baz', {}));
+        let state = hierarchy(undefined, setDataSuccessful('foo.bar.baz', {}));
         expect(state.foo.bar.baz).to.be.defined;
       });
 
       it('shouldnt disturb other branches of the tree', () => {
-        let state = hierachy({
+        let state = hierarchy({
           foo: {
             bar: {
               baz: {}
@@ -52,9 +52,9 @@ describe('dataReducer', () => {
   });
 
   describe('removing data', () => {
-    describe('hierachy', () => {
+    describe('hierarchy', () => {
       it('should remove the tree at that point', () => {
-        let state = hierachy({
+        let state = hierarchy({
           foo: {
             bar: {
               baz: {}
@@ -66,7 +66,7 @@ describe('dataReducer', () => {
       });
 
       it('should do nothing if it cant find that section of the tree', () => {
-        let state = hierachy({
+        let state = hierarchy({
           foo: {}
         }, removeDataSuccessful('foo.bar.baz'));
 
