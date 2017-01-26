@@ -1,8 +1,7 @@
 import Simpla from '../src/simpla';
 import thunk from 'redux-thunk';
-import rootReducer from '../src/reducers/';
 import configureMockStore from './__utils__/redux-mock-store';
-import { ELEMENTS, BASE_PATH, AUTH_SERVER } from '../src/constants/options';
+import { AUTH_SERVER } from '../src/constants/options';
 import { setOption } from '../src/actions/options';
 import * as types from '../src/constants/actionTypes';
 
@@ -14,22 +13,6 @@ describe('Simpla', () => {
   });
 
   describe('initilization', () => {
-    let mapElementsAndBaseToActions = (elements, base = '') => {
-      return elements.map(element => {
-        let href = `${base}${element}`,
-            linkHref = (() => {
-              let link = document.createElement('link');
-              link.href = href;
-              return link.href;
-            })();
-
-        return {
-          type: types.IMPORT_ELEMENT,
-          href: linkHref
-        };
-      });
-    };
-
     const project = 'project-id',
           dataEndpoint = `${AUTH_SERVER}/projects/${project}/content`,
           standardActions = [
@@ -43,61 +26,12 @@ describe('Simpla', () => {
       caseName: 'only project key is given',
       options: project,
       actions: [
-        ...standardActions,
-        ...mapElementsAndBaseToActions(ELEMENTS, BASE_PATH)
-      ]
-    }, {
-      caseName: 'elements is given falsey value',
-      options: {
-        project,
-        elements: null
-      },
-      actions: [
         ...standardActions
-      ]
-    }, {
-      caseName: 'elements prop is just an array',
-      options: {
-        project,
-        elements: [
-          'foo',
-          'bar'
-        ]
-      },
-      actions: [
-        ...standardActions,
-        ...mapElementsAndBaseToActions(['foo', 'bar'])
-      ]
-    }, {
-      caseName: 'elements is both paths and base',
-      options: {
-        project,
-        elements: {
-          paths: [ 'b', 'b/c' ],
-          base: 'a/'
-        }
-      },
-      actions: [
-        ...standardActions,
-        ...mapElementsAndBaseToActions([ 'b', 'b/c' ], 'a/')
-      ]
-    }, {
-      caseName: 'elements is just base',
-      options: {
-        project,
-        elements: {
-          base: 'a/'
-        }
-      },
-      actions: [
-        ...standardActions,
-        ...mapElementsAndBaseToActions(ELEMENTS, 'a/')
       ]
     }, {
       caseName: 'disable using hash',
       options: {
         project,
-        elements: null,
         hashTracking: false
       },
       actions: [
@@ -110,7 +44,6 @@ describe('Simpla', () => {
       caseName: 'set custom endpoints',
       options: {
         project,
-        elements: null,
         hashTracking: false,
         _dataEndpoint: 'foo-data',
         _authEndpoint: 'foo-auth'
@@ -123,21 +56,9 @@ describe('Simpla', () => {
       ]
     }];
 
-    before(() => {
-      if (document.head.appendChild.restore) {
-        return;
-      }
-
-      sinon.stub(document.head, 'appendChild', (link) => {
-        if (link.onload) {
-          link.onload();
-        }
-      });
-    });
-
     possibilities.forEach(({ options, actions, caseName }) => {
       it(`should dispatch the correct actions when ${caseName}`, () => {
-        Simpla._store = mockStore({ _imports: {} });
+        Simpla._store = mockStore({});
 
         Simpla(options);
 

@@ -2,12 +2,11 @@ import 'core-js/fn/object/assign';
 import 'core-js/fn/promise';
 import { createStore, applyMiddleware } from 'redux';
 import { setOption } from './actions/options';
-import { importElement } from './actions/imports';
 import { editActive, editInactive } from './actions/editable';
 import { login, logout } from './actions/authentication';
 import { get, set, remove, find } from './actions/data';
 import save from './actions/save';
-import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
+import { AUTH_SERVER } from './constants/options';
 import { DATA_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
@@ -34,9 +33,7 @@ configurePolymer();
 const Simpla = function Simpla(options) {
   Simpla._store = Simpla._store || store;
 
-  let project,
-      base = '',
-      elements = [];
+  let project;
 
   // Initialize data endpoint
   if (typeof options === 'string') {
@@ -56,20 +53,6 @@ const Simpla = function Simpla(options) {
   } else {
     Simpla._store.dispatch(setOption('hashTracking', true));
   }
-
-  // Initialize elements
-  if (typeof options.elements === 'undefined') { // Doesn't exist, use defaults
-    elements = ELEMENTS;
-    base = BASE_PATH;
-  } else if (options.elements instanceof Array) { // Exists and is an array of paths
-    elements = options.elements;
-  } else if (options.elements) { // Exists, and not falsey
-    // Use given, or fallback to defaults
-    elements = options.elements.paths || ELEMENTS;
-    base = options.elements.base || BASE_PATH;
-  }
-
-  elements.forEach(element => Simpla._store.dispatch(importElement(`${base}${element}`)));
 
   return Simpla;
 };
