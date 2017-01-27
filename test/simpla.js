@@ -215,24 +215,6 @@ describe('Simpla', () => {
             expect(spy.lastCall.calledWith(data)).to.be.true;
           });
       });
-
-      /**
-       * This is currently disabled as with the new data structure, it may not
-       *  make much sense to have Simpla.get('.') and as such isn't yet implemented
-       * What should Simpla.get('.') even return?
-       */
-      xit('should be able to observe the root by not passing anything', () => {
-        let rootSpy = sinon.spy(),
-            rootUnobserve;
-
-        rootUnobserve = Simpla.observe(spy);
-
-        return Simpla.set('foo', { data: { foo: 'foo!!'} })
-          .then(() => Simpla.get('.'))
-          .then(data => {
-            expect(rootSpy.lastCall.calledWith(data)).to.be.true;
-          });
-      });
     });
   });
 });
