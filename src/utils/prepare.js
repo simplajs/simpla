@@ -1,4 +1,4 @@
-import { ELEMENTS_SERVER } from '../constants/options';
+import { WC_POLYFILL } from '../constants/options';
 
 /**
  * Hides <default-content> elements by injecting a style tag into the head
@@ -33,7 +33,7 @@ export function readyWebComponents() {
   return new Promise(resolve => {
     let script = document.createElement('script');
     script.async = true;
-    script.src = `${ELEMENTS_SERVER}/webcomponentsjs/webcomponents-lite.min.js`;
+    script.src = WC_POLYFILL;
     script.onload = resolve;
     document.head.appendChild(script);
   });
