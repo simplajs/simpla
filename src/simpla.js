@@ -32,27 +32,13 @@ const Simpla = new class Simpla {
     this._store = createStore(rootReducer, applyMiddleware(thunk));
   }
 
-  init(options) {
-    let project;
-
-    // Initialize data endpoint
-    if (typeof options === 'string') {
-      project = options;
-    } else {
-      project = options.project;
-    }
-
+  init(project) {
     this._store.dispatch(setOption('project', project));
 
     // Initialize endpoints
-    this._store.dispatch(setOption('authEndpoint', options._authEndpoint || AUTH_SERVER));
-    this._store.dispatch(setOption('dataEndpoint', options._dataEndpoint || `${AUTH_SERVER}/projects/${project}/content`));
-
-    if (typeof options.hashTracking !== 'undefined') {
-      this._store.dispatch(setOption('hashTracking', options.hashTracking));
-    } else {
-      this._store.dispatch(setOption('hashTracking', true));
-    }
+    this._store.dispatch(setOption('authEndpoint', AUTH_SERVER));
+    this._store.dispatch(setOption('dataEndpoint', `${AUTH_SERVER}/projects/${project}/content`));
+    this._store.dispatch(setOption('hashTracking', true));
   }
 
   // Authentication

@@ -42,56 +42,18 @@ describe('Simpla', () => {
   });
 
   describe('initilization', () => {
-    const standardActions = [
-      setOption('project', project),
-      setOption('authEndpoint', AUTH_SERVER),
-      setOption('dataEndpoint', dataEndpoint),
-      setOption('hashTracking', true)
-    ];
+    it('should set right options when pass initial project id', () => {
+      Simpla._store = mockStore({});
 
-    let possibilities = [{
-      caseName: 'only project key is given',
-      options: project,
-      actions: [
-        ...standardActions
-      ]
-    }, {
-      caseName: 'disable using hash',
-      options: {
-        project,
-        hashTracking: false
-      },
-      actions: [
+      Simpla.init(project);
+
+      // Tests for members as we don't care what order the initializations happen
+      expect(Simpla._store.getActions()).to.deep.equal([
         setOption('project', project),
         setOption('authEndpoint', AUTH_SERVER),
         setOption('dataEndpoint', dataEndpoint),
-        setOption('hashTracking', false)
-      ]
-    }, {
-      caseName: 'set custom endpoints',
-      options: {
-        project,
-        hashTracking: false,
-        _dataEndpoint: 'foo-data',
-        _authEndpoint: 'foo-auth'
-      },
-      actions: [
-        setOption('project', project),
-        setOption('authEndpoint', 'foo-auth'),
-        setOption('dataEndpoint', 'foo-data'),
-        setOption('hashTracking', false)
-      ]
-    }];
-
-    possibilities.forEach(({ options, actions, caseName }) => {
-      it(`should dispatch the correct actions when ${caseName}`, () => {
-        Simpla._store = mockStore({});
-
-        Simpla.init(options);
-
-        // Tests for members as we don't care what order the initializations happen
-        expect(Simpla._store.getActions()).to.deep.includes.members(actions);
-      });
+        setOption('hashTracking', true)
+      ]);
     });
 
     it('should return undefined after init', () => {
