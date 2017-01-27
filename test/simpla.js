@@ -4,23 +4,50 @@ import configureMockStore from './__utils__/redux-mock-store';
 import { AUTH_SERVER } from '../src/constants/options';
 import { setOption } from '../src/actions/options';
 import * as types from '../src/constants/actionTypes';
+import fetchMock from 'fetch-mock';
 
 const mockStore = configureMockStore([ thunk ]);
 
+const MOCK_DATA = {
+  [ 'foo' ]: {
+    data: 'foo'
+  },
+  [ 'foo.bar' ]: {
+    data: {
+      foo:'bar'
+    }
+  },
+  [ 'foo.bar.baz' ]: {
+    data: {
+      foo: {
+        bar: 'baz'
+      }
+    }
+  }
+}
+
 describe('Simpla', () => {
-  it('should export a function', () => {
-    expect(Simpla).to.be.a.function;
+  const project = 'project-id',
+        dataEndpoint = `${AUTH_SERVER}/projects/${project}/content`;
+
+  beforeEach(() => {
+    Object.keys(MOCK_DATA).forEach(uid => {
+      fetchMock
+        .mock(`${dataEndpoint}/${uid}`, 'GET', MOCK_DATA[uid]);
+    });
+  });
+
+  afterEach(() => {
+    fetchMock.restore();
   });
 
   describe('initilization', () => {
-    const project = 'project-id',
-          dataEndpoint = `${AUTH_SERVER}/projects/${project}/content`,
-          standardActions = [
-            setOption('project', project),
-            setOption('authEndpoint', AUTH_SERVER),
-            setOption('dataEndpoint', dataEndpoint),
-            setOption('hashTracking', true)
-          ]
+    const standardActions = [
+      setOption('project', project),
+      setOption('authEndpoint', AUTH_SERVER),
+      setOption('dataEndpoint', dataEndpoint),
+      setOption('hashTracking', true)
+    ];
 
     let possibilities = [{
       caseName: 'only project key is given',
@@ -60,16 +87,16 @@ describe('Simpla', () => {
       it(`should dispatch the correct actions when ${caseName}`, () => {
         Simpla._store = mockStore({});
 
-        Simpla(options);
+        Simpla.init(options);
 
         // Tests for members as we don't care what order the initializations happen
         expect(Simpla._store.getActions()).to.deep.includes.members(actions);
       });
     });
 
-    it('should return itself after init', () => {
-      let response = Simpla('');
-      expect(response).to.equal(Simpla);
+    it('should return undefined after init', () => {
+      let response = Simpla.init(project);
+      expect(response).to.be.undefined;
     });
   });
 
@@ -125,7 +152,9 @@ describe('Simpla', () => {
 
       beforeEach(() => {
         spy = sinon.spy();
-        delete Simpla._store;
+        // Reset Simpla
+        Simpla.constructor.call(Simpla);
+        Simpla.init(project);
         Simpla.editable(false);
       });
 
@@ -149,23 +178,19 @@ describe('Simpla', () => {
   });
 
   describe('content methods', () => {
-    const foo = { data: { foo: '' } },
-          fooBar = { data: { foo: 'bar' } },
-          fooBaz = { data: { foo: 'baz' } };
-
     beforeEach(() => {
       return Simpla.remove('foo')
         .then(() => Promise.all([
-          Simpla.set('foo', foo),
-          Simpla.set('foo.bar', fooBar),
-          Simpla.set('foo.baz', fooBaz)
+          Simpla.set('foo', MOCK_DATA['foo']),
+          Simpla.set('foo.bar', MOCK_DATA['foo.bar']),
+          Simpla.set('foo.baz', MOCK_DATA['foo.bar.baz'])
         ]));
     });
 
     it('should be able to get leaf node', () => {
       return Simpla.get('foo.bar')
         .then(data => {
-          expect(data).to.deep.equal(fooBar);
+          expect(data).to.deep.equal(MOCK_DATA['foo.bar']);
         });
     });
 
@@ -187,7 +212,8 @@ describe('Simpla', () => {
 
       beforeEach(() => {
         spy = sinon.spy();
-        delete Simpla._store;
+        Simpla.constructor.call(Simpla);
+        Simpla.init(project);
         ({ unobserve } = Simpla.observe('foo.bar', spy));
       });
 
@@ -196,7 +222,7 @@ describe('Simpla', () => {
       });
 
       it('should be able to observe data', () => {
-        return Simpla.set('foo.bar', { data: { foo: 'bloop' } })
+        return Simpla.set('foo.bar', MOCK_DATA['foo.bar'])
           .then(() => Simpla.get('foo.bar'))
           .then((data) => {
             expect(spy.lastCall.calledWith(data)).to.be.true;
@@ -204,12 +230,12 @@ describe('Simpla', () => {
       });
 
       it('should be able to observe children additions / changes changes', () => {
-        return Simpla.set('foo.bar.baz', { data: { foo: 'barbaz' } })
+        return Simpla.set('foo.bar.baz', MOCK_DATA['foo.bar.baz'])
           .then(() => Simpla.get('foo.bar'))
           .then((data) => {
             expect(spy.lastCall.calledWith(data)).to.be.true;
           })
-          .then(() => Simpla.set('foo.bar.baz', { data: { foo: 'barbing' } }))
+          .then(() => Simpla.set('foo.bar.baz', MOCK_DATA['foo.bar.baz']))
           .then(() => Simpla.get('foo.bar'))
           .then((data) => {
             expect(spy.lastCall.calledWith(data)).to.be.true;

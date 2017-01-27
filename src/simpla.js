@@ -18,9 +18,6 @@ import usageMonitoring from './plugins/usageMonitoring';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
-// Create core store
-const store = createStore(rootReducer, applyMiddleware(thunk));
-
 // Hide Default Content
 hideDefaultContent();
 
@@ -30,115 +27,113 @@ readyWebComponents();
 // Setup Polymer configuration
 configurePolymer();
 
-const Simpla = function Simpla(options) {
-  Simpla._store = Simpla._store || store;
-
-  let project;
-
-  // Initialize data endpoint
-  if (typeof options === 'string') {
-    project = options;
-  } else {
-    project = options.project;
+const Simpla = new class Simpla {
+  constructor() {
+    this._store = createStore(rootReducer, applyMiddleware(thunk));
   }
 
-  Simpla._store.dispatch(setOption('project', project));
+  init(options) {
+    let project;
 
-  // Initialize endpoints
-  Simpla._store.dispatch(setOption('authEndpoint', options._authEndpoint || AUTH_SERVER));
-  Simpla._store.dispatch(setOption('dataEndpoint', options._dataEndpoint || `${AUTH_SERVER}/projects/${project}/content`));
+    // Initialize data endpoint
+    if (typeof options === 'string') {
+      project = options;
+    } else {
+      project = options.project;
+    }
 
-  if (typeof options.hashTracking !== 'undefined') {
-    Simpla._store.dispatch(setOption('hashTracking', options.hashTracking));
-  } else {
-    Simpla._store.dispatch(setOption('hashTracking', true));
+    this._store.dispatch(setOption('project', project));
+
+    // Initialize endpoints
+    this._store.dispatch(setOption('authEndpoint', options._authEndpoint || AUTH_SERVER));
+    this._store.dispatch(setOption('dataEndpoint', options._dataEndpoint || `${AUTH_SERVER}/projects/${project}/content`));
+
+    if (typeof options.hashTracking !== 'undefined') {
+      this._store.dispatch(setOption('hashTracking', options.hashTracking));
+    } else {
+      this._store.dispatch(setOption('hashTracking', true));
+    }
   }
 
-  return Simpla;
-};
-
-// Add mixins
-Object.assign(Simpla, {
   // Authentication
   login(...args) {
-    return dispatchThunkAndExpect(store, login(...args), types.LOGIN_SUCCESSFUL);
-  },
+    return dispatchThunkAndExpect(this._store, login(...args), types.LOGIN_SUCCESSFUL);
+  }
 
   logout(...args) {
-    return dispatchThunkAndExpect(store, logout(...args), types.LOGOUT_SUCCESSFUL);
-  },
+    return dispatchThunkAndExpect(this._store, logout(...args), types.LOGOUT_SUCCESSFUL);
+  }
 
   // Data
   find(...args) {
-    return dispatchThunkAndExpect(store, find(...args), types.FIND_DATA_SUCCESSFUL);
-  },
+    return dispatchThunkAndExpect(this._store, find(...args), types.FIND_DATA_SUCCESSFUL);
+  }
 
   get(...args) {
-    return dispatchThunkAndExpect(store, get(...args), types.GET_DATA_SUCCESSFUL);
-  },
+    return dispatchThunkAndExpect(this._store, get(...args), types.GET_DATA_SUCCESSFUL);
+  }
 
   set(...args) {
-    return dispatchThunkAndExpect(store, set(...args), types.SET_DATA_SUCCESSFUL);
-  },
+    return dispatchThunkAndExpect(this._store, set(...args), types.SET_DATA_SUCCESSFUL);
+  }
 
   remove(...args) {
-    return dispatchThunkAndExpect(store, remove(...args), types.REMOVE_DATA_SUCCESSFUL);
-  },
+    return dispatchThunkAndExpect(this._store, remove(...args), types.REMOVE_DATA_SUCCESSFUL);
+  }
 
   save(...args) {
-    return dispatchThunkAndExpect(store, save(...args), types.SAVE_SUCCESSFUL);
-  },
+    return dispatchThunkAndExpect(this._store, save(...args), types.SAVE_SUCCESSFUL);
+  }
 
   observe(...args) {
     let callback = args.pop(),
         path = args[0] ? `${DATA_PREFIX}.hierarchy.${args[0]}` : `${DATA_PREFIX}.hierarchy`,
         wrappedCallback = () => this.get(args[0]).then(callback);
 
-    return storeToObserver(this._store || store).observe(path, wrappedCallback);
-  },
+    return storeToObserver(this._store).observe(path, wrappedCallback);
+  }
 
   // Events
   on(...args) {
     emitter.on(...args);
-  },
+  }
 
   off(...args) {
     emitter.off(...args);
-  },
+  }
 
   once(...args) {
     emitter.once(...args);
-  },
+  }
 
   emit(...args) {
     emitter.emit(...args);
-  },
+  }
 
   // Editable
   editable(on) {
-    (this._store || store).dispatch(on ? editActive() : editInactive());
-  },
+    this._store.dispatch(on ? editActive() : editInactive());
+  }
 
   // State
   getState(path) {
-    let state = (this._store || store).getState();
+    let state = this._store.getState();
     return path ? selectPropByPath(path, state) : state;
-  },
+  }
 
   observeState(...args) {
-    return storeToObserver(this._store || store).observe(...args);
-  },
-
-  // Backwards compatibility for previous SDK
-  client: Simpla
-});
+    return storeToObserver(this._store).observe(...args);
+  }
+}
 
 // Init plugins
-[
+const plugins = [
   hashTracking,
   supportDeprecatedInitializer,
   supportDeprecatedConfig,
   usageMonitoring
-].forEach(plugin => plugin(Simpla));
+]
+
+plugins.forEach(plugin => plugin(Simpla));
 
 export default Simpla;
