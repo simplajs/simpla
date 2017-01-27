@@ -11,7 +11,7 @@ import { DATA_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
 import { storeToObserver, dispatchThunkAndExpect, selectPropByPath } from './utils/helpers';
-import { supportDeprecatedConfig, supportDeprecatedInitializer } from './plugins/deprecation';
+import { supportDeprecatedConfig } from './plugins/deprecation';
 import hashTracking from './plugins/hashTracking';
 import usageMonitoring from './plugins/usageMonitoring';
 import thunk from 'redux-thunk';
@@ -97,7 +97,6 @@ const Simpla = new class Simpla {
 // Init plugins
 const plugins = [
   hashTracking,
-  supportDeprecatedInitializer,
   supportDeprecatedConfig,
   usageMonitoring
 ]
