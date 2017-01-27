@@ -11,7 +11,6 @@ import { DATA_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
 import { storeToObserver, dispatchThunkAndExpect, selectPropByPath } from './utils/helpers';
-import { emitter } from './middleware/emitter';
 import { supportDeprecatedConfig, supportDeprecatedInitializer } from './plugins/deprecation';
 import hashTracking from './plugins/hashTracking';
 import usageMonitoring from './plugins/usageMonitoring';
@@ -77,23 +76,6 @@ const Simpla = new class Simpla {
         wrappedCallback = () => this.get(args[0]).then(callback);
 
     return storeToObserver(this._store).observe(path, wrappedCallback);
-  }
-
-  // Events
-  on(...args) {
-    emitter.on(...args);
-  }
-
-  off(...args) {
-    emitter.off(...args);
-  }
-
-  once(...args) {
-    emitter.once(...args);
-  }
-
-  emit(...args) {
-    emitter.emit(...args);
   }
 
   // Editable
