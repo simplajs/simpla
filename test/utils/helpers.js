@@ -2,6 +2,7 @@ import {
   storeToObserver,
   selectPropByPath,
   dispatchThunkAndExpect,
+  runDispatchAndExpect,
   dataIsValid,
   toQueryParams,
   findDataInState
@@ -258,6 +259,30 @@ describe('helpers', () => {
           }]
         });
       });
+    });
+  });
+
+  describe('runDispatchAndExpect', () => {
+    it('should reject with response if catches action', () => {
+      let responseAction = { type: 'foo', response: 'nope' },
+          dispatch = () => Promise.reject(responseAction);
+
+      return runDispatchAndExpect(dispatch, {}, responseAction.type)
+        .then(
+          () => Promise.reject(new Error('Should have thrown')),
+          (error) => expect(error).to.equal(responseAction.response)
+        );
+    });
+
+    it('should reject with error if catches error', () => {
+      let error = new Error('Failed'),
+          dispatch = () => Promise.reject(error);
+
+      return runDispatchAndExpect(dispatch, {}, 'foo')
+        .then(
+          () => Promise.reject(new Error('Should have thrown')),
+          (rejectedWith) => expect(rejectedWith).to.equal(error)
+        );
     });
   });
 });

@@ -109,11 +109,13 @@ export function dispatchThunkAndExpect(store, ...args) {
 }
 
 export function runDispatchAndExpect(dispatch, action, expectedType) {
+  const isAction = (response) => typeof response.type !== 'undefined' && typeof response.response !== 'undefined';
+
   return dispatch(action)
     .then(ensureActionMatches(expectedType))
     .then(
       action => action.response,
-      action => Promise.reject(action.response)
+      action => isAction(action) ? Promise.reject(action.response) : Promise.reject(action)
     );
 }
 
