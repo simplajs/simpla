@@ -1,139 +1,199 @@
-<p align="center">
- <a href="https://www.simpla.io"><img src="https://storage.googleapis.com/simpla-assets/img/logo-wordmark-sml.png" alt="Simpla logo" width="350" /></a> 
-</p>
+# Simpla 2.0 (pre-release)
 
-<p align="center">
-  <a href="https://travis-ci.org/simplaio/simpla"><img src="https://travis-ci.org/simplaio/simpla.svg?branch=master" alt="Test satus" title="Test satus" /></a>
+This is a pre-release branch for Simpla v2. It is under active development - breaking changes, bugs, and instability should be expected. It should be used for **testing only**, it should _not_ be used in production.
 
-  <a href="https://david-dm.org/simplaio/simpla#info=devDependencies" target="_blank"> <img src="https://img.shields.io/david/dev/simplaio/simpla.svg?theme=shields.io" alt="Dependencies" title="Dependencies"> </a>
+## Goals
+The overriding goal of v2.0 is to lay the foundation required to open up the Simpla ecosystem. To achieve this we've focussed on a few areas:
 
-  <img src="https://img.shields.io/bower/v/simpla.svg" alt="Bower version" title="Bower version">
+- **Create a single source of truth across the ecosystem.** The v2 SDK introduces states (eg: `editable`, `authenticated`) and a data buffer, which mediates all data in a Simpla app. This makes interacting with Simpla's API significantly more straightforward, both for element authors and end-users
 
-  <img src="https://badges.herokuapp.com/size/github/simplaio/simpla/master/simpla.js?gzip=true&color=blue" alt="Size of library" title="Size of library">
+- **Streamline element authorship.** V2 introduces new mechanisms (eg: observers) that make creating elements for the Simpla ecosystem trivial
 
-  <a href="http://slack.simpla.io"><img src="http://slack.simpla.io/badge.svg" alt="Slack group" title="Slack group"></a>
-</p> 
+- **Structured data and content models.** All UIDs now have a consistent data schema, which both element authors and users can depend on. This paves the way for advanced content modelling with Simpla (as opposed to just 'editable HTML'), as well as more powerful data management (querying, filtering, metadata, etc)
 
-<p align="center">
- <a href="https://travis-ci.org/simplaio/simpla"><img src="https://badges.herokuapp.com/travis/simplaio/simpla/sauce/simpla?labels=none" alt="Cross browser test status" title="Cross browser test status"></a>
-</p>
+- **Non-destructive data management.** The introduction of a data buffer means that previously destructive methods (eg: `set()`) now operate on the local buffer, and aren't persisted to the API until a new `save()` method is called. This allows elements to react to changes safely, without waiting for a user to set data to the API
 
-Simpla lets you build dynamic content in plain HTML. It's a collection of new HTML elements powered by a RESTful API. You use them to create, structure, and manipulate content in your code. No CMS needed. 
+- **Make fewer assumptions.** We made many assumptions in v1 under the guise of 'ease of use'. In reality most of these were unecessary and just made it harder to open up Simpla's ecosystem. V2 is a lower-level, more powerful SDK (eg: elements are no longer imported automatically via the SDK)
 
-They're built on top of the emerging [Web Components](https://www.w3.org/wiki/WebComponents/) spec. They look like this:
+- **Seamless migration from v1.** While there are several breaking changes introduced v2 (see below), it's important that users of Simpla don't have to migrate their existing codebases. We have created a [compatibility layer](https://github.com/simplaio/simpla-v2-compat) for existing v1 elements to use the v2 SDK, and will migrate v1 data safely to a new endpoint for v2 once it's live
 
-```html
-<simpla-text sid="text"></simpla-text>
-<simpla-img sid="img"></simpla-img>
-```
+## Breaking changes from 1.0
+There are several breaking changes introduced in the v2.0 SDK:
 
-<p align="center"><img src="https://storage.googleapis.com/simpla-assets/img/editing-demo.gif" alt="Demo of Simpla"></p>
+- Initialisation has been moved to an `init()` method, ie: `Simpla.init('project-id')`
 
-<br/>
-<p align="center"><a href="https://www.simpla.io/docs"><strong>Read the full docs on simpla.io</strong></a></p>
+- Elements are no longer imported (automatically or otherwise) via the SDK, use [HTML imports](https://www.webcomponents.org/community/articles/introduction-to-html-imports) directly instead
 
-<br/>
+- Every piece of data (ie: UID) has a predefined data schema, with several computed properties (eg: `createdAt`, `updatedAt`) and two mutable properties: `data : Object` and `type : String`. Trying to `set()` data outside of these properties will fail
 
-## Installation and setup
-The easiest way to get started with Simpla is by using the [simpla.io](https://simpla.io) platform. Create a free project, then include this library and call `Simpla()` with your project ID
+- The `set()` method no longer directly PUTs data to the API, it sets it to the local buffer, after which calling `save()` persists all changes in the buffer to the API
 
-```html  
-<script src="https://app.simpla.io"></script>
-<script>
-  // TODO: Enter project ID
-  Simpla('PROJECT-ID');
-</script>
-```
+- Calling `get()` on the UID of a `simpla-block` no longer returns an array of its children, but rather its data (normally `null`). Use the new `find()` method instead
 
-You can also install Simpla locally with Bower
+## Installing
+The v2.0 preview can be installed either via Bower or NPM/Yarn
 
 ```bash
-$ bower install simpla --save
+bower install simplaio/simpla#v2.0.0-preview --save
 ```
 
-### Setting options
-Simpla is configurable via the `Simpla()` initializer
+```bash
+npm install simpla@2.0.0-preview --save
+```
+
+Once installed, include the SDK in the `<head>` of your document:
+
+```html
+<script src="/bower_components/simpla/simpla.js"></script>
+```
+
+You will also need to install and import Simpla elements manually, currently only Bower is supported (Yarn support coming):
+
+```bash
+bower install simpla-text simpla-img simpla-block --save
+```
+
+```html
+<link rel="import" href="/bower_components/simpla-text/simpla-text.html">
+<link rel="import" href="/bower_components/simpla-img/simpla-img.html">
+<link rel="import" href="/bower_components/simpla-block/simpla-block.html">
+```
+
+**NOTE:** You MUST create a new project to use with the v2 SDK, as it is not yet compatible with v1 projects, and you risk corrupting data by using it with existing v1 content
+
+## API
+
+### Initialising Simpla
+You must initialise your Simpla project before using the SDK, with the `init()` method
 
 ```js
-Simpla({
-  project: 'PROJECT-ID',
-  api: 'https://api.simpla.io',
-  ...
+// TODO: replace 'project-key' with your project's ID
+Simpla.init('project-id')
+```
+
+### Authentication
+Authentication methods remain unchanged from v1, use `login` to log a user into Simpla, and `logout` to clear their token and log them out
+
+```js
+Simpla.login({
+  username: '',
+  password: ''
+}).then(function() {
+  // User logged in
 });
+
+Simpla.logout()
+  .then(function() {
+    // User logged out
+  });
 ```
 
-[Read more about available options](https://www.simpla.io/docs/#options)
+### Data operations
+Data methods now operate on a local data buffer, and are persisted to Simpla's API by calling the new `save()` method.
 
-## Usage
+#### Get
+Fetch data from Simpla's API with the `get()` method, which takes the UID to fetch as a single argument
 
-Drop Simpla's new HTML elements into your code wherever you want editable content.
-
-- Use `<simpla-text>` for editable text
-
-- Use `<simpla-img>` for editable images.
-
-Every element must have a unique Content ID (usually contained in the `sid` attribute) and both opening and closing HTML tags.
-
-```html
-<simpla-text sid="my-text"></simpla-text>
-<simpla-img sid="my-img"></simpla-text> 
+```js
+Simpla.get('some.uid')
+  .then(function(data) {
+    // data = {
+    //  uid: 'some.uid',
+    //  type: 'text',
+    //  data: {...},
+    //  createdAt: ...
+    // }
+    });
 ```
 
-### Structuring data
-Simpla structures data on the fly. This means with you can create powerful dynamic content, without a CMS. Build blogs, localize content, personalize user journeys, all with just HTML and Javascript.
+#### Set
+Change data in the local buffer by calling `set()`, which takes two arguments - the UID to operate on, and the new data
 
-Use `<simpla-block>` to create namespaces for content
-
-```html
-<simpla-block sid="block">
-
-  <!-- This 'text' is scoped to 'block' -->
-  <simpla-text sid="text"></simpla-text>
-
-</simpla-block>
+```js
+Simpla.set('some.uid', { data: {...} })
+  .then(function() {
+    // data set
+    });
 ```
 
-Dynamically set the `sid` of elements to fetch different content. For example, build a simple fontend blog
+**Note:** All element data should be inside the `data` property, and all elements should set a `type`, which is an arbitrary hint for what kind of content this UID contains
 
-```html
-<simpla-block gid="blog">
+#### Remove
+Delete a UID with the `remove` method. Remember, deleted data will not be persisted until `save` is called
 
-  <!-- Post ID set by js -->
-  <simpla-block id="post" sid="">
-    <simpla-text sid="content"></simpla-text>
-  </simpla-block>
-
-</simpla-block>
-
-<script>
-  // Get post slug from URL
-  var slug = window.location.pathname.split('blog/').pop();
-
-  // Set post ID to slug
-  document.querySelector('#post').sid = slug;
-</script>
+```js
+Simpla.remove('some.uid')
+  .then(function() {
+    // UID deleted
+  });
 ```
 
-<br/>
+#### Find
+Query Simpla's API with the `find` method. Currently it only takes a single parameter, `parent`, which is used to list the children of a block. More querying methods (sort, filter, etc) will be added soon
 
-<p align="center"><a href="https://www.simpla.io/docs"><strong>Read more about using Simpla</strong></a></p>
+```js
+Simpla.find({ parent: 'some' })
+  .then(function(data) {
+    // data = {
+    //  items: [
+    //    { uid: 'some.uid', ...}
+    //  ],
+    //  metadata: {}
+    // }
+    });
+```
 
-<br/>
+#### Save
+The save performs a diff between the local buffer and remote data, and persists all changes to Simpla's API. It takes no arguments
 
-## Editing content
+```js
+Simpla.save()
+  .then(function() {
+    // Changes saved
+    });
+```
 
-<p align="center"><img src="https://storage.googleapis.com/simpla-assets/img/hero-img.png" width="600" /></p>
+### States
+States manage the global state of Simpla and its components in a session. Currently there are two states managed by Simpla:
 
-Simpla doesn’t have any admin areas or forms. Content editors can work inline without breaking things, and there's a JSON API for developers.
+- `authenticated : Boolean`, whether the user is logged in
+- `editable : Boolean`, whether Simpla is in edit mode
 
-Just add `#edit` to the end of your URL (eg: `https://mysite.com#edit`) and login to start editing your content. When you’ve finished press save to publish your changes. Remove `#edit` from the URL to exit edit mode.
+#### Getting a state
+You can get the current value of a state using the `getState()` method
 
-<br/>
+```js
+Simpla.getState('editable') // Returns true/false
+```
 
-<p align="center"><a href="https://www.simpla.io"><strong>Try the demo on simpla.io</strong></a></p>
+### Observers
+React to changes in a Simpla app by using observers
 
-<br/>
+#### Observing changes to data
+Use the `observe()` method to create an observer for a UID. It takes two arguments, the UID to observe, and the callback to execute when the data in the UID changes. It returns an object containing an `unobserve()` method used to destroy the observer
 
---
+```js
+// Create observer
+var observer = Simpla.observe('some.uid', function(item) { ... });
 
-MIT © 2016 Simpla International
+// Destroy observer
+observer.unobserve();
+```
+
+#### Observing changes to state
+Use the `observeState()` method to create an observer for a part of the Simpla state. It has the same syntax as `observe`
+
+```js
+// Create observer
+var observer = Simpla.observeState('editable', function(value) { ... });
+
+// Destroy observer
+observer.unobserve();
+```
+
+## Upcoming changes
+We expect further breaking changes to the API and SDK before final release, primarily in regard to data schema. We plan to replace UIDs with Paths, ie: `some.uid` becomes `/some/path`. This will make data much easier to reason about, and make querying more straightforward. 
+
+## Testing and feedback
+Please test out the SDK and give us feedback! File issues for any bugs you find, or with interface problems/missing use-cases. It should be largely stable enough for ongoing testing, and we're in the process of converting the current Simpla elements (and simpla.io itself) to run on it before launching live.
+
