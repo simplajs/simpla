@@ -76,7 +76,7 @@ Authentication methods remain unchanged from v1, use `login` to log a user into 
 
 ```js
 Simpla.login({
-  username: '',
+  email: '',
   password: ''
 }).then(function() {
   // User logged in
