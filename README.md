@@ -50,7 +50,7 @@ Once installed, include the SDK in the `<head>` of your document:
 You will also need to install and import Simpla elements manually, currently only Bower is supported (Yarn support coming):
 
 ```bash
-bower install simpla-text simpla-img simpla-block --save
+bower install SimplaElements/simpla-text SimplaElements/simpla-img SimplaElements/simpla-block --save
 ```
 
 ```html
@@ -192,8 +192,7 @@ observer.unobserve();
 ```
 
 ## Upcoming changes
-We expect further breaking changes to the API and SDK before final release, primarily in regard to data schema. We plan to replace UIDs with Paths, ie: `some.uid` becomes `/some/path`. This will make data much easier to reason about, and make querying more straightforward. 
+We expect further breaking changes to the API and SDK before final release, primarily in regard to data schema. We plan to replace UIDs with Paths, ie: `some.uid` becomes `/some/path`. This will make data much easier to reason about, and make querying more straightforward.
 
 ## Testing and feedback
 Please test out the SDK and give us feedback! File issues for any bugs you find, or with interface problems/missing use-cases. It should be largely stable enough for ongoing testing, and we're in the process of converting the current Simpla elements (and simpla.io itself) to run on it before launching live.
-
