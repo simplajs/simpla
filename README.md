@@ -67,7 +67,7 @@ bower install SimplaElements/simpla-text SimplaElements/simpla-img SimplaElement
 You must initialise your Simpla project before using the SDK, with the `init()` method
 
 ```js
-// TODO: replace 'project-key' with your project's ID
+// TODO: replace 'project-id' with your project's ID
 Simpla.init('project-id')
 ```
 
