@@ -109,8 +109,8 @@ Fetch data from Simpla's API with the `get()` method, which takes the UID to fet
 Simpla.get('some.uid')
   .then(function(data) {
     // data = {
-    //  uid: 'some.uid',
-    //  type: 'text',
+    //  id: 'some.uid',
+    //  type: 'Text',
     //  data: {...},
     //  createdAt: ...
     // }
@@ -127,7 +127,7 @@ Simpla.set('some.uid', { data: {...} })
     });
 ```
 
-**Note:** All element data should be inside the `data` property, and all elements should set a `type`, which is an arbitrary hint for what kind of content this UID contains
+**Note:** All element data should live inside the `data` object, and all elements should set a `type`, which is just an arbitrary hint (_not_ a JS primitive) for what kind of content this UID contains.
 
 #### Remove
 Delete a UID with the `remove` method. Remember, deleted data will not be persisted until `save` is called
@@ -144,8 +144,8 @@ Query Simpla's API with the `find` method. Currently it only takes a single para
 
 ```js
 Simpla.find({ parent: 'some' })
-  .then(function(data) {
-    // data = {
+  .then(function(result) {
+    // result = {
     //  items: [
     //    { uid: 'some.uid', ...}
     //  ],
@@ -202,8 +202,17 @@ var observer = Simpla.observeState('editable', function(value) { ... });
 observer.unobserve();
 ```
 
+## Known Issues
+ - `find()` requests are not cache-busted properly, resulting in stale data after subsequent saves
+ - `remove()` can intermittently fail, and when it does it can cause all future requests to error out
+ - User auth token is not being persisted to localstorage on login
+
 ## Upcoming changes
-We expect further breaking changes to the API and SDK before final release, primarily in regard to data schema. We plan to replace UIDs with Paths, ie: `some.uid` becomes `/some/path`. This will make data much easier to reason about, and make querying more straightforward.
+We expect further breaking changes to the API and SDK before final release: 
+
+- UIDs will be replaced with Paths, ie: `some.uid` becomes `/some/path`. This will make data models much easier to reason about, and make querying more straightforward.
+- Hashtracking is currently still handled by this SDK, it will be moved to the new `simpla-admin` element before release
+- The SDK currently imports its own polyfill for cross-browser Web Components support. This is fragile, and should be moved to userland (include CDN script tag to `webcomponents-lite.min.js` in standard install snippets)
 
 ## Testing and feedback
 Please test out the SDK and give us feedback! File issues for any bugs you find, or with interface problems/missing use-cases. It should be largely stable enough for ongoing testing, and we're in the process of converting the current Simpla elements (and simpla.io itself) to run on it before launching live.
