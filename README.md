@@ -30,7 +30,7 @@ There are several breaking changes introduced in the v2.0 SDK:
 
 - Calling `get()` on the UID of a `simpla-block` no longer returns an array of its children, but rather its data (normally `null`). Use the new `find()` method instead
 
-## Installing
+## Installation
 The v2.0 preview can be installed either via Bower or NPM/Yarn
 
 ```bash
@@ -41,25 +41,34 @@ bower install simplaio/simpla#v2.0.0-preview --save
 npm install simpla@2.0.0-preview --save
 ```
 
-Once installed, include the SDK in the `<head>` of your document:
+Once installed, include the SDK in the `<head>` of your document
 
 ```html
 <script src="/bower_components/simpla/simpla.js"></script>
 ```
 
-You will also need to install and import Simpla elements manually, currently only Bower is supported (Yarn support coming):
+Or import the ES6 module and attach it as a global to the window manually
+
+```js
+import Simpla from 'simpla';
+
+window.Simpla = Simpla;
+```
+
+### Installing elements
+
+You will also need to install and import Simpla elements, currently only Bower is supported (Yarn support coming):
 
 ```bash
-bower install SimplaElements/simpla-text SimplaElements/simpla-img SimplaElements/simpla-block --save
+bower install SimplaElements/simpla-text SimplaElements/simpla-img SimplaElements/simpla-block SimplaElements/simpla-admin --save
 ```
 
 ```html
 <link rel="import" href="/bower_components/simpla-text/simpla-text.html">
 <link rel="import" href="/bower_components/simpla-img/simpla-img.html">
 <link rel="import" href="/bower_components/simpla-block/simpla-block.html">
+<link rel="import" href="/bower_components/simpla-admin/simpla-admin.html" async>
 ```
-
-**NOTE:** You MUST create a new project to use with the v2 SDK, as it is not yet compatible with v1 projects, and you risk corrupting data by using it with existing v1 content
 
 ## API
 
@@ -70,6 +79,8 @@ You must initialise your Simpla project before using the SDK, with the `init()` 
 // TODO: replace 'project-id' with your project's ID
 Simpla.init('project-id')
 ```
+
+**NOTE:** You MUST create a new project to use with the v2 SDK, as it is not yet compatible with v1 projects, and you risk corrupting data by using it with existing v1 content
 
 ### Authentication
 Authentication methods remain unchanged from v1, use `login` to log a user into Simpla, and `logout` to clear their token and log them out
