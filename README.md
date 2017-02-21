@@ -30,6 +30,10 @@ There are several breaking changes introduced in the v2.0 SDK:
 
 - Calling `get()` on the UID of a `simpla-block` no longer returns an array of its children, but rather its data (normally `null`). Use the new `find()` method instead
 
+- Hashtracking (i.e. `#edit` triggering edit mode) is now handled by the new `simpla-admin` element. Import that element if you wish to continue using it
+
+- The cross-browser WebComponents polyfill is no longer included by the SDK, instead it should be included manually before importing elements e.g. from CDNJS
+
 ## Installation
 The v2.0 preview can be installed either via Bower or NPM/Yarn
 
@@ -208,11 +212,9 @@ observer.unobserve();
  - User auth token is not being persisted to localstorage on login
 
 ## Upcoming changes
-We expect further breaking changes to the API and SDK before final release: 
+We expect further breaking changes to the API and SDK before final release:
 
 - UIDs will be replaced with Paths, ie: `some.uid` becomes `/some/path`. This will make data models much easier to reason about, and make querying more straightforward.
-- Hashtracking is currently still handled by this SDK, it will be moved to the new `simpla-admin` element before release
-- The SDK currently imports its own polyfill for cross-browser Web Components support. This is fragile, and should be moved to userland (include CDN script tag to `webcomponents-lite.min.js` in standard install snippets)
 
 ## Testing and feedback
 Please test out the SDK and give us feedback! File issues for any bugs you find, or with interface problems/missing use-cases. It should be largely stable enough for ongoing testing, and we're in the process of converting the current Simpla elements (and simpla.io itself) to run on it before launching live.
