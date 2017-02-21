@@ -9,7 +9,7 @@ import save from './actions/save';
 import { AUTH_SERVER } from './constants/options';
 import { DATA_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
-import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
+import { hideDefaultContent, configurePolymer } from './utils/prepare';
 import { storeToObserver, dispatchThunkAndExpect, selectPropByPath } from './utils/helpers';
 import { supportDeprecatedConfig } from './plugins/deprecation';
 import usageMonitoring from './plugins/usageMonitoring';
@@ -18,9 +18,6 @@ import rootReducer from './reducers';
 
 // Hide Default Content
 hideDefaultContent();
-
-// Conditionally load in web components
-readyWebComponents();
 
 // Setup Polymer configuration
 configurePolymer();
