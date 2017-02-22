@@ -2,6 +2,7 @@ import {
   GET_DATA_FROM_API_SUCCESSFUL,
   SET_DATA_TO_API_SUCCESSFUL,
   REMOVE_DATA_FROM_API_SUCCESSFUL,
+  FIND_DATA_FROM_API_SUCCESSFUL,
 
   SET_DATA_SUCCESSFUL,
   REMOVE_DATA_SUCCESSFUL
@@ -29,26 +30,19 @@ function isDifferent(remote, local) {
  * @param  {Object} action     Action being performed on the store
  * @return {Object}            New state
  */
-function reducePart(state = {}, action) {
+function reducePart(state = {}, data, isRemote) {
+  debugger;
   let { local, remote, changed } = state;
 
-  switch(action.type) {
-    case GET_DATA_FROM_API_SUCCESSFUL:
-    case SET_DATA_TO_API_SUCCESSFUL:
-    case REMOVE_DATA_FROM_API_SUCCESSFUL:
-      remote = clone(action.response || null);
-      changed = isDifferent(remote, local);
-
-      return Object.assign({}, state, { remote, changed });
-    case SET_DATA_SUCCESSFUL:
-    case REMOVE_DATA_SUCCESSFUL:
-      local = clone(action.response || null);
-      changed = isDifferent(remote, local);
-
-      return Object.assign({}, state, { local, changed });
-    default:
-      return state;
+  if (isRemote) {
+    remote = clone(data || null);
+  } else {
+    local = clone(data || null);
   }
+
+  changed = isDifferent(remote, local);
+
+  return Object.assign({}, state, { local, remote, changed });
 }
 
 /**
@@ -58,15 +52,26 @@ function reducePart(state = {}, action) {
  * @return {Object}              New state
  */
 export default function save(state = {}, action) {
-  if (action.hasOwnProperty('uid')) {
-    const { uid } = action,
-          currentUidState = state[uid],
-          newUidState = reducePart(currentUidState, action);
+  let updatePart = (whole, id, data, remote) => {
+    let oldSubstate = whole[id],
+        newSubstate = reducePart(whole[id], data, remote);
 
-    if (newUidState !== currentUidState) {
-      return Object.assign({}, state, { [ uid ]: newUidState });
-    }
+    return oldSubstate === newSubstate ? state : Object.assign({}, whole, { [ id ]: newSubstate });
+  };
+
+  switch (action.type) {
+  case FIND_DATA_FROM_API_SUCCESSFUL:
+    return action.response.items.reduce((whole, item) => {
+      return updatePart(whole, item.id, item, true);
+    }, state);
+  case GET_DATA_FROM_API_SUCCESSFUL:
+  case SET_DATA_TO_API_SUCCESSFUL:
+  case REMOVE_DATA_FROM_API_SUCCESSFUL:
+    return updatePart(state, action.uid, action.response, true);
+  case SET_DATA_SUCCESSFUL:
+  case REMOVE_DATA_SUCCESSFUL:
+    return updatePart(state, action.uid, action.response, false);
+  default:
+    return state;
   }
-
-  return state;
 }

@@ -3,29 +3,37 @@ import * as apiActions from '../../src/actions/api';
 import * as dataActions from '../../src/actions/data';
 
 const UID = 'some.uid';
-const RESPONSE = { foo: 'bar' };
-const CHANGED = { foo: 'bar', bar: 'baz' };
+const RESPONSE = { id: UID, data: { foo: 'bar' } };
+const CHANGED = { id: UID, data: { foo: 'bar', baz: 'qux' } };
+const FIND_RESPONSE = { items: [ RESPONSE ] };
 
 describe('state of save', () => {
+  it('should populate remote data from a `find` call', () => {
+    let findSuccessful = apiActions.findDataSuccessful({}, FIND_RESPONSE);
+    expect(saveReducer({}, findSuccessful)[UID].remote).to.deep.equal(RESPONSE);
+  });
+
   it('should handle updates to the Remote API', () => {
     let actions = [
-          [ apiActions.getDataSuccessful(UID, RESPONSE), RESPONSE ],
-          [ apiActions.setDataSuccessful(UID, null, RESPONSE), RESPONSE ],
-          [ apiActions.removeDataSuccessful(UID), null ]
-        ];
+      [ apiActions.getDataSuccessful(UID, RESPONSE), RESPONSE ],
+      [ apiActions.setDataSuccessful(UID, null, RESPONSE), RESPONSE ],
+      [ apiActions.removeDataSuccessful(UID), null ]
+    ];
 
     actions.forEach(([ action, remoteState ]) => {
+      console.log(action.type, saveReducer({}, action)[UID].remote);
       expect(saveReducer({}, action)[UID].remote).to.deep.equal(remoteState);
     });
   });
 
   it('should handle updates to the inernal state', () => {
     let actions = [
-          [ dataActions.setDataSuccessful(UID, RESPONSE), RESPONSE ],
-          [ dataActions.removeDataSuccessful(UID), null ]
-        ];
+      [ dataActions.setDataSuccessful(UID, RESPONSE), RESPONSE ],
+      [ dataActions.removeDataSuccessful(UID), null ]
+    ];
 
     actions.forEach(([ action, localState ]) => {
+      console.log(action.type, saveReducer({}, action)[UID].local);
       expect(saveReducer({}, action)[UID].local).to.deep.equal(localState);
     });
   });
@@ -45,7 +53,7 @@ describe('state of save', () => {
     expect(original[UID].changed).to.be.false;
   });
 
-  it(`shouldn't pass object references in`, () => {
+  it('shouldn\'t pass object references in', () => {
     let data = { foo: 'bar' },
         state = saveReducer({}, dataActions.setDataSuccessful(UID, data));
 
