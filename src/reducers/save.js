@@ -25,13 +25,13 @@ function isDifferent(remote, local) {
 }
 
 /**
- * Reduce part of the save state. Designes to be a reducer for arbitrary UID
- * @param  {Object} [state={}] State of save info at UID
- * @param  {Object} action     Action being performed on the store
- * @return {Object}            New state
+ * Reduce state of individual UID
+ * @param  {Object}   [state={}] State of save info at UID
+ * @param  {Object}   data       Incoming data for the item at UID
+ * @param  {Boolean}  isRemote   Whether data is remote data or local if not
+ * @return {Object}
  */
 function reducePart(state = {}, data, isRemote) {
-  debugger;
   let { local, remote, changed } = state;
 
   if (isRemote) {

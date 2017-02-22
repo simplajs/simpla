@@ -21,7 +21,6 @@ describe('state of save', () => {
     ];
 
     actions.forEach(([ action, remoteState ]) => {
-      console.log(action.type, saveReducer({}, action)[UID].remote);
       expect(saveReducer({}, action)[UID].remote).to.deep.equal(remoteState);
     });
   });
@@ -33,7 +32,6 @@ describe('state of save', () => {
     ];
 
     actions.forEach(([ action, localState ]) => {
-      console.log(action.type, saveReducer({}, action)[UID].local);
       expect(saveReducer({}, action)[UID].local).to.deep.equal(localState);
     });
   });
