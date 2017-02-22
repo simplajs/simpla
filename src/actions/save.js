@@ -28,20 +28,25 @@ export function saveFailed() {
 
 export default function save() {
   return (dispatch, getState) => {
+    let shouldRemove,
+        shouldSet,
+        setPromises,
+        removePromises;
+
     dispatch(startSave());
 
     const saveState = getState().save,
           entries = Object.keys(saveState).map(uid => [ uid, saveState[uid] ]);
 
-    let shouldRemove = ([, { local, changed }]) => local === null && changed,
-        shouldSet = ([, { local, changed }]) => local !== null && changed;
+    shouldRemove = ([, { local, changed }]) => local === null && changed;
+    shouldSet = ([, { local, changed }]) => local !== null && changed;
 
-    let setPromises = entries
+    setPromises = entries
       .filter(shouldSet)
       .map(([ uid, { local } ]) => set(uid, local))
       .map(action => runDispatchAndExpect(dispatch, action, SET_DATA_TO_API_SUCCESSFUL));
 
-    let removePromises = entries
+    removePromises = entries
       .filter(shouldRemove)
       .map(([ uid ]) => remove(uid))
       .map(action => runDispatchAndExpect(dispatch, action, REMOVE_DATA_FROM_API_SUCCESSFUL));

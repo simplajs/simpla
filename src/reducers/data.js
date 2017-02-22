@@ -2,8 +2,6 @@ import { SET_DATA_SUCCESSFUL, REMOVE_DATA_SUCCESSFUL } from '../constants/action
 import { clone } from '../utils/helpers';
 import { combineReducers } from 'redux';
 
-const INITIAL_STATE = {};
-
 function markAt(state, path) {
   let key = path[0],
       value = path.length === 1 ? {} : markAt(state[key] || {}, path.slice(1));

@@ -73,7 +73,6 @@ export function storeToObserver(store) {
       let onChange = args.pop(),
           selector = args[0],
           lastState,
-          unsubscribe,
           getState,
           handleChange;
 
@@ -104,10 +103,6 @@ export function ensureActionMatches(expectedType) {
   }
 }
 
-export function dispatchThunkAndExpect(store, ...args) {
-  return runDispatchAndExpect(store.dispatch, ...args);
-}
-
 export function runDispatchAndExpect(dispatch, action, expectedType) {
   const isAction = (response) => typeof response.type !== 'undefined' && typeof response.response !== 'undefined';
 
@@ -117,6 +112,10 @@ export function runDispatchAndExpect(dispatch, action, expectedType) {
       action => action.response,
       action => isAction(action) ? Promise.reject(action.response) : Promise.reject(action)
     );
+}
+
+export function dispatchThunkAndExpect(store, ...args) {
+  return runDispatchAndExpect(store.dispatch, ...args);
 }
 
 /**

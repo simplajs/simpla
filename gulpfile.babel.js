@@ -72,14 +72,18 @@ const bs = browserSync.create(),
 
 wct.gulp.init(gulp);
 
+gulp.task('lint', () => {
+  return gulp.src('src/**/*.js')
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(gulpif(!argv.debug, eslint.failAfterError()));
+});
+
 gulp.task('build', () => {
   return gulp.src('src/simpla.js')
           .pipe(errorNotifier())
 
             .pipe(gulpif(argv.debug, sourcemaps.init()))
-            .pipe(eslint())
-            .pipe(eslint.format())
-            .pipe(gulpif(!argv.debug, eslint.failAfterError()))
             .pipe(rollup(OPTIONS.rollup))
 
             // Minify and pipe out
@@ -105,16 +109,16 @@ gulp.task('build:tests', () => {
           .pipe(gulp.dest(wctConfig.suites[0]));
 });
 
-gulp.task('demo', (callback) => bs.init(OPTIONS.browserSync));
+gulp.task('demo', () => bs.init(OPTIONS.browserSync));
 
 gulp.task('refresh', () => bs.reload());
 
-gulp.task('test', ['build', 'build:tests', 'test:local']);
+gulp.task('test', ['lint', 'build', 'build:tests', 'test:local']);
 
-gulp.task('watch:src', () => gulp.watch(['src/**/*'], () => gulprun('build', 'refresh')));
+gulp.task('watch:src', () => gulp.watch(['src/**/*'], () => gulprun('lint', 'build', 'refresh')));
 
 gulp.task('watch:tests', () => gulp.watch(['test/**/*', 'src/**/*'], ['build:tests']));
 
 gulp.task('watch', [ 'watch:src', 'watch:tests' ]);
 
-gulp.task('default', ['build', 'build:tests', 'demo', 'watch']);
+gulp.task('default', ['lint', 'build', 'build:tests', 'demo', 'watch']);

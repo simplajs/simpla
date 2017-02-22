@@ -89,6 +89,55 @@ export function removeDataSuccessful(uid) {
   };
 }
 
+export function set(uid, data, validate = true) {
+  return (dispatch) => {
+    let action;
+
+    dispatch(setData(uid, data));
+
+    if (validate && !dataIsValid(data)) {
+      action = setDataFailed(uid, new Error(INVALID_DATA));
+    } else {
+      action = setDataSuccessful(uid, data);
+    }
+
+    return Promise.resolve()
+      .then(() => dispatch(action));
+  };
+}
+
+export function remove(uid) {
+  return (dispatch) => {
+    dispatch(removeData(uid));
+
+    return Promise.resolve()
+      .then(() => dispatch(removeDataSuccessful(uid)));
+  };
+}
+
+export function get(uid) {
+  return (dispatch, getState) => {
+    let state,
+        stored,
+        fetchData;
+
+    dispatch(getData(uid));
+
+    state = getState();
+    stored = selectDataFromState(uid, state);
+
+    if (typeof stored === 'undefined') {
+      fetchData = runDispatchAndExpect(dispatch, getFromApi(uid), GET_DATA_FROM_API_SUCCESSFUL)
+        .then((response) => runDispatchAndExpect(dispatch, set(uid, response, false), SET_DATA_SUCCESSFUL));
+    } else {
+      fetchData = Promise.resolve(stored);
+    }
+
+    return fetchData
+      .then((response) => dispatch(getDataSuccessful(uid, response)));
+  };
+}
+
 export function find(query = {}) {
   return (dispatch, getState) => {
     let storeResponse,
@@ -125,54 +174,5 @@ export function find(query = {}) {
     return runDispatchAndExpect(dispatch, findFromApi(query), FIND_DATA_FROM_API_SUCCESSFUL)
       .then(storeResponse)
       .then(findLocallyAndReturn);
-  };
-}
-
-export function get(uid) {
-  return (dispatch, getState) => {
-    let state,
-        stored,
-        fetchData;
-
-    dispatch(getData(uid));
-
-    state = getState();
-    stored = selectDataFromState(uid, state);
-
-    if (typeof stored === 'undefined') {
-      fetchData = runDispatchAndExpect(dispatch, getFromApi(uid), GET_DATA_FROM_API_SUCCESSFUL)
-        .then((response) => runDispatchAndExpect(dispatch, set(uid, response, false), SET_DATA_SUCCESSFUL));
-    } else {
-      fetchData = Promise.resolve(stored);
-    }
-
-    return fetchData
-      .then((response) => dispatch(getDataSuccessful(uid, response)));
-  };
-}
-
-export function set(uid, data, validate = true) {
-  return (dispatch, getState) => {
-    let action;
-
-    dispatch(setData(uid, data));
-
-    if (validate && !dataIsValid(data)) {
-      action = setDataFailed(uid, new Error(INVALID_DATA));
-    } else {
-      action = setDataSuccessful(uid, data);
-    }
-
-    return Promise.resolve()
-      .then(() => dispatch(action));
-  };
-}
-
-export function remove(uid, data) {
-  return (dispatch, getState) => {
-    dispatch(removeData(uid));
-
-    return Promise.resolve()
-      .then(() => dispatch(removeDataSuccessful(uid)));
   };
 }

@@ -46,7 +46,7 @@ export default function(Simpla) {
   function resetSession() {
     try {
       window.localStorage.setItem(SESSION_KEY, Date.now() + INTERVAL);
-    } catch(e) {
+    } catch (e) {
       // Fail silently, thisis low priority work and doesn't matter greatly if
       //  we cant set
     }
