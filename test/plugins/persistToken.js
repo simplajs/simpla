@@ -6,27 +6,35 @@ const VALID_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3Np
       WRONG_ISSUER_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3NvbWVjb21wYW55LmF1dGgwLmNvbS8iLCJleHAiOjI1MzQwMjI2MTIwMH0.lhflibqLa1yK48F5GlFwP20RKTI82nBAoMK9lECpn2M';
 
 describe('persisting tokens', () => {
-  const unobserve = sinon.stub();
-
   const Simpla = {
-    observeState: sinon.stub().returns(unobserve),
     _store: {
       dispatch: sinon.stub()
     }
   }
 
-  beforeEach(() => {
-    sinon.stub(window.localStorage, 'setItem');
-    sinon.stub(window.localStorage, 'getItem');
-    sinon.stub(window.localStorage, 'removeItem');
+  before(() => {
+    window._localStorage = window.localStorage;
+
+    Object.defineProperty(window, 'localStorage', {
+      writable: true
+    });
+    
+    window.localStorage = {
+      setItem: sinon.stub(),
+      getItem: sinon.stub(),
+      removeItem: sinon.stub()
+    };
+  });
+
+  after(() => {
+    window.localStorage = window._localStorage;
   });
 
   afterEach(() => {
-    window.localStorage.setItem.restore();
-    window.localStorage.getItem.restore();
-    window.localStorage.removeItem.restore();
+    window.localStorage.setItem.reset();
+    window.localStorage.getItem.reset();
+    window.localStorage.removeItem.reset();
 
-    Simpla.observeState.reset();
     Simpla._store.dispatch.reset();
   });
 
