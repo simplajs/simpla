@@ -13,6 +13,7 @@ import { hideDefaultContent, configurePolymer } from './utils/prepare';
 import { storeToObserver, dispatchThunkAndExpect, selectPropByPath } from './utils/helpers';
 import { supportDeprecatedConfig } from './plugins/deprecation';
 import usageMonitoring from './plugins/usageMonitoring';
+import persistToken from './plugins/persistToken';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
@@ -93,8 +94,9 @@ const Simpla = new class Simpla {
 // Init plugins
 const plugins = [
   supportDeprecatedConfig,
-  usageMonitoring
-]
+  usageMonitoring,
+  persistToken
+];
 
 plugins.forEach(plugin => plugin(Simpla));
 
