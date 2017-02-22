@@ -41,6 +41,10 @@ export function content(state = {}, action) {
   case SET_DATA_SUCCESSFUL:
     return Object.assign({}, state, { [ action.uid ]: clone(action.response) });
   case REMOVE_DATA_SUCCESSFUL:
+    if (state[action.uid] === null) {
+      return state;
+    }
+
     return Object.assign({}, state, { [ action.uid ]: null });
   default:
     return state;

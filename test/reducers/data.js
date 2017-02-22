@@ -87,6 +87,14 @@ describe('dataReducer', () => {
         let state = content({}, removeDataSuccessful('foo.bar'));
         expect(state['foo.bar']).to.equal(null);
       });
+
+      it('should not return a new object if it would make no difference', () => {
+        let currentState = {
+          [ 'foo.bar' ]: null
+        };
+
+        expect(content(currentState, removeDataSuccessful('foo.bar'))).to.equal(currentState);
+      });
     });
   });
 });
