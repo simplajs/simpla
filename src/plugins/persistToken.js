@@ -1,7 +1,8 @@
 import { loginSuccessful } from '../actions/authentication';
 
+export const TOKEN_KEY = 'simpla-token';
+
 const TOKEN_ISSUER = 'https://simpla.auth0.com/',
-      TOKEN_KEY = 'simpla-token',
       WARN_NO_SET = 'Could not remember login token. Are you in Private Mode?',
       WARN_NO_READ = 'Could not load login token from storage. Are you in Private Mode?',
       WARN_NO_REMOVE = 'Could not logout. Are you in Private Mode?',
