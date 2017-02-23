@@ -17,7 +17,7 @@ describe('state of save', () => {
     let actions = [
       [ apiActions.getDataSuccessful(UID, RESPONSE), RESPONSE ],
       [ apiActions.setDataSuccessful(UID, null, RESPONSE), RESPONSE ],
-      [ apiActions.removeDataSuccessful(UID), null ]
+      [ apiActions.removeDataSuccessful(UID, RESPONSE), null ]
     ];
 
     actions.forEach(([ action, remoteState ]) => {

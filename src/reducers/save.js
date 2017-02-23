@@ -52,28 +52,36 @@ function reducePart(state = {}, data, isRemote) {
  * @return {Object}              New state
  */
 export default function save(state = {}, action) {
-  let updatePart = (whole, id, data, remote) => {
+  let updatePart,
+      updateLocal,
+      updateRemote;
+
+  updatePart = (remote) => (whole, id, data) => {
     let oldSubstate = whole[id],
         newSubstate = reducePart(whole[id], data, remote);
 
     return oldSubstate === newSubstate ? state : Object.assign({}, whole, { [ id ]: newSubstate });
   };
 
+  updateLocal = updatePart(false);
+  updateRemote = updatePart(true);
+
   switch (action.type) {
   case FIND_DATA_FROM_API_SUCCESSFUL:
     return action.response.items.reduce((whole, item) => {
-      return updatePart(whole, item.id, item, true);
+      return updateRemote(whole, item.id, item);
     }, state);
   case GET_DATA_FROM_API_SUCCESSFUL:
   case SET_DATA_TO_API_SUCCESSFUL:
+    return updateRemote(state, action.uid, action.response);
   case REMOVE_DATA_FROM_API_SUCCESSFUL:
-    return updatePart(state, action.uid, action.response, true);
+    return updateRemote(state, action.uid, null);
   case SET_DATA_SUCCESSFUL:
     if (!action.persist) {
       return state;
     }
 
-    return updatePart(state, action.uid, action.response, false);
+    return updateLocal(state, action.uid, action.response);
   case REMOVE_DATA_SUCCESSFUL:
     if (!action.persist) {
       let purged = Object.assign({}, state);
@@ -81,7 +89,7 @@ export default function save(state = {}, action) {
       return purged;
     }
 
-    return updatePart(state, action.uid, action.response, false);
+    return updateLocal(state, action.uid, action.response);
   default:
     return state;
   }
