@@ -69,9 +69,16 @@ export default function save(state = {}, action) {
   case REMOVE_DATA_FROM_API_SUCCESSFUL:
     return updatePart(state, action.uid, action.response, true);
   case SET_DATA_SUCCESSFUL:
-  case REMOVE_DATA_SUCCESSFUL:
     if (!action.persist) {
       return state;
+    }
+
+    return updatePart(state, action.uid, action.response, false);
+  case REMOVE_DATA_SUCCESSFUL:
+    if (!action.persist) {
+      let purged = Object.assign({}, state);
+      delete purged[action.uid];
+      return purged;
     }
 
     return updatePart(state, action.uid, action.response, false);

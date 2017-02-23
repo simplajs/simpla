@@ -48,6 +48,12 @@ describe('state of save', () => {
     });
   });
 
+  it('should remove items with persist: false already in save state if item flagged for deletion', () => {
+    let state = saveReducer({ [ UID ]: {} }, dataActions.removeDataSuccessful(UID, { persist: false }));
+
+    expect(state[UID]).to.not.exist;
+  });
+
   it('should reflect changes on the changed prop', () => {
     let initial = {
           [ UID ]: {
