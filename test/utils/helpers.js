@@ -260,6 +260,12 @@ describe('helpers', () => {
         });
       });
     });
+
+    describe('content state not ready', () => {
+      it('should return items = []', () => {
+        expect(findDataInState({}, {})).to.deep.equal({ items: [] });
+      });
+    });
   });
 
   describe('runDispatchAndExpect', () => {

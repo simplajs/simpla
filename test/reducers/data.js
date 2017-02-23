@@ -1,5 +1,6 @@
 import { hierarchy, content } from '../../src/reducers/data';
 import { setDataSuccessful, removeDataSuccessful } from '../../src/actions/data';
+import { makeItemWith } from '../../src/utils/helpers';
 
 describe('dataReducer', () => {
   describe('setting data', () => {
@@ -37,8 +38,10 @@ describe('dataReducer', () => {
 
     describe('content', () => {
       it('should create a flat map of uids to their data', () => {
-        let state = content({}, setDataSuccessful('foo.bar', {}));
-        expect(state['foo.bar']).to.deep.equal({});
+        let uid = 'foo.bar',
+            state = content({}, setDataSuccessful(uid, {}));
+
+        expect(state[uid]).to.deep.equal(makeItemWith(uid, {}));
       });
 
       it('should store deep copies of the data', () => {
@@ -48,6 +51,13 @@ describe('dataReducer', () => {
         data.foo.bar = 'qux';
         expect(state['foo'].foo.bar).to.equal('baz');
       });
+    });
+
+    it('should ensure the data set into the state contains the id prop', () => {
+      let uid = 'foo.bar',
+          state = content({}, setDataSuccessful(uid, {}));
+
+      expect(state[uid].id).to.equal(uid);
     });
   });
 

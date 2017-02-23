@@ -18,7 +18,8 @@ import {
   dataIsValid,
   findDataInState,
   hasRunQuery,
-  makeBlankItem
+  makeBlankItem,
+  makeItemWith
 } from '../utils/helpers';
 import { get as getFromApi, find as findFromApi } from './api';
 
@@ -63,7 +64,7 @@ export function setData(uid, data) {
 export function setDataSuccessful(uid, response) {
   return {
     type: SET_DATA_SUCCESSFUL,
-    response,
+    response: makeItemWith(uid, response),
     uid
   };
 }
@@ -118,10 +119,21 @@ export function set(uid, data, validate = true) {
 }
 
 export function remove(uid) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
+    function removeChildren(uid) {
+      if (!uid) {
+        return Promise.resolve();
+      }
+
+      let { items } = findDataInState({ parent: uid }, getState()),
+          removeItem = item => runDispatchAndExpect(dispatch, remove(item.id), REMOVE_DATA_SUCCESSFUL);
+
+      return Promise.all(items.map(removeItem));
+    }
+
     dispatch(removeData(uid));
 
-    return Promise.resolve()
+    return removeChildren(uid)
       .then(() => dispatch(removeDataSuccessful(uid)));
   };
 }

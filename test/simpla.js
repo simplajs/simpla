@@ -5,6 +5,7 @@ import { AUTH_SERVER } from '../src/constants/options';
 import { setOption } from '../src/actions/options';
 import * as types from '../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
+import { makeItemWith } from '../src/utils/helpers';
 
 const mockStore = configureMockStore([ thunk ]);
 
@@ -152,7 +153,7 @@ describe('Simpla', () => {
     it('should be able to get leaf node', () => {
       return Simpla.get('foo.bar')
         .then(data => {
-          expect(data).to.deep.equal(MOCK_DATA['foo.bar']);
+          expect(data).to.deep.equal(makeItemWith('foo.bar', MOCK_DATA['foo.bar']));
         });
     });
 

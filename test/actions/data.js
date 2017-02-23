@@ -10,11 +10,12 @@ import fetchMock from 'fetch-mock';
 const mockStore = configureMockStore([ thunk ]);
 
 const UID_FOR_STORED = 'foo.bar';
-const STORED_AT_UID = { data: { foo: 'baz' } };
+const TO_STORE = { data: { foo: 'baz' } };
+const STORED_AT_UID = { id: UID_FOR_STORED, data: { foo: 'baz' } };
 const BAD_DATA = { foo: 'bar' };
 const SERVER = 'some-server';
 const UID_FOR_NOT_STORED = 'some.uid.to.something';
-const RESPONSE = { data: { foo: 'bar' } };
+const RESPONSE = { id: UID_FOR_NOT_STORED, data: { foo: 'bar' } };
 
 // Find Data
 const BLANK_QUERY = {};
@@ -215,10 +216,10 @@ describe('data actions', () => {
     it('should fire off set and set successful', () => {
       let store = mockStore({});
 
-      return store.dispatch(dataActions.set(UID_FOR_STORED, STORED_AT_UID))
+      return store.dispatch(dataActions.set(UID_FOR_STORED, TO_STORE))
         .then(() => {
           expect(store.getActions()).to.deep.include.members([
-            dataActions.setData(UID_FOR_STORED, STORED_AT_UID),
+            dataActions.setData(UID_FOR_STORED, TO_STORE),
             dataActions.setDataSuccessful(UID_FOR_STORED, STORED_AT_UID)
           ]);
         });
@@ -291,11 +292,38 @@ describe('data actions', () => {
 
       return store.dispatch(dataActions.remove(UID_FOR_STORED))
         .then(() => {
-          expect(store.getActions()).to.deep.equal([
+          expect(store.getActions()).to.deep.include.members([
             dataActions.removeData(UID_FOR_STORED),
             dataActions.removeDataSuccessful(UID_FOR_STORED)
           ]);
         });
+    });
+
+    it('should fire remove actions for children', () => {
+      let store = mockStore({
+        [ DATA_PREFIX ]: {
+          hierarchy: {
+            foo: {
+              bar: {}
+            }
+          },
+          content: {
+            'foo': {
+              id: 'foo'
+            },
+            'foo.bar': {
+              id: 'foo.bar'
+            }
+          }
+        }
+      });
+
+      return store.dispatch(dataActions.remove('foo'))
+        .then(() => {
+          expect(store.getActions()).to.deep.include.members([
+            dataActions.removeData('foo.bar')
+          ]);
+        })
     });
   });
 });

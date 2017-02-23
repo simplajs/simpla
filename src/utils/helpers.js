@@ -44,7 +44,7 @@ export function findDataInState(query, state) {
       hierarchy;
 
   if (!dataState) {
-    return [];
+    return { items: [] };
   }
 
   ({ content, hierarchy } = dataState);
@@ -168,4 +168,8 @@ export function makeBlankItem() {
     type: null,
     data: null
   };
+}
+
+export function makeItemWith(uid, item) {
+  return Object.assign(clone(item), { id: uid });
 }
