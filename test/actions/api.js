@@ -10,7 +10,6 @@ import {
   removeDataSuccessful
 } from '../../src/actions/api';
 import thunk from 'redux-thunk';
-import * as types from '../../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
 import configureMockStore from '../__utils__/redux-mock-store';
 
@@ -55,10 +54,10 @@ describe('data crud', () => {
 
     it('should encode uri components in url', () => {
       let store = mockStore({
-            config: {
-              dataEndpoint: SERVER
-            }
-          });
+        config: {
+          dataEndpoint: SERVER
+        }
+      });
 
       return store.dispatch(get(HASH_UID))
         .then(() => {

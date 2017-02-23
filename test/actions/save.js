@@ -1,16 +1,12 @@
 import save, { startSave, saveSuccessful, saveFailed } from '../../src/actions/save';
 import * as apiActions from '../../src/actions/api';
 import thunk from 'redux-thunk';
-import * as types from '../../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
 import configureMockStore from '../__utils__/redux-mock-store';
 
 const mockStore = configureMockStore([ thunk ]);
 const TOKEN = 'some-token';
 const SERVER = 'some-server';
-const UID = 'some.uid.to.something';
-const DATA = { foo: 'bar' };
-const RESPONSE = DATA;
 
 const TO_SET = {
   [ 'foo.bar' ]: {
@@ -97,8 +93,6 @@ describe('save actions', () => {
   });
 
   it('should throw save unsuccessful if any fetch fails', () => {
-    let uid = Object.keys(TO_SET)[0];
-
     fetchMock.restore();
 
     return store.dispatch(save())

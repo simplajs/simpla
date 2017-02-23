@@ -1,6 +1,5 @@
 import * as dataActions from '../../src/actions/data';
 import * as apiActions from '../../src/actions/api';
-import * as types from '../../src/constants/actionTypes';
 import { INVALID_DATA } from '../../src/constants/errors';
 import { DATA_PREFIX, QUERIES_PREFIX } from '../../src/constants/state';
 import { toQueryParams, makeBlankItem } from '../../src/utils/helpers';
@@ -18,15 +17,6 @@ const UID_FOR_NOT_STORED = 'some.uid.to.something';
 const RESPONSE = { data: { foo: 'bar' } };
 
 // Find Data
-const FIND_CONTENT = {
-  'foo': { id: 'foo', data: {} },
-  'foo.bar': { id: 'foo.bar', data: {} }
-};
-const FIND_HIERARCHY = {
-  foo: {
-    bar: null
-  }
-};
 const BLANK_QUERY = {};
 const BLANK_QUERY_ITEMS = [{
   id: 'foo',
@@ -271,7 +261,7 @@ describe('data actions', () => {
         .then(() => {
           throw Error('Set should have errored');
         })
-        .catch((err) => {
+        .catch(() => {
           expect(store.getActions()).to.deep.include.members([
             dataActions.setData(UID_FOR_STORED, BAD_DATA),
             dataActions.setDataFailed(UID_FOR_STORED, new Error(INVALID_DATA))

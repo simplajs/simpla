@@ -1,8 +1,5 @@
 import usageMonitoring from '../../src/plugins/usageMonitoring';
 import fetchMock from 'fetch-mock';
-import configureMockStore from '../__utils__/redux-mock-store';
-
-const mockStore = configureMockStore();
 
 const SERVER = 'some-server',
       PROJECT = 'some-project';

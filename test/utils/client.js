@@ -1,5 +1,4 @@
 import client from '../../src/utils/client';
-import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
 
 const SERVER = 'some-server';
@@ -25,7 +24,7 @@ describe('client', () => {
   it('should not request w/ content-type on GETs', () => {
     client.get(`${SERVER}/${UID}`);
 
-    let { headers, method } = fetchMock.lastOptions(`${SERVER}/${UID}`);
+    let { headers } = fetchMock.lastOptions(`${SERVER}/${UID}`);
 
     expect(headers['Content-Type']).to.be.undefined;
   });

@@ -1,4 +1,3 @@
-import { LOGIN_SUCCESSFUL, LOGOUT_SUCCESSFUL } from '../../src/constants/actionTypes';
 import tokenReducer from '../../src/reducers/token';
 import { loginSuccessful, logoutSuccessful } from '../../src/actions/authentication';
 

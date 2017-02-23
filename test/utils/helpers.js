@@ -36,7 +36,7 @@ describe('helpers', () => {
       let spy = sinon.spy(),
           store;
 
-      store = createStore((state, action) => {
+      store = createStore((state) => {
         return state ? [...state, state.length] : [];
       });
 
