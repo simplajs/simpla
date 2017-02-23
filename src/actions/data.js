@@ -91,7 +91,14 @@ export function removeDataSuccessful(uid) {
   };
 }
 
-export function set(uid, data, validate = true) {
+export function set(uid, data, options = {}) {
+  options = Object.assign({
+    validate: true,
+    createAncestry: true
+  }, options);
+
+  let { validate, createAncestry } = options;
+
   return (dispatch, getState) => {
     function ensureParentExists(child) {
       let parent = child.split('.').slice(0, -1).join('.');
@@ -100,20 +107,24 @@ export function set(uid, data, validate = true) {
         return Promise.resolve();
       }
 
-      return runDispatchAndExpect(dispatch, set(parent, makeBlankItem(parent)), SET_DATA_SUCCESSFUL);
+      return runDispatchAndExpect(
+        dispatch,
+        set(parent, makeBlankItem(parent)),
+        SET_DATA_SUCCESSFUL
+      );
     }
 
     let action;
 
     dispatch(setData(uid, data));
 
-    if (validate && !dataIsValid(data)) {
+    if (validate && !dataIsValid( data)) {
       action = setDataFailed(uid, new Error(INVALID_DATA));
     } else {
       action = setDataSuccessful(uid, data);
     }
 
-    return ensureParentExists(uid)
+    return (createAncestry ? ensureParentExists(uid) : Promise.resolve())
       .then(() => dispatch(action));
   };
 }
@@ -126,7 +137,13 @@ export function remove(uid) {
       }
 
       let { items } = findDataInState({ parent: uid }, getState()),
-          removeItem = item => runDispatchAndExpect(dispatch, remove(item.id), REMOVE_DATA_SUCCESSFUL);
+          removeItem = item => {
+            return runDispatchAndExpect(
+              dispatch,
+              remove(item.id),
+              REMOVE_DATA_SUCCESSFUL
+            );
+          };
 
       return Promise.all(items.map(removeItem));
     }
@@ -150,8 +167,17 @@ export function get(uid) {
     stored = selectDataFromState(uid, state);
 
     if (typeof stored === 'undefined') {
-      fetchData = runDispatchAndExpect(dispatch, getFromApi(uid), GET_DATA_FROM_API_SUCCESSFUL)
-        .then((response) => runDispatchAndExpect(dispatch, set(uid, response, false), SET_DATA_SUCCESSFUL));
+      fetchData = runDispatchAndExpect(
+          dispatch,
+          getFromApi(uid),
+          GET_DATA_FROM_API_SUCCESSFUL
+        ).then((response) => {
+          return runDispatchAndExpect(
+            dispatch,
+            set(uid, response, { validate: false, createAncestry: false }),
+            SET_DATA_SUCCESSFUL
+          )
+        });
     } else {
       fetchData = Promise.resolve(stored);
     }
@@ -170,7 +196,11 @@ export function find(query = {}) {
     dispatch(findData(query));
 
     storeItemInState = (item) => {
-      return runDispatchAndExpect(dispatch, set(item.id, item, false), SET_DATA_SUCCESSFUL)
+      return runDispatchAndExpect(
+        dispatch,
+        set(item.id, item, { validate: false }),
+        SET_DATA_SUCCESSFUL
+      );
     };
 
     storeResponse = (response) => {

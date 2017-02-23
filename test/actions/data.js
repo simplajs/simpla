@@ -210,6 +210,24 @@ describe('data actions', () => {
           ]);
         });
     });
+
+    it('should not set implicit ancestors when getting from API', () => {
+      let child = UID_FOR_NOT_STORED,
+          parent = UID_FOR_NOT_STORED.split('.').slice(0, -1).join('.'),
+          store = mockStore({
+            config: {
+              dataEndpoint: SERVER
+            },
+            data
+          });
+
+      return store.dispatch(dataActions.get(child))
+        .then(() => {
+          expect(store.getActions()).to.not.deep.include.members([
+            dataActions.setData(parent, makeBlankItem())
+          ]);
+        });
+    });
   });
 
   describe('set', () => {
@@ -255,6 +273,18 @@ describe('data actions', () => {
         });
     });
 
+    it('shouldnt create ancestors if createAncestry is false', () => {
+      let store = mockStore({});
+
+      return store.dispatch(dataActions.set('foo.bar.baz.qux', makeBlankItem(), { createAncestry: false }))
+        .then(() => {
+          expect(store.getActions())
+            .to.not.deep.include.members([
+              dataActions.setData('foo.bar.baz', makeBlankItem())
+            ]);
+        });
+    });
+
     it('should fail if data doesnt match correct structure', () => {
       let store = mockStore({});
 
@@ -273,7 +303,7 @@ describe('data actions', () => {
     it('should accept any data if validate is set to false', () => {
       let store = mockStore({});
 
-      return store.dispatch(dataActions.set(UID_FOR_STORED, BAD_DATA, false))
+      return store.dispatch(dataActions.set(UID_FOR_STORED, BAD_DATA, { validate: false }))
         .then(() => {
           expect(store.getActions()).to.deep.include.members([
             dataActions.setData(UID_FOR_STORED, BAD_DATA),
