@@ -3,7 +3,7 @@ import * as apiActions from '../../src/actions/api';
 import * as types from '../../src/constants/actionTypes';
 import { INVALID_DATA } from '../../src/constants/errors';
 import { DATA_PREFIX, QUERIES_PREFIX } from '../../src/constants/state';
-import { toQueryParams } from '../../src/utils/helpers';
+import { toQueryParams, makeBlankItem } from '../../src/utils/helpers';
 import thunk from 'redux-thunk';
 import configureMockStore from '../__utils__/redux-mock-store';
 import fetchMock from 'fetch-mock';
@@ -192,7 +192,7 @@ describe('data actions', () => {
 
       return store.dispatch(dataActions.get(UID_FOR_STORED))
         .then(() => {
-          expect(store.getActions()).to.deep.equal([
+          expect(store.getActions()).to.deep.include.members([
             dataActions.getData(UID_FOR_STORED),
             dataActions.getDataSuccessful(UID_FOR_STORED, STORED_AT_UID)
           ]);
@@ -227,10 +227,40 @@ describe('data actions', () => {
 
       return store.dispatch(dataActions.set(UID_FOR_STORED, STORED_AT_UID))
         .then(() => {
-          expect(store.getActions()).to.deep.equal([
+          expect(store.getActions()).to.deep.include.members([
             dataActions.setData(UID_FOR_STORED, STORED_AT_UID),
             dataActions.setDataSuccessful(UID_FOR_STORED, STORED_AT_UID)
           ]);
+        });
+    });
+
+    it('should set ancestors if not in buffer', () => {
+      let child = 'foo.bar.baz.qux',
+          missingAncestors = [ 'foo.bar.baz', 'foo.bar' ],
+          knownAncestor = 'foo',
+          expectedActions,
+          unexpectedActions,
+          initialState,
+          store;
+
+      initialState = {
+        [ DATA_PREFIX ]: {
+          content: {
+            [ knownAncestor ]: makeBlankItem()
+          }
+        }
+      };
+
+      store = mockStore(initialState);
+
+      expectedActions = missingAncestors.map(id => dataActions.setData(id, makeBlankItem()));
+      unexpectedActions = [ dataActions.setData(knownAncestor, makeBlankItem()) ];
+
+      return store.dispatch(dataActions.set(child, makeBlankItem()))
+        .then(() => {
+          expect(store.getActions())
+            .to.deep.include.members(expectedActions)
+            .and.to.not.deep.include.members(unexpectedActions);
         });
     });
 
@@ -242,7 +272,7 @@ describe('data actions', () => {
           throw Error('Set should have errored');
         })
         .catch((err) => {
-          expect(store.getActions()).to.deep.equal([
+          expect(store.getActions()).to.deep.include.members([
             dataActions.setData(UID_FOR_STORED, BAD_DATA),
             dataActions.setDataFailed(UID_FOR_STORED, new Error(INVALID_DATA))
           ])
@@ -254,9 +284,12 @@ describe('data actions', () => {
 
       return store.dispatch(dataActions.set(UID_FOR_STORED, BAD_DATA, false))
         .then(() => {
-          expect(store.getActions()).to.deep.equal([
+          expect(store.getActions()).to.deep.include.members([
             dataActions.setData(UID_FOR_STORED, BAD_DATA),
             dataActions.setDataSuccessful(UID_FOR_STORED, BAD_DATA)
+          ])
+          .and.to.not.deep.include.members([
+            dataActions.setDataFailed(UID_FOR_STORED, new Error(INVALID_DATA))
           ]);
         });
     });

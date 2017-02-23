@@ -17,7 +17,8 @@ import {
   runDispatchAndExpect,
   dataIsValid,
   findDataInState,
-  hasRunQuery
+  hasRunQuery,
+  makeBlankItem
 } from '../utils/helpers';
 import { get as getFromApi, find as findFromApi } from './api';
 
@@ -90,7 +91,17 @@ export function removeDataSuccessful(uid) {
 }
 
 export function set(uid, data, validate = true) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
+    function ensureParentExists(child) {
+      let parent = child.split('.').slice(0, -1).join('.');
+
+      if (!parent || selectDataFromState(parent, getState())) {
+        return Promise.resolve();
+      }
+
+      return runDispatchAndExpect(dispatch, set(parent, makeBlankItem(parent)), SET_DATA_SUCCESSFUL);
+    }
+
     let action;
 
     dispatch(setData(uid, data));
@@ -101,7 +112,7 @@ export function set(uid, data, validate = true) {
       action = setDataSuccessful(uid, data);
     }
 
-    return Promise.resolve()
+    return ensureParentExists(uid)
       .then(() => dispatch(action));
   };
 }

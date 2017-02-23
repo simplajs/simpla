@@ -162,3 +162,10 @@ export function hasRunQuery(query, state) {
   const queryState = state[QUERIES_PREFIX];
   return !!(queryState && queryState[toQueryParams(query)]);
 }
+
+export function makeBlankItem() {
+  return {
+    type: null,
+    data: null
+  };
+}
