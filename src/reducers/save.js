@@ -70,6 +70,10 @@ export default function save(state = {}, action) {
     return updatePart(state, action.uid, action.response, true);
   case SET_DATA_SUCCESSFUL:
   case REMOVE_DATA_SUCCESSFUL:
+    if (!action.persist) {
+      return state;
+    }
+
     return updatePart(state, action.uid, action.response, false);
   default:
     return state;

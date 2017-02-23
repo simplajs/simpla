@@ -262,7 +262,14 @@ describe('data actions', () => {
 
       store = mockStore(initialState);
 
-      expectedActions = missingAncestors.map(id => dataActions.setData(id, makeBlankItem()));
+      expectedActions = missingAncestors.reduce((actions, id) => {
+        return [
+          ...actions,
+          dataActions.setData(id, makeBlankItem()),
+          dataActions.setDataSuccessful(id, makeBlankItem(), { persist: false })
+        ];
+      }, []);
+
       unexpectedActions = [ dataActions.setData(knownAncestor, makeBlankItem()) ];
 
       return store.dispatch(dataActions.set(child, makeBlankItem()))
@@ -351,7 +358,8 @@ describe('data actions', () => {
       return store.dispatch(dataActions.remove('foo'))
         .then(() => {
           expect(store.getActions()).to.deep.include.members([
-            dataActions.removeData('foo.bar')
+            dataActions.removeData('foo.bar'),
+            dataActions.removeDataSuccessful('foo.bar', { persist: false })
           ]);
         })
     });

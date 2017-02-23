@@ -29,8 +29,6 @@ const TO_REMOVE = {
   }
 };
 
-
-
 const TO_REMAIN = {
   [ 'foo.baz']: {
     remote: '',

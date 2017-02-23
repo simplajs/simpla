@@ -61,11 +61,15 @@ export function setData(uid, data) {
   };
 }
 
-export function setDataSuccessful(uid, response) {
+export function setDataSuccessful(uid, response, options = {}) {
+  options = Object.assign({ persist: true }, options);
+  let { persist } = options;
+
   return {
     type: SET_DATA_SUCCESSFUL,
     response: makeItemWith(uid, response),
-    uid
+    uid,
+    persist
   };
 }
 
@@ -84,20 +88,25 @@ export function removeData(uid) {
   };
 }
 
-export function removeDataSuccessful(uid) {
+export function removeDataSuccessful(uid, options = {}) {
+  options = Object.assign({ persist: true }, options);
+  let { persist } = options;
+
   return {
     type: REMOVE_DATA_SUCCESSFUL,
-    uid
+    uid,
+    persist
   };
 }
 
 export function set(uid, data, options = {}) {
   options = Object.assign({
     validate: true,
-    createAncestry: true
+    createAncestry: true,
+    persist: true
   }, options);
 
-  let { validate, createAncestry } = options;
+  let { validate, createAncestry, persist } = options;
 
   return (dispatch, getState) => {
     function ensureParentExists(child) {
@@ -109,7 +118,7 @@ export function set(uid, data, options = {}) {
 
       return runDispatchAndExpect(
         dispatch,
-        set(parent, makeBlankItem(parent)),
+        set(parent, makeBlankItem(parent), { persist: false }),
         SET_DATA_SUCCESSFUL
       );
     }
@@ -121,7 +130,7 @@ export function set(uid, data, options = {}) {
     if (validate && !dataIsValid( data)) {
       action = setDataFailed(uid, new Error(INVALID_DATA));
     } else {
-      action = setDataSuccessful(uid, data);
+      action = setDataSuccessful(uid, data, { persist });
     }
 
     return (createAncestry ? ensureParentExists(uid) : Promise.resolve())
@@ -129,7 +138,10 @@ export function set(uid, data, options = {}) {
   };
 }
 
-export function remove(uid) {
+export function remove(uid, options = {}) {
+  options = Object.assign({ persist: true }, options);
+  let { persist } = options;
+
   return (dispatch, getState) => {
     function removeChildren(uid) {
       if (!uid) {
@@ -140,7 +152,7 @@ export function remove(uid) {
           removeItem = item => {
             return runDispatchAndExpect(
               dispatch,
-              remove(item.id),
+              remove(item.id, { persist: false }),
               REMOVE_DATA_SUCCESSFUL
             );
           };
@@ -151,7 +163,7 @@ export function remove(uid) {
     dispatch(removeData(uid));
 
     return removeChildren(uid)
-      .then(() => dispatch(removeDataSuccessful(uid)));
+      .then(() => dispatch(removeDataSuccessful(uid, { persist })));
   };
 }
 

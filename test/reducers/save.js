@@ -25,7 +25,7 @@ describe('state of save', () => {
     });
   });
 
-  it('should handle updates to the inernal state', () => {
+  it('should handle updates to the internal state', () => {
     let actions = [
       [ dataActions.setDataSuccessful(UID, RESPONSE), RESPONSE ],
       [ dataActions.removeDataSuccessful(UID), null ]
@@ -33,6 +33,18 @@ describe('state of save', () => {
 
     actions.forEach(([ action, localState ]) => {
       expect(saveReducer({}, action)[UID].local).to.deep.equal(localState);
+    });
+  });
+
+  it('should not track local state when persist flag is false', () => {
+    let persist = false,
+        actions = [
+          dataActions.setDataSuccessful(UID, RESPONSE, { persist }),
+          dataActions.removeDataSuccessful(UID, { persist })
+        ];
+
+    actions.forEach((action) => {
+      expect(saveReducer({}, action)[UID]).to.not.exist;
     });
   });
 
