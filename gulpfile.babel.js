@@ -92,7 +92,9 @@ gulp.task('build', () => {
             .pipe(rename({ dirname: '' }))
             .pipe(size({ gzip: true }))
 
-          .pipe(gulp.dest('.'));
+          .pipe(gulp.dest('.'))
+          .pipe(notify('build finished'));
+
 });
 
 gulp.task('build:tests', () => {
@@ -106,7 +108,8 @@ gulp.task('build:tests', () => {
             .pipe(gulpif(argv.debug, sourcemaps.write()))
             .pipe(size({ gzip: true }))
 
-          .pipe(gulp.dest(wctConfig.suites[0]));
+          .pipe(gulp.dest(wctConfig.suites[0]))
+          .pipe(notify('build:tests finished'));
 });
 
 gulp.task('demo', () => bs.init(OPTIONS.browserSync));
