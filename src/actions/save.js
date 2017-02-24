@@ -54,10 +54,7 @@ export default function save() {
 
     setPromises = entries
       .filter(shouldSet)
-      .map(([ uid, { local } ]) => {
-        let { type, data } = local;
-        return set(uid, { type, data });
-      })
+      .map(([ uid, { local } ]) => set(uid, local))
       .map(action => {
         return runDispatchAndExpect(dispatch, action, SET_DATA_TO_API_SUCCESSFUL)
           .then(saveResultLocally);

@@ -83,6 +83,7 @@ describe('save actions', () => {
 
     return store.dispatch(save())
       .then(() => {
+        debugger;
         expect(store.getActions()).to.deep.include.members(actions);
       });
   });
