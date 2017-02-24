@@ -171,5 +171,9 @@ export function makeBlankItem() {
 }
 
 export function makeItemWith(uid, item) {
+  if (item === null) {
+    return null
+  };
+  
   return Object.assign(clone(item), { id: uid });
 }

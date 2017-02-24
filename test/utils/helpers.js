@@ -5,7 +5,8 @@ import {
   runDispatchAndExpect,
   dataIsValid,
   toQueryParams,
-  findDataInState
+  findDataInState,
+  makeItemWith
 } from '../../src/utils/helpers';
 import {
   DATA_PREFIX
@@ -289,6 +290,19 @@ describe('helpers', () => {
           () => Promise.reject(new Error('Should have thrown')),
           (rejectedWith) => expect(rejectedWith).to.equal(error)
         );
+    });
+  });
+
+  describe('makeItemWith', () => {
+    it('should combine id and data', () => {
+      expect(makeItemWith('foo', { foo: 'bar' })).to.deep.equal({
+        id: 'foo',
+        foo: 'bar'
+      });
+    });
+
+    it('should be able to handle null body values', () => {
+      expect(makeItemWith('foo', null)).to.deep.equal(null);
     });
   });
 });
