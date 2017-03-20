@@ -86,10 +86,12 @@ gulp.task('build', () => {
             .pipe(gulpif(argv.debug, sourcemaps.init()))
             .pipe(rollup(OPTIONS.rollup))
 
+          .pipe(gulp.dest('.'))
+
             // Minify and pipe out
             .pipe(gulpif(!argv.debug, uglify(OPTIONS.uglify)))
             .pipe(gulpif(argv.debug, sourcemaps.write()))
-            .pipe(rename({ dirname: '' }))
+            .pipe(rename('simpla.min.js'))
             .pipe(size({ gzip: true }))
 
           .pipe(gulp.dest('.'))
