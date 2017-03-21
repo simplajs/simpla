@@ -68,16 +68,17 @@ const Simpla = new class Simpla {
     return dispatchThunkAndExpect(this._store, remove(uid, ...args), types.REMOVE_DATA_SUCCESSFUL);
   }
 
-  save(...args) {
-    return dispatchThunkAndExpect(this._store, save(...args), types.SAVE_SUCCESSFUL);
+  observe(path, ...args) {
+    let callback = args.pop(),
+        uid = pathToUid(path),
+        pathInState = uid ? `${DATA_PREFIX}.hierarchy.${uid}` : `${DATA_PREFIX}.hierarchy`,
+        wrappedCallback = () => this.get(uid).then(callback);
+
+    return storeToObserver(this._store).observe(pathInState, wrappedCallback);
   }
 
-  observe(...args) {
-    let callback = args.pop(),
-        path = args[0] ? `${DATA_PREFIX}.hierarchy.${args[0]}` : `${DATA_PREFIX}.hierarchy`,
-        wrappedCallback = () => this.get(args[0]).then(callback);
-
-    return storeToObserver(this._store).observe(path, wrappedCallback);
+  save(...args) {
+    return dispatchThunkAndExpect(this._store, save(...args), types.SAVE_SUCCESSFUL);
   }
 
   // Editable

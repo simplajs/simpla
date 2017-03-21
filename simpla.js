@@ -4112,26 +4112,27 @@ var Simpla = new (function () {
       return dispatchThunkAndExpect(this._store, remove$1.apply(undefined, [uid].concat(args)), REMOVE_DATA_SUCCESSFUL);
     }
   }, {
-    key: 'save',
-    value: function save() {
-      return dispatchThunkAndExpect(this._store, save$1.apply(undefined, arguments), SAVE_SUCCESSFUL);
-    }
-  }, {
     key: 'observe',
-    value: function observe() {
+    value: function observe(path) {
       var _this = this;
 
-      for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-        args[_key4] = arguments[_key4];
+      for (var _len4 = arguments.length, args = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+        args[_key4 - 1] = arguments[_key4];
       }
 
       var callback = args.pop(),
-          path = args[0] ? DATA_PREFIX + '.hierarchy.' + args[0] : DATA_PREFIX + '.hierarchy',
+          uid = pathToUid(path),
+          pathInState = uid ? DATA_PREFIX + '.hierarchy.' + uid : DATA_PREFIX + '.hierarchy',
           wrappedCallback = function wrappedCallback() {
-        return _this.get(args[0]).then(callback);
+        return _this.get(uid).then(callback);
       };
 
-      return storeToObserver(this._store).observe(path, wrappedCallback);
+      return storeToObserver(this._store).observe(pathInState, wrappedCallback);
+    }
+  }, {
+    key: 'save',
+    value: function save() {
+      return dispatchThunkAndExpect(this._store, save$1.apply(undefined, arguments), SAVE_SUCCESSFUL);
     }
 
     // Editable
