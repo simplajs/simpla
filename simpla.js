@@ -3116,6 +3116,16 @@ function makeItemWith(uid, item) {
   return Object.assign(clone(item), { id: uid });
 }
 
+function pathToUid(path) {
+  if (!path) {
+    return path;
+  }
+
+  path = path.replace(/^\/+/, '').replace(/\/+$/, '');
+
+  return path.split('/').join('.');
+}
+
 /**
  * Check if uid is invalid. If invalid, returns message why, otherwise returns
  * 	false
@@ -4063,22 +4073,43 @@ var Simpla = new (function () {
   }, {
     key: 'find',
     value: function find() {
-      return dispatchThunkAndExpect(this._store, find$1.apply(undefined, arguments), FIND_DATA_SUCCESSFUL);
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+      options.parent = pathToUid(options.parent);
+      return dispatchThunkAndExpect(this._store, find$1(options), FIND_DATA_SUCCESSFUL);
     }
   }, {
     key: 'get',
-    value: function get() {
-      return dispatchThunkAndExpect(this._store, get$2.apply(undefined, arguments), GET_DATA_SUCCESSFUL);
+    value: function get(path) {
+      var uid = pathToUid(path);
+
+      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      return dispatchThunkAndExpect(this._store, get$2.apply(undefined, [uid].concat(args)), GET_DATA_SUCCESSFUL);
     }
   }, {
     key: 'set',
-    value: function set() {
-      return dispatchThunkAndExpect(this._store, set$2.apply(undefined, arguments), SET_DATA_SUCCESSFUL);
+    value: function set(path) {
+      var uid = pathToUid(path);
+
+      for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+        args[_key2 - 1] = arguments[_key2];
+      }
+
+      return dispatchThunkAndExpect(this._store, set$2.apply(undefined, [uid].concat(args)), SET_DATA_SUCCESSFUL);
     }
   }, {
     key: 'remove',
-    value: function remove() {
-      return dispatchThunkAndExpect(this._store, remove$1.apply(undefined, arguments), REMOVE_DATA_SUCCESSFUL);
+    value: function remove(path) {
+      var uid = pathToUid(path);
+
+      for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+        args[_key3 - 1] = arguments[_key3];
+      }
+
+      return dispatchThunkAndExpect(this._store, remove$1.apply(undefined, [uid].concat(args)), REMOVE_DATA_SUCCESSFUL);
     }
   }, {
     key: 'save',
@@ -4090,8 +4121,8 @@ var Simpla = new (function () {
     value: function observe() {
       var _this = this;
 
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
+      for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+        args[_key4] = arguments[_key4];
       }
 
       var callback = args.pop(),

@@ -6,7 +6,8 @@ import {
   dataIsValid,
   toQueryParams,
   findDataInState,
-  makeItemWith
+  makeItemWith,
+  pathToUid
 } from '../../src/utils/helpers';
 import {
   DATA_PREFIX
@@ -303,6 +304,26 @@ describe('helpers', () => {
 
     it('should be able to handle null body values', () => {
       expect(makeItemWith('foo', null)).to.deep.equal(null);
+    });
+  });
+
+  describe('pathToUid', () => {
+    let test = (path, uid) => {
+      expect(pathToUid(path)).to.equal(uid, `${path} -> ${uid}`);
+    };
+
+    it('should ignore trailing and leading slashes', () => {
+      [ '/foo/bar', 'foo/bar/', '/foo/bar/', '//foo/bar' ]
+        .forEach(path => test(path, 'foo.bar'));
+    });
+
+    it('should swap / for .', () => {
+      test('foo/bar', 'foo.bar');
+    });
+
+    it('should return path if no slashes found, or falsey', () => {
+      test('foo', 'foo');
+      test(null, null);
     });
   });
 });

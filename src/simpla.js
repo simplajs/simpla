@@ -10,7 +10,7 @@ import { AUTH_SERVER } from './constants/options';
 import { DATA_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, configurePolymer } from './utils/prepare';
-import { storeToObserver, dispatchThunkAndExpect, selectPropByPath } from './utils/helpers';
+import { storeToObserver, dispatchThunkAndExpect, selectPropByPath, pathToUid } from './utils/helpers';
 import { supportDeprecatedConfig } from './plugins/deprecation';
 import usageMonitoring from './plugins/usageMonitoring';
 import persistToken from './plugins/persistToken';
@@ -48,20 +48,24 @@ const Simpla = new class Simpla {
   }
 
   // Data
-  find(...args) {
-    return dispatchThunkAndExpect(this._store, find(...args), types.FIND_DATA_SUCCESSFUL);
+  find(options = {}) {
+    options.parent = pathToUid(options.parent);
+    return dispatchThunkAndExpect(this._store, find(options), types.FIND_DATA_SUCCESSFUL);
   }
 
-  get(...args) {
-    return dispatchThunkAndExpect(this._store, get(...args), types.GET_DATA_SUCCESSFUL);
+  get(path, ...args) {
+    const uid = pathToUid(path);
+    return dispatchThunkAndExpect(this._store, get(uid, ...args), types.GET_DATA_SUCCESSFUL);
   }
 
-  set(...args) {
-    return dispatchThunkAndExpect(this._store, set(...args), types.SET_DATA_SUCCESSFUL);
+  set(path, ...args) {
+    const uid = pathToUid(path);
+    return dispatchThunkAndExpect(this._store, set(uid, ...args), types.SET_DATA_SUCCESSFUL);
   }
 
-  remove(...args) {
-    return dispatchThunkAndExpect(this._store, remove(...args), types.REMOVE_DATA_SUCCESSFUL);
+  remove(path, ...args) {
+    const uid = pathToUid(path);
+    return dispatchThunkAndExpect(this._store, remove(uid, ...args), types.REMOVE_DATA_SUCCESSFUL);
   }
 
   save(...args) {

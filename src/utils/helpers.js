@@ -174,6 +174,16 @@ export function makeItemWith(uid, item) {
   if (item === null) {
     return null
   };
-  
+
   return Object.assign(clone(item), { id: uid });
+}
+
+export function pathToUid(path) {
+  if (!path) {
+    return path;
+  }
+
+  path = path.replace(/^\/+/, '').replace(/\/+$/, '');
+
+  return path.split('/').join('.');
 }
