@@ -3858,6 +3858,10 @@ function editable$1() {
   }
 }
 
+function equal(subjectA, subjectB) {
+  return JSON.stringify(subjectA) === JSON.stringify(subjectB);
+}
+
 function markAt(state, path) {
   var key = path[0],
       value = path.length === 1 ? {} : markAt(state[key] || {}, path.slice(1));
@@ -3901,6 +3905,13 @@ function content() {
 
   switch (action.type) {
     case SET_DATA_SUCCESSFUL:
+      var currentContent = state[action.uid],
+          newContent = clone(action.response);
+
+      if (equal(currentContent, newContent)) {
+        return state;
+      }
+
       return Object.assign({}, state, defineProperty$1({}, action.uid, clone(action.response)));
     case REMOVE_DATA_SUCCESSFUL:
       if (state[action.uid] === null) {

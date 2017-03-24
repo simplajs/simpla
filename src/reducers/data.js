@@ -2,6 +2,10 @@ import { SET_DATA_SUCCESSFUL, REMOVE_DATA_SUCCESSFUL } from '../constants/action
 import { clone } from '../utils/helpers';
 import { combineReducers } from 'redux';
 
+function equal(subjectA, subjectB) {
+  return JSON.stringify(subjectA) === JSON.stringify(subjectB);
+}
+
 function markAt(state, path) {
   let key = path[0],
       value = path.length === 1 ? {} : markAt(state[key] || {}, path.slice(1));
@@ -39,6 +43,13 @@ export function hierarchy(state = {}, action) {
 export function content(state = {}, action) {
   switch (action.type) {
   case SET_DATA_SUCCESSFUL:
+    let currentContent = state[action.uid],
+        newContent = clone(action.response);
+
+    if (equal(currentContent, newContent)) {
+      return state;
+    }
+
     return Object.assign({}, state, { [ action.uid ]: clone(action.response) });
   case REMOVE_DATA_SUCCESSFUL:
     if (state[action.uid] === null) {

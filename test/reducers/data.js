@@ -59,6 +59,14 @@ describe('dataReducer', () => {
 
       expect(state[uid].id).to.equal(uid);
     });
+
+    it('should not set data if no change has occurred', () => {
+      let action = setDataSuccessful('foo.bar', {}),
+          initialState = content({}, action),
+          secondaryState = content(initialState, action);
+
+      expect(initialState).to.equal(secondaryState);
+    });
   });
 
   describe('removing data', () => {
