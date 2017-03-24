@@ -188,20 +188,28 @@ describe('Simpla', () => {
         return Simpla.set('foo.bar', MOCK_DATA['foo.bar'])
           .then(() => Simpla.get('foo.bar'))
           .then((data) => {
-            expect(spy.lastCall.calledWith(data)).to.be.true;
+            expect(spy.callCount, 'Called once').to.equal(1);
+            expect(spy.lastCall.calledWith(data), 'Called with correct data').to.be.true;
           });
       });
 
-      it('should be able to observe children additions / changes changes', () => {
-        return Simpla.set('foo.bar.baz', MOCK_DATA['foo.bar.baz'])
-          .then(() => Simpla.get('foo.bar'))
-          .then((data) => {
-            expect(spy.lastCall.calledWith(data)).to.be.true;
+      it('should be not observe children additions / changes', () => {
+        // Without Promise.resolve() lines, it fails - this suggests that the observer
+        //  has been added to the microtask queue...
+        return Simpla.set('foo.bar', MOCK_DATA['foo.bar'])
+          .then(() => Promise.resolve())
+          .then(() => {
+            spy.reset();
           })
           .then(() => Simpla.set('foo.bar.baz', MOCK_DATA['foo.bar.baz']))
-          .then(() => Simpla.get('foo.bar'))
-          .then((data) => {
-            expect(spy.lastCall.calledWith(data)).to.be.true;
+          .then(() => Promise.resolve())
+          .then(() => {
+            expect(spy.called, 'Did not get called after child added').to.be.false;
+          })
+          .then(() => Simpla.set('foo.bar.baz', MOCK_DATA['foo.bar.baz']))
+          .then(() => Promise.resolve())
+          .then(() => {
+            expect(spy.called, 'Did not get called after child changed').to.be.false;
           });
       });
     });

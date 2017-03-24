@@ -51,53 +51,63 @@ describe('helpers', () => {
       expect(spy.lastCall.args).to.deep.equal([ [ 0, 1 ], [ 0 ] ]);
     });
 
-    it('should observe only subproperties when given a selector string', () => {
-      let barSpy = sinon.spy(),
-          bazSpy = sinon.spy(),
-          initial = {
-            foo: {
-              bar: null,
-              baz: null
-            }
-          },
-          store,
-          observable;
+    describe('watching deep paths', () => {
+      function runTest(pathA, pathB) {
+        let barSpy = sinon.spy(),
+            bazSpy = sinon.spy(),
+            initial = {
+              foo: {
+                bar: null,
+                baz: null
+              }
+            },
+            store,
+            observable;
 
-      store = createStore((state = initial, action) => {
-        switch (action.type) {
-        case 'set-foo-bar':
-          return Object.assign({}, state, {
-            foo: Object.assign({}, state.foo, { bar: action.value })
-          });
-        case 'set-foo-baz':
-          return Object.assign({}, state, {
-            foo: Object.assign({}, state.foo, { baz: action.value })
-          });
-        default:
-          return state;
-        }
+        store = createStore((state = initial, action) => {
+          switch (action.type) {
+          case 'set-foo-bar':
+            return Object.assign({}, state, {
+              foo: Object.assign({}, state.foo, { bar: action.value })
+            });
+          case 'set-foo-baz':
+            return Object.assign({}, state, {
+              foo: Object.assign({}, state.foo, { baz: action.value })
+            });
+          default:
+            return state;
+          }
+        });
+
+        observable = storeToObserver(store);
+
+        observable.observe(pathA, barSpy);
+        observable.observe(pathB, bazSpy);
+
+        store.dispatch({
+          type: 'set-foo-bar',
+          value: 'bar'
+        });
+
+        expect(bazSpy.called).to.be.false;
+        expect(barSpy.lastCall.args).to.deep.equal([ 'bar', null ]);
+
+        store.dispatch({
+          type: 'set-foo-baz',
+          value: 'baz'
+        });
+
+        expect(bazSpy.lastCall.args).to.deep.equal([ 'baz', null ]);
+        expect(barSpy.callCount).to.equal(1);
+      }
+
+      it('should observe subproperties when given a selector string', () => {
+        runTest('foo.bar', 'foo.baz');
       });
 
-      observable = storeToObserver(store);
-
-      observable.observe('foo.bar', barSpy);
-      observable.observe('foo.baz', bazSpy);
-
-      store.dispatch({
-        type: 'set-foo-bar',
-        value: 'bar'
+      it('should observe subproperties when given a path as an array', () => {
+        runTest(['foo', 'bar'], [ 'foo', 'baz' ]);
       });
-
-      expect(bazSpy.called).to.be.false;
-      expect(barSpy.lastCall.args).to.deep.equal([ 'bar', null ]);
-
-      store.dispatch({
-        type: 'set-foo-baz',
-        value: 'baz'
-      });
-
-      expect(bazSpy.lastCall.args).to.deep.equal([ 'baz', null ]);
-      expect(barSpy.callCount).to.equal(1);
     });
 
     it('should ensure internal comparisons states are updated before calling observer', () => {

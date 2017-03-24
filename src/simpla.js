@@ -71,8 +71,15 @@ const Simpla = new class Simpla {
   observe(path, ...args) {
     let callback = args.pop(),
         uid = pathToUid(path),
-        pathInState = uid ? `${DATA_PREFIX}.hierarchy.${uid}` : `${DATA_PREFIX}.hierarchy`,
-        wrappedCallback = () => this.get(uid).then(callback);
+        pathInState,
+        wrappedCallback;
+
+    if (!uid) {
+      throw new Error('Observe must be given a valid path');
+    }
+
+    pathInState = [ DATA_PREFIX, 'content', uid ];
+    wrappedCallback = () => this.get(uid).then(callback);
 
     return storeToObserver(this._store).observe(pathInState, wrappedCallback);
   }

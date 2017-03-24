@@ -4122,8 +4122,15 @@ var Simpla = new (function () {
 
       var callback = args.pop(),
           uid = pathToUid(path),
-          pathInState = uid ? DATA_PREFIX + '.hierarchy.' + uid : DATA_PREFIX + '.hierarchy',
-          wrappedCallback = function wrappedCallback() {
+          pathInState = void 0,
+          wrappedCallback = void 0;
+
+      if (!uid) {
+        throw new Error('Observe must be given a valid path');
+      }
+
+      pathInState = [DATA_PREFIX, 'content', uid];
+      wrappedCallback = function wrappedCallback() {
         return _this.get(uid).then(callback);
       };
 
