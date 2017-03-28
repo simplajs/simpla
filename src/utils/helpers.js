@@ -187,3 +187,43 @@ export function pathToUid(path) {
 
   return path.split('/').join('.');
 }
+
+export function uidToPath(uid) {
+  if (!uid) {
+    return uid;
+  }
+
+  // Normalize so there's always a leading /
+  if (uid.charAt(0) !== '.') {
+    uid = `.${uid}`;
+  }
+
+  return uid.split('.').join('/');
+}
+
+export function itemUidToPath(item) {
+  let path,
+      transformed;
+
+  if (!item) {
+    return item;
+  }
+
+  path = uidToPath(item.id);
+  transformed = Object.assign({}, item, { path });
+  delete transformed.id;
+
+  return transformed;
+}
+
+export function queryResultsToPath(results) {
+  let items;
+
+  if (!results) {
+    return results;
+  }
+
+  items = results.items.map(itemUidToPath);
+
+  return Object.assign({}, results, { items });
+}

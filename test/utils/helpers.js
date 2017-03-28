@@ -7,7 +7,9 @@ import {
   toQueryParams,
   findDataInState,
   makeItemWith,
-  pathToUid
+  pathToUid,
+  uidToPath,
+  itemUidToPath
 } from '../../src/utils/helpers';
 import {
   DATA_PREFIX
@@ -334,6 +336,38 @@ describe('helpers', () => {
     it('should return path if no slashes found, or falsey', () => {
       test('foo', 'foo');
       test(null, null);
+    });
+  });
+
+  describe('uidToPath', () => {
+    let test = (uid, path) => {
+      expect(uidToPath(uid)).to.equal(path, `${uid} -> ${path}`);
+    };
+
+    it('should convert . to /', () => {
+      test('foo.bar.baz', '/foo/bar/baz');
+    });
+
+    it('should passthrough falsey values', () => {
+      test(null, null);
+    });
+  });
+
+  describe('itemUidToPath', () => {
+    let itemWithUid = makeItemWith('foo.bar.baz', { data: { foo: 'bar' } }),
+        itemWithPath = Object.assign({ path: '/foo/bar/baz' }, itemWithUid);
+
+    delete itemWithPath.id;
+
+    it('should take a response item and set it\'s uid to the path equivalent', () => {
+      expect(itemUidToPath(itemWithUid)).to.deep.equal(itemWithPath);
+    });
+
+    it('should passthrough falsey values', () => {
+      [ null, '', false, undefined]
+        .forEach(falsey => {
+          expect(itemUidToPath(falsey)).to.deep.equal(falsey);
+        });
     });
   });
 });

@@ -5,7 +5,7 @@ import { AUTH_SERVER } from '../src/constants/options';
 import { setOption } from '../src/actions/options';
 import * as types from '../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
-import { makeItemWith } from '../src/utils/helpers';
+import { makeItemWith, itemUidToPath } from '../src/utils/helpers';
 
 const mockStore = configureMockStore([ thunk ]);
 
@@ -25,6 +25,10 @@ const MOCK_DATA = {
       }
     }
   }
+}
+
+function makeAndPathItem(uid, data) {
+  return itemUidToPath(makeItemWith(uid, data));
 }
 
 describe('Simpla', () => {
@@ -153,7 +157,7 @@ describe('Simpla', () => {
     it('should be able to get leaf node', () => {
       return Simpla.get('foo.bar')
         .then(data => {
-          expect(data).to.deep.equal(makeItemWith('foo.bar', MOCK_DATA['foo.bar']));
+          expect(data).to.deep.equal(makeAndPathItem('foo.bar', MOCK_DATA['foo.bar']));
         });
     });
 
@@ -213,5 +217,6 @@ describe('Simpla', () => {
           });
       });
     });
+
   });
 });

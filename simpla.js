@@ -3126,6 +3126,46 @@ function pathToUid(path) {
   return path.split('/').join('.');
 }
 
+function uidToPath(uid) {
+  if (!uid) {
+    return uid;
+  }
+
+  // Normalize so there's always a leading /
+  if (uid.charAt(0) !== '.') {
+    uid = '.' + uid;
+  }
+
+  return uid.split('.').join('/');
+}
+
+function itemUidToPath(item) {
+  var path = void 0,
+      transformed = void 0;
+
+  if (!item) {
+    return item;
+  }
+
+  path = uidToPath(item.id);
+  transformed = Object.assign({}, item, { path: path });
+  delete transformed.id;
+
+  return transformed;
+}
+
+function queryResultsToPath(results) {
+  var items = void 0;
+
+  if (!results) {
+    return results;
+  }
+
+  items = results.items.map(itemUidToPath);
+
+  return Object.assign({}, results, { items: items });
+}
+
 /**
  * Check if uid is invalid. If invalid, returns message why, otherwise returns
  * 	false
@@ -4087,7 +4127,7 @@ var Simpla = new (function () {
       var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
       options.parent = pathToUid(options.parent);
-      return dispatchThunkAndExpect(this._store, find$1(options), FIND_DATA_SUCCESSFUL);
+      return dispatchThunkAndExpect(this._store, find$1(options), FIND_DATA_SUCCESSFUL).then(queryResultsToPath);
     }
   }, {
     key: 'get',
@@ -4098,7 +4138,7 @@ var Simpla = new (function () {
         args[_key - 1] = arguments[_key];
       }
 
-      return dispatchThunkAndExpect(this._store, get$2.apply(undefined, [uid].concat(args)), GET_DATA_SUCCESSFUL);
+      return dispatchThunkAndExpect(this._store, get$2.apply(undefined, [uid].concat(args)), GET_DATA_SUCCESSFUL).then(itemUidToPath);
     }
   }, {
     key: 'set',
@@ -4109,7 +4149,7 @@ var Simpla = new (function () {
         args[_key2 - 1] = arguments[_key2];
       }
 
-      return dispatchThunkAndExpect(this._store, set$2.apply(undefined, [uid].concat(args)), SET_DATA_SUCCESSFUL);
+      return dispatchThunkAndExpect(this._store, set$2.apply(undefined, [uid].concat(args)), SET_DATA_SUCCESSFUL).then(itemUidToPath);
     }
   }, {
     key: 'remove',
@@ -4120,7 +4160,7 @@ var Simpla = new (function () {
         args[_key3 - 1] = arguments[_key3];
       }
 
-      return dispatchThunkAndExpect(this._store, remove$1.apply(undefined, [uid].concat(args)), REMOVE_DATA_SUCCESSFUL);
+      return dispatchThunkAndExpect(this._store, remove$1.apply(undefined, [uid].concat(args)), REMOVE_DATA_SUCCESSFUL).then(itemUidToPath);
     }
   }, {
     key: 'observe',
@@ -4142,7 +4182,7 @@ var Simpla = new (function () {
 
       pathInState = [DATA_PREFIX, 'content', uid];
       wrappedCallback = function wrappedCallback() {
-        return _this.get(uid).then(callback);
+        return _this.get(path).then(callback);
       };
 
       return storeToObserver(this._store).observe(pathInState, wrappedCallback);
