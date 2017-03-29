@@ -22,8 +22,14 @@ var _core = createCommonjsModule(function (module) {
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
+
+
+
+
+
+
 
 
 
@@ -1672,6 +1678,103 @@ var performanceNow = performance.now || performance.mozNow || performance.msNow 
 // generate timestamp or delta
 // see http://nodejs.org/api/process.html#process_process_hrtime
 
+/** Detect free variable `global` from Node.js. */
+var freeGlobal = (typeof global$8 === 'undefined' ? 'undefined' : _typeof(global$8)) == 'object' && global$8 && global$8.Object === Object && global$8;
+
+/** Detect free variable `self`. */
+var freeSelf = (typeof self === 'undefined' ? 'undefined' : _typeof(self)) == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root = freeGlobal || freeSelf || Function('return this')();
+
+/** Built-in value references. */
+var _Symbol = root.Symbol;
+
+/** Used for built-in method references. */
+var objectProto$1 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$2 = objectProto$1.hasOwnProperty;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString = objectProto$1.toString;
+
+/** Built-in value references. */
+var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
+
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */
+function getRawTag(value) {
+  var isOwn = hasOwnProperty$2.call(value, symToStringTag$1),
+      tag = value[symToStringTag$1];
+
+  try {
+    value[symToStringTag$1] = undefined;
+    var unmasked = true;
+  } catch (e) {}
+
+  var result = nativeObjectToString.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag$1] = tag;
+    } else {
+      delete value[symToStringTag$1];
+    }
+  }
+  return result;
+}
+
+/** Used for built-in method references. */
+var objectProto$2 = Object.prototype;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString$1 = objectProto$2.toString;
+
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */
+function objectToString(value) {
+  return nativeObjectToString$1.call(value);
+}
+
+/** `Object#toString` result references. */
+var nullTag = '[object Null]';
+var undefinedTag = '[object Undefined]';
+
+/** Built-in value references. */
+var symToStringTag = _Symbol ? _Symbol.toStringTag : undefined;
+
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+function baseGetTag(value) {
+  if (value == null) {
+    return value === undefined ? undefinedTag : nullTag;
+  }
+  return symToStringTag && symToStringTag in Object(value) ? getRawTag(value) : objectToString(value);
+}
+
 /**
  * Creates a unary function that invokes `func` with its argument transformed.
  *
@@ -1734,13 +1837,6 @@ var hasOwnProperty$1 = objectProto.hasOwnProperty;
 var objectCtorString = funcToString.call(Object);
 
 /**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objectToString = objectProto.toString;
-
-/**
  * Checks if `value` is a plain object, that is, an object created by the
  * `Object` constructor or one with a `[[Prototype]]` of `null`.
  *
@@ -1769,7 +1865,7 @@ var objectToString = objectProto.toString;
  * // => true
  */
 function isPlainObject(value) {
-  if (!isObjectLike(value) || objectToString.call(value) != objectTag) {
+  if (!isObjectLike(value) || baseGetTag(value) != objectTag) {
     return false;
   }
   var proto = getPrototype(value);
@@ -1799,14 +1895,21 @@ function symbolObservablePonyfill(root) {
 }
 
 /* global window */
-var root = undefined;
-if (typeof global$8 !== 'undefined') {
-	root = global$8;
+var root$2;
+
+if (typeof self !== 'undefined') {
+  root$2 = self;
 } else if (typeof window !== 'undefined') {
-	root = window;
+  root$2 = window;
+} else if (typeof global$8 !== 'undefined') {
+  root$2 = global$8;
+} else if (typeof module !== 'undefined') {
+  root$2 = module;
+} else {
+  root$2 = Function('return this')();
 }
 
-var result = symbolObservablePonyfill(root);
+var result = symbolObservablePonyfill(root$2);
 
 /**
  * These are private action types reserved by Redux.
@@ -2362,6 +2465,18 @@ function editInactive() {
     arrayBuffer: 'ArrayBuffer' in self
   };
 
+  if (support.arrayBuffer) {
+    var viewClasses = ['[object Int8Array]', '[object Uint8Array]', '[object Uint8ClampedArray]', '[object Int16Array]', '[object Uint16Array]', '[object Int32Array]', '[object Uint32Array]', '[object Float32Array]', '[object Float64Array]'];
+
+    var isDataView = function isDataView(obj) {
+      return obj && DataView.prototype.isPrototypeOf(obj);
+    };
+
+    var isArrayBufferView = ArrayBuffer.isView || function (obj) {
+      return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1;
+    };
+  }
+
   function normalizeName(name) {
     if (typeof name !== 'string') {
       name = String(name);
@@ -2404,6 +2519,10 @@ function editInactive() {
       headers.forEach(function (value, name) {
         this.append(name, value);
       }, this);
+    } else if (Array.isArray(headers)) {
+      headers.forEach(function (header) {
+        this.append(header[0], header[1]);
+      }, this);
     } else if (headers) {
       Object.getOwnPropertyNames(headers).forEach(function (name) {
         this.append(name, headers[name]);
@@ -2414,12 +2533,8 @@ function editInactive() {
   Headers.prototype.append = function (name, value) {
     name = normalizeName(name);
     value = normalizeValue(value);
-    var list = this.map[name];
-    if (!list) {
-      list = [];
-      this.map[name] = list;
-    }
-    list.push(value);
+    var oldValue = this.map[name];
+    this.map[name] = oldValue ? oldValue + ',' + value : value;
   };
 
   Headers.prototype['delete'] = function (name) {
@@ -2427,12 +2542,8 @@ function editInactive() {
   };
 
   Headers.prototype.get = function (name) {
-    var values = this.map[normalizeName(name)];
-    return values ? values[0] : null;
-  };
-
-  Headers.prototype.getAll = function (name) {
-    return this.map[normalizeName(name)] || [];
+    name = normalizeName(name);
+    return this.has(name) ? this.map[name] : null;
   };
 
   Headers.prototype.has = function (name) {
@@ -2440,15 +2551,15 @@ function editInactive() {
   };
 
   Headers.prototype.set = function (name, value) {
-    this.map[normalizeName(name)] = [normalizeValue(value)];
+    this.map[normalizeName(name)] = normalizeValue(value);
   };
 
   Headers.prototype.forEach = function (callback, thisArg) {
-    Object.getOwnPropertyNames(this.map).forEach(function (name) {
-      this.map[name].forEach(function (value) {
-        callback.call(thisArg, value, name, this);
-      }, this);
-    }, this);
+    for (var name in this.map) {
+      if (this.map.hasOwnProperty(name)) {
+        callback.call(thisArg, this.map[name], name, this);
+      }
+    }
   };
 
   Headers.prototype.keys = function () {
@@ -2499,14 +2610,36 @@ function editInactive() {
 
   function readBlobAsArrayBuffer(blob) {
     var reader = new FileReader();
+    var promise = fileReaderReady(reader);
     reader.readAsArrayBuffer(blob);
-    return fileReaderReady(reader);
+    return promise;
   }
 
   function readBlobAsText(blob) {
     var reader = new FileReader();
+    var promise = fileReaderReady(reader);
     reader.readAsText(blob);
-    return fileReaderReady(reader);
+    return promise;
+  }
+
+  function readArrayBufferAsText(buf) {
+    var view = new Uint8Array(buf);
+    var chars = new Array(view.length);
+
+    for (var i = 0; i < view.length; i++) {
+      chars[i] = String.fromCharCode(view[i]);
+    }
+    return chars.join('');
+  }
+
+  function bufferClone(buf) {
+    if (buf.slice) {
+      return buf.slice(0);
+    } else {
+      var view = new Uint8Array(buf.byteLength);
+      view.set(new Uint8Array(buf));
+      return view.buffer;
+    }
   }
 
   function Body() {
@@ -2514,7 +2647,9 @@ function editInactive() {
 
     this._initBody = function (body) {
       this._bodyInit = body;
-      if (typeof body === 'string') {
+      if (!body) {
+        this._bodyText = '';
+      } else if (typeof body === 'string') {
         this._bodyText = body;
       } else if (support.blob && Blob.prototype.isPrototypeOf(body)) {
         this._bodyBlob = body;
@@ -2522,11 +2657,12 @@ function editInactive() {
         this._bodyFormData = body;
       } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
         this._bodyText = body.toString();
-      } else if (!body) {
-        this._bodyText = '';
-      } else if (support.arrayBuffer && ArrayBuffer.prototype.isPrototypeOf(body)) {
-        // Only support ArrayBuffers for POST method.
-        // Receiving ArrayBuffers happens via Blobs, instead.
+      } else if (support.arrayBuffer && support.blob && isDataView(body)) {
+        this._bodyArrayBuffer = bufferClone(body.buffer);
+        // IE 10-11 can't handle a DataView body.
+        this._bodyInit = new Blob([this._bodyArrayBuffer]);
+      } else if (support.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(body) || isArrayBufferView(body))) {
+        this._bodyArrayBuffer = bufferClone(body);
       } else {
         throw new Error('unsupported BodyInit type');
       }
@@ -2551,6 +2687,8 @@ function editInactive() {
 
         if (this._bodyBlob) {
           return Promise.resolve(this._bodyBlob);
+        } else if (this._bodyArrayBuffer) {
+          return Promise.resolve(new Blob([this._bodyArrayBuffer]));
         } else if (this._bodyFormData) {
           throw new Error('could not read FormData body as blob');
         } else {
@@ -2559,29 +2697,30 @@ function editInactive() {
       };
 
       this.arrayBuffer = function () {
-        return this.blob().then(readBlobAsArrayBuffer);
-      };
-
-      this.text = function () {
-        var rejected = consumed(this);
-        if (rejected) {
-          return rejected;
-        }
-
-        if (this._bodyBlob) {
-          return readBlobAsText(this._bodyBlob);
-        } else if (this._bodyFormData) {
-          throw new Error('could not read FormData body as text');
+        if (this._bodyArrayBuffer) {
+          return consumed(this) || Promise.resolve(this._bodyArrayBuffer);
         } else {
-          return Promise.resolve(this._bodyText);
+          return this.blob().then(readBlobAsArrayBuffer);
         }
-      };
-    } else {
-      this.text = function () {
-        var rejected = consumed(this);
-        return rejected ? rejected : Promise.resolve(this._bodyText);
       };
     }
+
+    this.text = function () {
+      var rejected = consumed(this);
+      if (rejected) {
+        return rejected;
+      }
+
+      if (this._bodyBlob) {
+        return readBlobAsText(this._bodyBlob);
+      } else if (this._bodyArrayBuffer) {
+        return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer));
+      } else if (this._bodyFormData) {
+        throw new Error('could not read FormData body as text');
+      } else {
+        return Promise.resolve(this._bodyText);
+      }
+    };
 
     if (support.formData) {
       this.formData = function () {
@@ -2607,7 +2746,8 @@ function editInactive() {
   function Request(input, options) {
     options = options || {};
     var body = options.body;
-    if (Request.prototype.isPrototypeOf(input)) {
+
+    if (input instanceof Request) {
       if (input.bodyUsed) {
         throw new TypeError('Already read');
       }
@@ -2618,12 +2758,12 @@ function editInactive() {
       }
       this.method = input.method;
       this.mode = input.mode;
-      if (!body) {
+      if (!body && input._bodyInit != null) {
         body = input._bodyInit;
         input.bodyUsed = true;
       }
     } else {
-      this.url = input;
+      this.url = String(input);
     }
 
     this.credentials = options.credentials || this.credentials || 'omit';
@@ -2641,7 +2781,7 @@ function editInactive() {
   }
 
   Request.prototype.clone = function () {
-    return new Request(this);
+    return new Request(this, { body: this._bodyInit });
   };
 
   function decode(body) {
@@ -2657,16 +2797,17 @@ function editInactive() {
     return form;
   }
 
-  function headers(xhr) {
-    var head = new Headers();
-    var pairs = (xhr.getAllResponseHeaders() || '').trim().split('\n');
-    pairs.forEach(function (header) {
-      var split = header.trim().split(':');
-      var key = split.shift().trim();
-      var value = split.join(':').trim();
-      head.append(key, value);
+  function parseHeaders(rawHeaders) {
+    var headers = new Headers();
+    rawHeaders.split(/\r?\n/).forEach(function (line) {
+      var parts = line.split(':');
+      var key = parts.shift().trim();
+      if (key) {
+        var value = parts.join(':').trim();
+        headers.append(key, value);
+      }
     });
-    return head;
+    return headers;
   }
 
   Body.call(Request.prototype);
@@ -2677,10 +2818,10 @@ function editInactive() {
     }
 
     this.type = 'default';
-    this.status = options.status;
+    this.status = 'status' in options ? options.status : 200;
     this.ok = this.status >= 200 && this.status < 300;
-    this.statusText = options.statusText;
-    this.headers = options.headers instanceof Headers ? options.headers : new Headers(options.headers);
+    this.statusText = 'statusText' in options ? options.statusText : 'OK';
+    this.headers = new Headers(options.headers);
     this.url = options.url || '';
     this._initBody(bodyInit);
   }
@@ -2718,35 +2859,16 @@ function editInactive() {
 
   self.fetch = function (input, init) {
     return new Promise(function (resolve, reject) {
-      var request;
-      if (Request.prototype.isPrototypeOf(input) && !init) {
-        request = input;
-      } else {
-        request = new Request(input, init);
-      }
-
+      var request = new Request(input, init);
       var xhr = new XMLHttpRequest();
-
-      function responseURL() {
-        if ('responseURL' in xhr) {
-          return xhr.responseURL;
-        }
-
-        // Avoid security warnings on getResponseHeader when not allowed by CORS
-        if (/^X-Request-URL:/m.test(xhr.getAllResponseHeaders())) {
-          return xhr.getResponseHeader('X-Request-URL');
-        }
-
-        return;
-      }
 
       xhr.onload = function () {
         var options = {
           status: xhr.status,
           statusText: xhr.statusText,
-          headers: headers(xhr),
-          url: responseURL()
+          headers: parseHeaders(xhr.getAllResponseHeaders() || '')
         };
+        options.url = 'responseURL' in xhr ? xhr.responseURL : options.headers.get('X-Request-URL');
         var body = 'response' in xhr ? xhr.response : xhr.responseText;
         resolve(new Response(body, options));
       };
@@ -2851,8 +2973,8 @@ var client = {
 };
 
 function syncLogin(_ref) {
-  var email = _ref.email;
-  var password = _ref.password;
+  var email = _ref.email,
+      password = _ref.password;
 
   return {
     type: LOGIN,
@@ -2876,8 +2998,8 @@ function loginFailed(error) {
 }
 
 function login$1(_ref2) {
-  var email = _ref2.email;
-  var password = _ref2.password;
+  var email = _ref2.email,
+      password = _ref2.password;
 
   return function (dispatch, getState) {
     var authEndpoint = getState().config.authEndpoint;
@@ -3075,7 +3197,7 @@ function dataIsValid(data) {
 }
 
 function toQueryParams() {
-  var query = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var query = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
   // Sort alphabetically, so that when caching it will always be the same key
   var alphabetically = function alphabetically(a, b) {
@@ -3179,15 +3301,15 @@ function isInvalid(uid) {
 }
 
 function formatAndRun(_ref) {
-  var _ref$uid = _ref.uid;
-  var uid = _ref$uid === undefined ? '' : _ref$uid;
-  var _ref$validateUid = _ref.validateUid;
-  var validateUid = _ref$validateUid === undefined ? true : _ref$validateUid;
-  var query = _ref.query;
-  var dataEndpoint = _ref.endpoint;
-  var token = _ref.token;
-  var method = _ref.method;
-  var body = _ref.body;
+  var _ref$uid = _ref.uid,
+      uid = _ref$uid === undefined ? '' : _ref$uid,
+      _ref$validateUid = _ref.validateUid,
+      validateUid = _ref$validateUid === undefined ? true : _ref$validateUid,
+      query = _ref.query,
+      dataEndpoint = _ref.endpoint,
+      token = _ref.token,
+      method = _ref.method,
+      body = _ref.body;
 
   var endpoint = dataEndpoint + '/' + encodeURIComponent(uid) + toQueryParams(query),
       invalid = isInvalid(uid);
@@ -3203,11 +3325,10 @@ function formatAndRun(_ref) {
 }
 
 function generateHandler(method, paramsToObj, _ref2, validateUid) {
-  var _ref3 = slicedToArray(_ref2, 3);
-
-  var start = _ref3[0];
-  var success = _ref3[1];
-  var fail = _ref3[2];
+  var _ref3 = slicedToArray(_ref2, 3),
+      start = _ref3[0],
+      success = _ref3[1],
+      fail = _ref3[2];
 
   return function () {
     for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
@@ -3215,12 +3336,11 @@ function generateHandler(method, paramsToObj, _ref2, validateUid) {
     }
 
     return function (dispatch, getState) {
-      var _getState = getState();
-
-      var config = _getState.config;
-      var token = _getState.token;
-      var endpoint = config.dataEndpoint;
-      var options = void 0;
+      var _getState = getState(),
+          config = _getState.config,
+          token = _getState.token,
+          endpoint = config.dataEndpoint,
+          options = void 0;
 
       options = Object.assign({ method: method, endpoint: endpoint, token: token, validateUid: validateUid }, paramsToObj.apply(undefined, args));
 
@@ -3326,11 +3446,11 @@ function setData$$1(uid, data) {
 }
 
 function setDataSuccessful$$1(uid, response) {
-  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+  var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   options = Object.assign({ persist: true }, options);
-  var _options = options;
-  var persist = _options.persist;
+  var _options = options,
+      persist = _options.persist;
 
 
   return {
@@ -3357,11 +3477,11 @@ function removeData$$1(uid) {
 }
 
 function removeDataSuccessful$$1(uid) {
-  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   options = Object.assign({ persist: true }, options);
-  var _options2 = options;
-  var persist = _options2.persist;
+  var _options2 = options,
+      persist = _options2.persist;
 
 
   return {
@@ -3372,7 +3492,7 @@ function removeDataSuccessful$$1(uid) {
 }
 
 function set$2(uid, data) {
-  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+  var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   options = Object.assign({
     validate: true,
@@ -3380,10 +3500,10 @@ function set$2(uid, data) {
     persist: true
   }, options);
 
-  var _options3 = options;
-  var validate = _options3.validate;
-  var createAncestry = _options3.createAncestry;
-  var persist = _options3.persist;
+  var _options3 = options,
+      validate = _options3.validate,
+      createAncestry = _options3.createAncestry,
+      persist = _options3.persist;
 
 
   return function (dispatch, getState) {
@@ -3414,11 +3534,11 @@ function set$2(uid, data) {
 }
 
 function remove$1(uid) {
-  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   options = Object.assign({ persist: true }, options);
-  var _options4 = options;
-  var persist = _options4.persist;
+  var _options4 = options,
+      persist = _options4.persist;
 
 
   return function (dispatch, getState) {
@@ -3427,10 +3547,9 @@ function remove$1(uid) {
         return Promise.resolve();
       }
 
-      var _findDataInState = findDataInState({ parent: uid }, getState());
-
-      var items = _findDataInState.items;
-      var removeItem = function removeItem(item) {
+      var _findDataInState = findDataInState({ parent: uid }, getState()),
+          items = _findDataInState.items,
+          removeItem = function removeItem(item) {
         return runDispatchAndExpect(dispatch, remove$1(item.id, { persist: false }), REMOVE_DATA_SUCCESSFUL);
       };
 
@@ -3471,7 +3590,7 @@ function get$2(uid) {
 }
 
 function find$1() {
-  var query = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var query = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
   return function (dispatch, getState) {
     var storeResponse = void 0,
@@ -3544,19 +3663,19 @@ function save$1() {
     });
 
     shouldRemove = function shouldRemove(_ref) {
-      var _ref2 = slicedToArray(_ref, 2);
+      var _ref2 = slicedToArray(_ref, 2),
+          _ref2$ = _ref2[1],
+          local = _ref2$.local,
+          changed = _ref2$.changed;
 
-      var _ref2$ = _ref2[1];
-      var local = _ref2$.local;
-      var changed = _ref2$.changed;
       return local === null && changed;
     };
     shouldSet = function shouldSet(_ref3) {
-      var _ref4 = slicedToArray(_ref3, 2);
+      var _ref4 = slicedToArray(_ref3, 2),
+          _ref4$ = _ref4[1],
+          local = _ref4$.local,
+          changed = _ref4$.changed;
 
-      var _ref4$ = _ref4[1];
-      var local = _ref4$.local;
-      var changed = _ref4$.changed;
       return local !== null && changed;
     };
 
@@ -3565,19 +3684,19 @@ function save$1() {
     };
 
     setPromises = entries.filter(shouldSet).map(function (_ref5) {
-      var _ref6 = slicedToArray(_ref5, 2);
+      var _ref6 = slicedToArray(_ref5, 2),
+          uid = _ref6[0],
+          local = _ref6[1].local;
 
-      var uid = _ref6[0];
-      var local = _ref6[1].local;
       return set$3(uid, local);
     }).map(function (action) {
       return runDispatchAndExpect(dispatch, action, SET_DATA_TO_API_SUCCESSFUL).then(saveResultLocally);
     });
 
     removePromises = entries.filter(shouldRemove).map(function (_ref7) {
-      var _ref8 = slicedToArray(_ref7, 1);
+      var _ref8 = slicedToArray(_ref7, 1),
+          uid = _ref8[0];
 
-      var uid = _ref8[0];
       return remove$2(uid);
     }).map(function (action) {
       return runDispatchAndExpect(dispatch, action, REMOVE_DATA_FROM_API_SUCCESSFUL);
@@ -3686,8 +3805,8 @@ var usageMonitoring = function (Simpla) {
   }
 
   function checkAndPing(_ref) {
-    var authEndpoint = _ref.authEndpoint;
-    var project = _ref.project;
+    var authEndpoint = _ref.authEndpoint,
+        project = _ref.project;
 
     var endpoint = authEndpoint + '/projects/' + project + '/sessions';
 
@@ -3703,15 +3822,12 @@ var usageMonitoring = function (Simpla) {
     // If they're not in the session, send a ping to the server
     if (!stillInSession()) {
       if (!checkAndPing(Simpla.getState().config)) {
-        (function () {
-          var _Simpla$observeState = Simpla.observeState('config', function (config) {
-            if (checkAndPing(config)) {
-              unobserve();
-            }
-          });
-
-          var unobserve = _Simpla$observeState.unobserve;
-        })();
+        var _Simpla$observeState = Simpla.observeState('config', function (config) {
+          if (checkAndPing(config)) {
+            unobserve();
+          }
+        }),
+            unobserve = _Simpla$observeState.unobserve;
       }
     }
 
@@ -3725,20 +3841,18 @@ var usageMonitoring = function (Simpla) {
   if (documentIsReady()) {
     run();
   } else {
-    (function () {
-      var listener = function listener() {
-        if (documentIsReady()) {
-          run();
-          document.removeEventListener('readystatechange', listener);
-        }
-      };
-      document.addEventListener('readystatechange', listener);
-    })();
+    var listener = function listener() {
+      if (documentIsReady()) {
+        run();
+        document.removeEventListener('readystatechange', listener);
+      }
+    };
+    document.addEventListener('readystatechange', listener);
   }
 
   // When they leave the site, reset the session token
   window.addEventListener('beforeunload', resetSession);
-}
+};
 
 var TOKEN_KEY = 'simpla-token';
 
@@ -3757,11 +3871,9 @@ function tokenIsValid(token) {
   }
 
   try {
-    var _token$split = token.split('.');
-
-    var _token$split2 = slicedToArray(_token$split, 2);
-
-    var payloadString = _token$split2[1];
+    var _token$split = token.split('.'),
+        _token$split2 = slicedToArray(_token$split, 2),
+        payloadString = _token$split2[1];
 
     payload = JSON.parse(atob(payloadString));
   } catch (e) {
@@ -3823,12 +3935,12 @@ function readTokenFromStorage(Simpla) {
 var persistToken = function (Simpla) {
   readTokenFromStorage(Simpla);
   Simpla.observeState('token', setTokenToStorage);
-}
+};
 
 function createThunkMiddleware(extraArgument) {
   return function (_ref) {
-    var dispatch = _ref.dispatch;
-    var getState = _ref.getState;
+    var dispatch = _ref.dispatch,
+        getState = _ref.getState;
     return function (next) {
       return function (action) {
         if (typeof action === 'function') {
@@ -3845,7 +3957,7 @@ var thunk = createThunkMiddleware();
 thunk.withExtraArgument = createThunkMiddleware;
 
 function authenticated() {
-  var state = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
   var action = arguments[1];
 
   switch (action.type) {
@@ -3859,7 +3971,7 @@ function authenticated() {
 }
 
 function options() {
-  var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var action = arguments[1];
 
   switch (action.type) {
@@ -3871,7 +3983,7 @@ function options() {
 }
 
 function options$1() {
-  var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var action = arguments[1];
 
   switch (action.type) {
@@ -3885,7 +3997,7 @@ function options$1() {
 var INITIAL_STATE = false;
 
 function editable$1() {
-  var state = arguments.length <= 0 || arguments[0] === undefined ? INITIAL_STATE : arguments[0];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : INITIAL_STATE;
   var action = arguments[1];
 
   switch (action.type) {
@@ -3926,7 +4038,7 @@ function pruneAt(state, path) {
 }
 
 function hierarchy() {
-  var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var action = arguments[1];
 
   switch (action.type) {
@@ -3940,7 +4052,7 @@ function hierarchy() {
 }
 
 function content() {
-  var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var action = arguments[1];
 
   switch (action.type) {
@@ -3967,7 +4079,7 @@ function content() {
 var data = combineReducers({ hierarchy: hierarchy, content: content });
 
 function token() {
-  var state = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
   var action = arguments[1];
 
   switch (action.type) {
@@ -4003,12 +4115,12 @@ function isDifferent(remote, local) {
  * @return {Object}
  */
 function reducePart() {
-  var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var data = arguments[1];
   var isRemote = arguments[2];
-  var local = state.local;
-  var remote = state.remote;
-  var changed = state.changed;
+  var local = state.local,
+      remote = state.remote,
+      changed = state.changed;
 
 
   if (isRemote) {
@@ -4029,7 +4141,7 @@ function reducePart() {
  * @return {Object}              New state
  */
 function save$2() {
-  var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var action = arguments[1];
 
   var updatePart = void 0,
@@ -4124,7 +4236,7 @@ var Simpla = new (function () {
   }, {
     key: 'find',
     value: function find() {
-      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
       options.parent = pathToUid(options.parent);
       return dispatchThunkAndExpect(this._store, find$1(options), FIND_DATA_SUCCESSFUL).then(queryResultsToPath);
