@@ -7,7 +7,7 @@ before_script:
   - npm i -g bower web-component-tester
   - bower install
   - gulp build:tests
-script: xvfb-run wct
+script: gulp lint && xvfb-run wct
 cache:
   directories:
     - node_modules
