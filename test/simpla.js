@@ -146,7 +146,7 @@ describe('Simpla', () => {
 
   describe('content methods', () => {
     beforeEach(() => {
-      return Simpla.remove('foo')
+      return Simpla.remove('/foo')
         .then(() => Promise.all([
           Simpla.set('/foo', MOCK_DATA['/foo']),
           Simpla.set('/foo/bar', MOCK_DATA['/foo/bar']),
@@ -197,10 +197,10 @@ describe('Simpla', () => {
           });
       });
 
-      it('should be not observe children additions / changes', () => {
+      it('should not be able to observe children additions / changes', () => {
         // Without Promise.resolve() lines, it fails - this suggests that the observer
         //  has been added to the microtask queue...
-        return Simpla.set('foo.bar', MOCK_DATA['/foo/bar'])
+        return Simpla.set('/foo/bar', MOCK_DATA['/foo/bar'])
           .then(() => Promise.resolve())
           .then(() => {
             spy.reset();
@@ -218,5 +218,59 @@ describe('Simpla', () => {
       });
     });
 
+    describe('paths', () => {
+      const VALID_PATH = '/foo/bar',
+            INVALID_PATH = 'foo/bar';
+
+      beforeEach(() => {
+        return Simpla.remove(VALID_PATH);
+      });
+
+      [{
+        description: (path) => `Get ${path}`,
+        fn: (path) => Simpla.get(path)
+      }, {
+        description: (path) => `Set ${path}`,
+        fn: (path) => Simpla.set(path, MOCK_DATA[VALID_PATH])
+      }, {
+        description: (path) => `Remove ${path}`,
+        fn: (path) => Simpla.remove(path)
+      }, {
+        description: (path) => `Find for parent ${path}`,
+        fn: (path) => Simpla.find({ parent: path })
+      }, {
+        description: (path) => `Observe ${path}`,
+        fn: (path) => Simpla.observe(path, () => {})
+      }].forEach(({ fn, description }) => {
+        let successDescription = description(VALID_PATH),
+            failDescription = description(INVALID_PATH);
+
+        it(`${successDescription} should succeed`, () => {
+          return Promise.resolve()
+            .then(() => fn(VALID_PATH))
+            .then(
+              () => {},
+              (err) => Promise.reject(
+                new Error(
+                  `${successDescription} should have resolved, but it was rejected with ${err.message}`,
+                )
+              )
+            );
+        });
+
+        it(`${failDescription} should fail`, () => {
+          return Promise.resolve()
+            .then(() => fn(INVALID_PATH))
+            .then(
+              () => Promise.reject(
+                new Error(
+                  `${failDescription}, should have rejected, but it resolved`
+                )
+              ),
+              () => {}
+            );
+        });
+      });
+    });
   });
 });

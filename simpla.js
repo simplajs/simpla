@@ -3288,6 +3288,16 @@ function queryResultsToPath(results) {
   return Object.assign({}, results, { items: items });
 }
 
+function validatePath(path) {
+  if (path.charAt(0) !== '/') {
+    throw new Error('Invalid path \'' + path + '\'. Paths must include a leading \'/\'.');
+  }
+
+  if (path.indexOf('//') !== -1) {
+    throw new Error('Invalid path \'' + path + '\'. Paths must not have more than one \'/\' in a row.');
+  }
+}
+
 /**
  * Check if uid is invalid. If invalid, returns message why, otherwise returns
  * 	false
@@ -4236,48 +4246,70 @@ var Simpla = new (function () {
   }, {
     key: 'find',
     value: function find() {
+      var _this = this;
+
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-      options.parent = pathToUid(options.parent);
-      return dispatchThunkAndExpect(this._store, find$1(options), FIND_DATA_SUCCESSFUL).then(queryResultsToPath);
+      var parentPath = options.parent;
+      options.parent = pathToUid(parentPath);
+      return Promise.resolve().then(function () {
+        return validatePath(parentPath);
+      }).then(function () {
+        return dispatchThunkAndExpect(_this._store, find$1(options), FIND_DATA_SUCCESSFUL);
+      }).then(queryResultsToPath);
     }
   }, {
     key: 'get',
     value: function get(path) {
-      var uid = pathToUid(path);
+      var _this2 = this;
 
       for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
         args[_key - 1] = arguments[_key];
       }
 
-      return dispatchThunkAndExpect(this._store, get$2.apply(undefined, [uid].concat(args)), GET_DATA_SUCCESSFUL).then(itemUidToPath);
+      var uid = pathToUid(path);
+      return Promise.resolve().then(function () {
+        return validatePath(path);
+      }).then(function () {
+        return dispatchThunkAndExpect(_this2._store, get$2.apply(undefined, [uid].concat(args)), GET_DATA_SUCCESSFUL);
+      }).then(itemUidToPath);
     }
   }, {
     key: 'set',
     value: function set(path) {
-      var uid = pathToUid(path);
+      var _this3 = this;
 
       for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
         args[_key2 - 1] = arguments[_key2];
       }
 
-      return dispatchThunkAndExpect(this._store, set$2.apply(undefined, [uid].concat(args)), SET_DATA_SUCCESSFUL).then(itemUidToPath);
+      var uid = pathToUid(path);
+      return Promise.resolve().then(function () {
+        return validatePath(path);
+      }).then(function () {
+        return dispatchThunkAndExpect(_this3._store, set$2.apply(undefined, [uid].concat(args)), SET_DATA_SUCCESSFUL);
+      }).then(itemUidToPath);
     }
   }, {
     key: 'remove',
     value: function remove(path) {
-      var uid = pathToUid(path);
+      var _this4 = this;
 
       for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
         args[_key3 - 1] = arguments[_key3];
       }
 
-      return dispatchThunkAndExpect(this._store, remove$1.apply(undefined, [uid].concat(args)), REMOVE_DATA_SUCCESSFUL).then(itemUidToPath);
+      var uid = pathToUid(path);
+      return Promise.resolve().then(function () {
+        return validatePath(path);
+      }).then(function () {
+        return dispatchThunkAndExpect(_this4._store, remove$1.apply(undefined, [uid].concat(args)), REMOVE_DATA_SUCCESSFUL);
+      }).then(itemUidToPath);
     }
   }, {
     key: 'observe',
     value: function observe(path) {
-      var _this = this;
+      var _this5 = this;
 
       for (var _len4 = arguments.length, args = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
         args[_key4 - 1] = arguments[_key4];
@@ -4292,9 +4324,11 @@ var Simpla = new (function () {
         throw new Error('Observe must be given a valid path');
       }
 
+      validatePath(path);
+
       pathInState = [DATA_PREFIX, 'content', uid];
       wrappedCallback = function wrappedCallback() {
-        return _this.get(path).then(callback);
+        return _this5.get(path).then(callback);
       };
 
       return storeToObserver(this._store).observe(pathInState, wrappedCallback);

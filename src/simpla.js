@@ -10,7 +10,15 @@ import { AUTH_SERVER } from './constants/options';
 import { DATA_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, configurePolymer } from './utils/prepare';
-import { storeToObserver, dispatchThunkAndExpect, selectPropByPath, pathToUid, itemUidToPath, queryResultsToPath } from './utils/helpers';
+import {
+  storeToObserver,
+  dispatchThunkAndExpect,
+  selectPropByPath,
+  pathToUid,
+  itemUidToPath,
+  queryResultsToPath,
+  validatePath
+} from './utils/helpers';
 import { supportDeprecatedConfig } from './plugins/deprecation';
 import usageMonitoring from './plugins/usageMonitoring';
 import persistToken from './plugins/persistToken';
@@ -49,26 +57,51 @@ const Simpla = new class Simpla {
 
   // Data
   find(options = {}) {
-    options.parent = pathToUid(options.parent);
-    return dispatchThunkAndExpect(this._store, find(options), types.FIND_DATA_SUCCESSFUL)
+    let parentPath = options.parent;
+    options.parent = pathToUid(parentPath);
+    return Promise.resolve()
+      .then(() => validatePath(parentPath))
+      .then(() => dispatchThunkAndExpect(
+        this._store,
+        find(options),
+        types.FIND_DATA_SUCCESSFUL
+      ))
       .then(queryResultsToPath);
   }
 
   get(path, ...args) {
     const uid = pathToUid(path);
-    return dispatchThunkAndExpect(this._store, get(uid, ...args), types.GET_DATA_SUCCESSFUL)
+    return Promise.resolve()
+      .then(() => validatePath(path))
+      .then(() => dispatchThunkAndExpect(
+        this._store,
+        get(uid, ...args),
+        types.GET_DATA_SUCCESSFUL
+      ))
       .then(itemUidToPath);
   }
 
   set(path, ...args) {
     const uid = pathToUid(path);
-    return dispatchThunkAndExpect(this._store, set(uid, ...args), types.SET_DATA_SUCCESSFUL)
+    return Promise.resolve()
+      .then(() => validatePath(path))
+      .then(() => dispatchThunkAndExpect(
+        this._store,
+        set(uid, ...args),
+        types.SET_DATA_SUCCESSFUL
+      ))
       .then(itemUidToPath);
   }
 
   remove(path, ...args) {
     const uid = pathToUid(path);
-    return dispatchThunkAndExpect(this._store, remove(uid, ...args), types.REMOVE_DATA_SUCCESSFUL)
+    return Promise.resolve()
+      .then(() => validatePath(path))
+      .then(() => dispatchThunkAndExpect(
+        this._store,
+        remove(uid, ...args),
+        types.REMOVE_DATA_SUCCESSFUL
+      ))
       .then(itemUidToPath);
   }
 
@@ -81,6 +114,8 @@ const Simpla = new class Simpla {
     if (!uid) {
       throw new Error('Observe must be given a valid path');
     }
+
+    validatePath(path);
 
     pathInState = [ DATA_PREFIX, 'content', uid ];
     wrappedCallback = () => this.get(path).then(callback);
