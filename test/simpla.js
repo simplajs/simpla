@@ -10,15 +10,15 @@ import { makeItemWith, itemUidToPath } from '../src/utils/helpers';
 const mockStore = configureMockStore([ thunk ]);
 
 const MOCK_DATA = {
-  [ 'foo' ]: {
+  [ '/foo' ]: {
     data: 'foo'
   },
-  [ 'foo.bar' ]: {
+  [ '/foo/bar' ]: {
     data: {
       foo:'bar'
     }
   },
-  [ 'foo.bar.baz' ]: {
+  [ '/foo/bar/baz' ]: {
     data: {
       foo: {
         bar: 'baz'
@@ -148,26 +148,26 @@ describe('Simpla', () => {
     beforeEach(() => {
       return Simpla.remove('foo')
         .then(() => Promise.all([
-          Simpla.set('foo', MOCK_DATA['foo']),
-          Simpla.set('foo.bar', MOCK_DATA['foo.bar']),
-          Simpla.set('foo.baz', MOCK_DATA['foo.bar.baz'])
+          Simpla.set('/foo', MOCK_DATA['/foo']),
+          Simpla.set('/foo/bar', MOCK_DATA['/foo/bar']),
+          Simpla.set('/foo/baz', MOCK_DATA['/foo/bar/baz'])
         ]));
     });
 
     it('should be able to get leaf node', () => {
-      return Simpla.get('foo.bar')
+      return Simpla.get('/foo/bar')
         .then(data => {
-          expect(data).to.deep.equal(makeAndPathItem('foo.bar', MOCK_DATA['foo.bar']));
+          expect(data).to.deep.equal(makeAndPathItem('foo.bar', MOCK_DATA['/foo/bar']));
         });
     });
 
     it('should be able to remove data', () => {
-      return Simpla.get('foo.bar')
+      return Simpla.get('/foo/bar')
         .then(response => {
           expect(response).to.not.be.null;
         })
-        .then(() => Simpla.remove('foo.bar'))
-        .then(() => Simpla.get('foo.bar'))
+        .then(() => Simpla.remove('/foo/bar'))
+        .then(() => Simpla.get('/foo/bar'))
         .then(response => {
           expect(response).to.be.null;
         });
@@ -181,7 +181,7 @@ describe('Simpla', () => {
         spy = sinon.spy();
         Simpla.constructor.call(Simpla);
         Simpla.init(project);
-        ({ unobserve } = Simpla.observe('foo.bar', spy));
+        ({ unobserve } = Simpla.observe('/foo/bar', spy));
       });
 
       afterEach(() => {
@@ -189,8 +189,8 @@ describe('Simpla', () => {
       });
 
       it('should be able to observe data', () => {
-        return Simpla.set('foo.bar', MOCK_DATA['foo.bar'])
-          .then(() => Simpla.get('foo.bar'))
+        return Simpla.set('/foo/bar', MOCK_DATA['/foo/bar'])
+          .then(() => Simpla.get('/foo/bar'))
           .then((data) => {
             expect(spy.callCount, 'Called once').to.equal(1);
             expect(spy.lastCall.calledWith(data), 'Called with correct data').to.be.true;
@@ -200,17 +200,17 @@ describe('Simpla', () => {
       it('should be not observe children additions / changes', () => {
         // Without Promise.resolve() lines, it fails - this suggests that the observer
         //  has been added to the microtask queue...
-        return Simpla.set('foo.bar', MOCK_DATA['foo.bar'])
+        return Simpla.set('foo.bar', MOCK_DATA['/foo/bar'])
           .then(() => Promise.resolve())
           .then(() => {
             spy.reset();
           })
-          .then(() => Simpla.set('foo.bar.baz', MOCK_DATA['foo.bar.baz']))
+          .then(() => Simpla.set('/foo/bar/baz', MOCK_DATA['/foo/bar/baz']))
           .then(() => Promise.resolve())
           .then(() => {
             expect(spy.called, 'Did not get called after child added').to.be.false;
           })
-          .then(() => Simpla.set('foo.bar.baz', MOCK_DATA['foo.bar.baz']))
+          .then(() => Simpla.set('/foo/bar/baz', MOCK_DATA['/foo/bar/baz']))
           .then(() => Promise.resolve())
           .then(() => {
             expect(spy.called, 'Did not get called after child changed').to.be.false;
