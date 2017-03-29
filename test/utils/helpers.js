@@ -9,7 +9,8 @@ import {
   makeItemWith,
   pathToUid,
   uidToPath,
-  itemUidToPath
+  itemUidToPath,
+  validatePath
 } from '../../src/utils/helpers';
 import {
   DATA_PREFIX
@@ -368,6 +369,24 @@ describe('helpers', () => {
         .forEach(falsey => {
           expect(itemUidToPath(falsey)).to.deep.equal(falsey);
         });
+    });
+  });
+
+  describe('validatePath', () => {
+    it('should ensure there is a leading /', () => {
+      expect(validatePath.bind(null, 'foo/bar')).to.throw();
+    });
+
+    it('should ensure there is is no repeated /', () => {
+      expect(validatePath.bind(null, '/foo//bar')).to.throw();
+    });
+
+    it('should pass valid paths', () => {
+      [ '/', '/foo', '/foo/bar' ]
+        .forEach(path => {
+          expect(validatePath.bind(null, path), path).not.to.throw();
+        });
+
     });
   });
 });

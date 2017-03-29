@@ -227,3 +227,13 @@ export function queryResultsToPath(results) {
 
   return Object.assign({}, results, { items });
 }
+
+export function validatePath(path) {
+  if (path.charAt(0) !== '/') {
+    throw new Error(`Invalid path '${path}'. Paths must include a leading '/'.`);
+  }
+
+  if (path.indexOf('//') !== -1) {
+    throw new Error(`Invalid path '${path}'. Paths must not have more than one '/' in a row.`);
+  }
+}
