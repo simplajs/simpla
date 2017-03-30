@@ -230,6 +230,38 @@ describe('Simpla', () => {
             expect(spy.callCount, 'Did not get called after child changed').to.equal(1)
           });
       });
+
+      describe('observing queries', () => {
+        let spy,
+            unobserve;
+
+        beforeEach(() => {
+          spy = sinon.spy();
+          Simpla.constructor.call(Simpla);
+          Simpla.init(project);
+          ({ unobserve } = Simpla.observeQuery({ parent: '/foo' }, spy));
+        });
+
+        afterEach(() => {
+          unobserve && unobserve();
+        });
+
+        it('should run callback for parent query when children are set', () => {
+          return Simpla.set('/foo/bar', { data: { foo: 'bar' } })
+            .then(() => Promise.resolve())
+            .then(() => {
+              expect(spy.called, 'Observer should have been called').to.be.true;
+            });
+        });
+
+        it('should not run callback for parent query when non-child is set', () => {
+          return Simpla.set('/bar', { data: { foo: 'bar' } })
+            .then(() => Promise.resolve())
+            .then(() => {
+              expect(spy.called, 'Observer should not have been called').not.to.be.true;
+            });
+        });
+      });
     });
 
     describe('paths', () => {

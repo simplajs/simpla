@@ -3658,6 +3658,13 @@ function find$1() {
   };
 }
 
+function observeQuery$1(query) {
+  return {
+    type: OBSERVE_QUERY,
+    query: query
+  };
+}
+
 function startSave() {
   return {
     type: SAVE
@@ -4424,6 +4431,19 @@ var Simpla = new (function () {
       };
 
       return storeToObserver(this._store).observe(pathInState, wrappedCallback);
+    }
+  }, {
+    key: 'observeQuery',
+    value: function observeQuery(query, callback) {
+      var queryString = void 0,
+          pathInStore = void 0;
+
+      query.parent = pathToUid(query.parent);
+      queryString = toQueryParams(query);
+      pathInStore = [QUERIES_PREFIX, queryString, 'matches'];
+
+      this._store.dispatch(observeQuery$1(query));
+      return storeToObserver(this._store).observe(pathInStore, callback);
     }
   }, {
     key: 'save',
