@@ -97,6 +97,18 @@ export function storeToObserver(store) {
   }
 }
 
+export function matchesQuery(query = {}, content) {
+  if (query.parent) {
+    return content.id !== query.parent && content.id.indexOf(query.parent) === 0;
+  }
+
+  if (Object.keys(query).length === 0) {
+    return true;
+  }
+
+  return false;
+}
+
 export function ensureActionMatches(expectedType) {
   return (action) => {
     return action.type === expectedType ? Promise.resolve(action) : Promise.reject(action);

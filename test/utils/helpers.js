@@ -10,7 +10,8 @@ import {
   pathToUid,
   uidToPath,
   itemUidToPath,
-  validatePath
+  validatePath,
+  matchesQuery
 } from '../../src/utils/helpers';
 import {
   DATA_PREFIX
@@ -280,6 +281,24 @@ describe('helpers', () => {
       it('should return items = []', () => {
         expect(findDataInState({}, {})).to.deep.equal({ items: [] });
       });
+    });
+  });
+
+  describe('matchesQuery', () => {
+    it('should match parent queries', () => {
+      let childContent = { id: 'foo.bar' },
+          notChildContent = { id: 'bar.baz' },
+          query = { parent: 'foo' };
+
+      expect(matchesQuery(query, childContent)).to.be.true;
+      expect(matchesQuery(query, notChildContent)).to.be.false;
+    });
+
+    it('should match everything for empty query', () => {
+      [{ id: 'foo' }, { id: 'foo.bar' }, { id: 'bar' }]
+        .forEach(content => {
+          expect(matchesQuery({}, content)).to.be.true;
+        });
     });
   });
 
