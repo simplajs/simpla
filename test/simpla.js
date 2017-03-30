@@ -244,10 +244,11 @@ describe('Simpla', () => {
 
         afterEach(() => {
           unobserve && unobserve();
+          return Simpla.remove('/foo');
         });
 
         it('should run callback for parent query when children are set', () => {
-          return Simpla.set('/foo/bar', { data: { foo: 'bar' } })
+          return Simpla.set('/foo/bar', MOCK_DATA['/foo/bar'])
             .then(() => Promise.resolve())
             .then(() => {
               expect(spy.called, 'Observer should have been called').to.be.true;
@@ -255,10 +256,28 @@ describe('Simpla', () => {
         });
 
         it('should not run callback for parent query when non-child is set', () => {
-          return Simpla.set('/bar', { data: { foo: 'bar' } })
+          return Simpla.set('/foo', MOCK_DATA['/foo'])
             .then(() => Promise.resolve())
             .then(() => {
               expect(spy.called, 'Observer should not have been called').not.to.be.true;
+            });
+        });
+
+        it('should run once after a find query', () => {
+          return Simpla.find({ parent: '/foo' })
+            .then(() => Promise.resolve())
+            .then(() => {
+              expect(spy.callCount, 'Observer should have been called once').to.equal(1);
+            });
+        });
+
+        it('should be called with equivalent of find method', () => {
+          return Simpla.set('/foo/bar', MOCK_DATA['/foo/bar'])
+            .then(() => Promise.resolve())
+            .then(() => {
+              expect(spy.getCall(0).args[0]).to.deep.equal({
+                items: [ makeAndPathItem('foo.bar', MOCK_DATA['/foo/bar']) ]
+              })
             });
         });
       });
