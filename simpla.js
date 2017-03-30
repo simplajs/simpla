@@ -3290,7 +3290,7 @@ function queryResultsToPath(results) {
 
 function validatePath(path) {
   if (path.charAt(0) !== '/') {
-    throw new Error('Invalid path \'' + path + '\'. Paths must include a leading \'/\'.');
+    throw new Error('Invalid path ' + path + '. Path must be a string starting with \'/\'');
   }
 
   if (path.indexOf('//') !== -1) {

@@ -381,12 +381,19 @@ describe('helpers', () => {
       expect(validatePath.bind(null, '/foo//bar')).to.throw();
     });
 
+    it('should ensure path is a string', () => {
+      expect(validatePath.bind(null, false)).to.throw();
+    });
+
+    it('should ensure path is not empty', () => {
+      expect(validatePath.bind(null, '')).to.throw();
+    });
+
     it('should pass valid paths', () => {
       [ '/', '/foo', '/foo/bar' ]
         .forEach(path => {
           expect(validatePath.bind(null, path), path).not.to.throw();
         });
-
     });
   });
 });
