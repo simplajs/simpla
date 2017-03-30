@@ -31,7 +31,7 @@ export default function queries(state = {}, action) {
       return updateStateWithQuery(state, queryString, { queriedRemote: true });
     }
 
-    return state;  
+    return state;
   case OBSERVE_QUERY:
     queryString = toQueryParams(action.query);
 

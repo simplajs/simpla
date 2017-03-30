@@ -3085,9 +3085,20 @@ function selectDataFromState(uid, state) {
   return data;
 }
 
+function uidsToResponse(uids, state) {
+  var content = state[DATA_PREFIX].content;
+
+
+  return {
+    items: uids.map(function (uid) {
+      return content[uid];
+    })
+  };
+}
+
 function findDataInState(query, state) {
   var dataState = state[DATA_PREFIX],
-      items = [],
+      uids = [],
       content = void 0,
       hierarchy = void 0;
 
@@ -3102,19 +3113,15 @@ function findDataInState(query, state) {
     var childObject = selectPropByPath(query.parent, hierarchy);
 
     if (childObject) {
-      var children = Object.keys(childObject).map(function (id) {
-        return content[query.parent + '.' + id];
+      uids = Object.keys(childObject).map(function (id) {
+        return query.parent + '.' + id;
       });
-
-      items = children;
     }
   } else {
-    items = Object.keys(content).map(function (uid) {
-      return content[uid];
-    });
+    uids = Object.keys(content);
   }
 
-  return { items: items };
+  return uidsToResponse(uids, state);
 }
 
 function storeToObserver(store) {
@@ -4435,15 +4442,23 @@ var Simpla = new (function () {
   }, {
     key: 'observeQuery',
     value: function observeQuery(query, callback) {
+      var _this6 = this;
+
       var queryString = void 0,
-          pathInStore = void 0;
+          pathInStore = void 0,
+          wrappedCallback = void 0;
 
       query.parent = pathToUid(query.parent);
       queryString = toQueryParams(query);
       pathInStore = [QUERIES_PREFIX, queryString, 'matches'];
 
       this._store.dispatch(observeQuery$1(query));
-      return storeToObserver(this._store).observe(pathInStore, callback);
+
+      wrappedCallback = function wrappedCallback(uids) {
+        return callback(queryResultsToPath(uidsToResponse(uids, _this6.getState())));
+      };
+
+      return storeToObserver(this._store).observe(pathInStore, wrappedCallback);
     }
   }, {
     key: 'save',

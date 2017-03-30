@@ -19,7 +19,8 @@ import {
   itemUidToPath,
   queryResultsToPath,
   validatePath,
-  toQueryParams
+  toQueryParams,
+  uidsToResponse
 } from './utils/helpers';
 import { supportDeprecatedConfig } from './plugins/deprecation';
 import usageMonitoring from './plugins/usageMonitoring';
@@ -127,14 +128,24 @@ const Simpla = new class Simpla {
 
   observeQuery(query, callback) {
     let queryString,
-        pathInStore;
+        pathInStore,
+        wrappedCallback;
 
     query.parent = pathToUid(query.parent);
     queryString = toQueryParams(query);
     pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
 
     this._store.dispatch(observeQuery(query));
-    return storeToObserver(this._store).observe(pathInStore, callback);
+
+    wrappedCallback = (uids) => {
+      return callback(
+        queryResultsToPath(
+          uidsToResponse(uids, this.getState())
+        )
+      );
+    }
+
+    return storeToObserver(this._store).observe(pathInStore, wrappedCallback);
   }
 
   save(...args) {

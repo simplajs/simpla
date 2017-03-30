@@ -37,9 +37,17 @@ export function selectDataFromState(uid, state) {
   return data;
 }
 
+export function uidsToResponse(uids, state) {
+  let { content } = state[DATA_PREFIX];
+
+  return {
+    items: uids.map(uid => content[uid])
+  };
+}
+
 export function findDataInState(query, state) {
   let dataState = state[DATA_PREFIX],
-      items = [],
+      uids = [],
       content,
       hierarchy;
 
@@ -54,17 +62,14 @@ export function findDataInState(query, state) {
     let childObject = selectPropByPath(query.parent, hierarchy);
 
     if (childObject) {
-      let children = Object.keys(childObject)
-        .map(id => content[`${query.parent}.${id}`]);
-
-      items = children;
+      uids = Object.keys(childObject)
+        .map(id => `${query.parent}.${id}`);
     }
   } else {
-    items = Object.keys(content)
-      .map(uid => content[uid]);
+    uids = Object.keys(content);
   }
 
-  return { items };
+  return uidsToResponse(uids, state);
 }
 
 export function storeToObserver(store) {
