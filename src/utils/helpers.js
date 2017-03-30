@@ -171,8 +171,9 @@ export function toQueryParams(query = {}) {
 }
 
 export function hasRunQuery(query, state) {
-  const queryState = state[QUERIES_PREFIX];
-  return !!(queryState && queryState[toQueryParams(query)]);
+  const queryState = state[QUERIES_PREFIX],
+        queryParams = toQueryParams(query);
+  return !!(queryState && queryState[queryParams] && queryState[queryParams].queriedRemote);
 }
 
 export function makeBlankItem() {

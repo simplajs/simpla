@@ -2423,6 +2423,9 @@ var REMOVE_DATA_FROM_API_FAILED = 'remove-data-from-api-failed';
 var EDIT_ACTIVE = 'edit-active';
 var EDIT_INACTIVE = 'edit-inactive';
 
+// Querying
+var OBSERVE_QUERY = 'observe-query';
+
 function setOption(prop, value) {
   return {
     type: SET_OPTION,
@@ -3148,7 +3151,20 @@ function storeToObserver(store) {
   };
 }
 
+function matchesQuery() {
+  var query = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var content = arguments[1];
 
+  if (query.parent) {
+    return content.id !== query.parent && content.id.indexOf(query.parent) === 0;
+  }
+
+  if (Object.keys(query).length === 0) {
+    return true;
+  }
+
+  return false;
+}
 
 function ensureActionMatches(expectedType) {
   return function (action) {
@@ -3221,8 +3237,9 @@ function toQueryParams() {
 }
 
 function hasRunQuery(query, state) {
-  var queryState = state[QUERIES_PREFIX];
-  return !!(queryState && queryState[toQueryParams(query)]);
+  var queryState = state[QUERIES_PREFIX],
+      queryParams = toQueryParams(query);
+  return !!(queryState && queryState[queryParams] && queryState[queryParams].queriedRemote);
 }
 
 function makeBlankItem() {
@@ -3994,13 +4011,86 @@ function options() {
   }
 }
 
-function options$1() {
+function updateStateWithQuery(state, queryString, updates) {
+  return Object.assign({}, state, defineProperty$1({}, queryString, Object.assign({}, state[queryString], updates)));
+}
+
+function queries() {
   var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var action = arguments[1];
 
+  var queryString = void 0;
+
   switch (action.type) {
     case FIND_DATA_FROM_API_SUCCESSFUL:
-      return Object.assign({}, state, defineProperty$1({}, toQueryParams(action.query), true));
+      queryString = toQueryParams(action.query);
+
+      if (!state[queryString]) {
+        return updateStateWithQuery(state, queryString, {
+          query: action.query,
+          queriedRemote: true,
+          matches: []
+        });
+      }
+
+      if (!state[queryString].queriedRemote) {
+        return updateStateWithQuery(state, queryString, { queriedRemote: true });
+      }
+
+      return state;
+    case OBSERVE_QUERY:
+      queryString = toQueryParams(action.query);
+
+      if (state[queryString]) {
+        return state;
+      }
+
+      return updateStateWithQuery(state, queryString, {
+        query: action.query,
+        queriedRemote: false,
+        matches: []
+      });
+    case SET_DATA_SUCCESSFUL:
+      return Object.keys(state).reduce(function (state, queryString) {
+        var _state$queryString = state[queryString],
+            query = _state$queryString.query,
+            matches = _state$queryString.matches,
+            response = action.response,
+            uid = action.uid,
+            updatedMatches = void 0;
+
+
+        if (!matchesQuery(query, response)) {
+          updatedMatches = matches.filter(function (match) {
+            return match !== uid;
+          });
+        } else {
+          updatedMatches = [].concat(toConsumableArray(matches), [uid]);
+        }
+
+        if (updatedMatches.length === matches.length) {
+          return state;
+        }
+
+        return updateStateWithQuery(state, queryString, { matches: updatedMatches });
+      }, state);
+    case REMOVE_DATA_SUCCESSFUL:
+      return Object.keys(state).reduce(function (state, queryString) {
+        var matches = state[queryString].matches,
+            uid = action.uid,
+            updatedMatches = void 0;
+
+
+        updatedMatches = matches.filter(function (match) {
+          return match !== uid;
+        });
+
+        if (updatedMatches === matches.length) {
+          return state;
+        }
+
+        return updateStateWithQuery(state, queryString, { matches: updatedMatches });
+      }, state);
     default:
       return state;
   }
@@ -4203,7 +4293,7 @@ function save$2() {
 
 var _combineReducers;
 
-var reducer = combineReducers((_combineReducers = {}, defineProperty$1(_combineReducers, DATA_PREFIX, data), defineProperty$1(_combineReducers, QUERIES_PREFIX, options$1), defineProperty$1(_combineReducers, 'authenticated', authenticated), defineProperty$1(_combineReducers, 'config', options), defineProperty$1(_combineReducers, 'editable', editable$1), defineProperty$1(_combineReducers, 'token', token), defineProperty$1(_combineReducers, 'save', save$2), _combineReducers));
+var reducer = combineReducers((_combineReducers = {}, defineProperty$1(_combineReducers, DATA_PREFIX, data), defineProperty$1(_combineReducers, QUERIES_PREFIX, queries), defineProperty$1(_combineReducers, 'authenticated', authenticated), defineProperty$1(_combineReducers, 'config', options), defineProperty$1(_combineReducers, 'editable', editable$1), defineProperty$1(_combineReducers, 'token', token), defineProperty$1(_combineReducers, 'save', save$2), _combineReducers));
 
 // Hide Default Content
 hideDefaultContent();
