@@ -5,7 +5,7 @@ import { AUTH_SERVER } from '../src/constants/options';
 import { setOption } from '../src/actions/options';
 import * as types from '../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
-import { makeItemWith, itemUidToPath } from '../src/utils/helpers';
+import { makeItemWith, itemUidToPath, pathToUid } from '../src/utils/helpers';
 
 const mockStore = configureMockStore([ thunk ]);
 
@@ -27,6 +27,21 @@ const MOCK_DATA = {
   }
 }
 
+// TODO: This should be moved to a proper mock of Simpla's server
+function resultsForGet(path) {
+  return Object.assign({}, MOCK_DATA[path], { id: pathToUid(path) });
+}
+
+function resultsForFind(parent) {
+  let items = Object.keys(MOCK_DATA)
+    .filter(path => path !== parent && path.indexOf(parent) === 0)
+    .map(path => resultsForGet(path));
+
+  return {
+    items
+  };
+}
+
 function makeAndPathItem(uid, data) {
   return itemUidToPath(makeItemWith(uid, data));
 }
@@ -36,9 +51,11 @@ describe('Simpla', () => {
         dataEndpoint = `${AUTH_SERVER}/projects/${project}/content`;
 
   beforeEach(() => {
-    Object.keys(MOCK_DATA).forEach(uid => {
+    // TODO: This should be moved to a proper mock of Simpla's server.
+    Object.keys(MOCK_DATA).forEach(path => {
       fetchMock
-        .mock(`${dataEndpoint}/${uid}`, 'GET', MOCK_DATA[uid]);
+        .mock(`${dataEndpoint}/${pathToUid(path)}`, 'GET', resultsForGet(path))
+        .mock(`${dataEndpoint}/?parent=${pathToUid(path)}`, 'GET', resultsForFind(path));
     });
   });
 
@@ -202,18 +219,15 @@ describe('Simpla', () => {
         //  has been added to the microtask queue...
         return Simpla.set('/foo/bar', MOCK_DATA['/foo/bar'])
           .then(() => Promise.resolve())
+          .then(() => Simpla.set('/foo/bar/baz', MOCK_DATA['/foo/bar/baz']))
+          .then(() => Promise.resolve())
           .then(() => {
-            spy.reset();
+            expect(spy.callCount, 'Did not get called after child added').to.equal(1)
           })
           .then(() => Simpla.set('/foo/bar/baz', MOCK_DATA['/foo/bar/baz']))
           .then(() => Promise.resolve())
           .then(() => {
-            expect(spy.called, 'Did not get called after child added').to.be.false;
-          })
-          .then(() => Simpla.set('/foo/bar/baz', MOCK_DATA['/foo/bar/baz']))
-          .then(() => Promise.resolve())
-          .then(() => {
-            expect(spy.called, 'Did not get called after child changed').to.be.false;
+            expect(spy.callCount, 'Did not get called after child changed').to.equal(1)
           });
       });
     });
