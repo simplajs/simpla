@@ -1,5 +1,6 @@
 import {
   FIND_DATA,
+  FIND_DATA_SUCCESSFUL,
   FIND_DATA_FROM_API_SUCCESSFUL,
   OBSERVE_QUERY,
   SET_DATA_SUCCESSFUL,
@@ -45,6 +46,49 @@ describe('queriesReducer', () => {
           });
 
       expect(reduced[toQueryParams(query)].querying).to.be.true;
+    });
+  });
+
+  describe(`behaviour for ${FIND_DATA_SUCCESSFUL} action`, () => {
+    const query = { parent: 'foo' },
+          action = { type: FIND_DATA_SUCCESSFUL, query };
+
+    it('should move the cached values into matches', () => {
+      let initial = getInitStateFor(query, {
+            querying: true,
+            matches: [ 'foo.bar', 'foo.baz' ],
+            cache: [ 'foo.bar', 'foo.qux' ]
+          }),
+          reducedQueryState;
+
+      reducedQueryState = queriesReducer(initial, action)[toQueryParams(query)];
+
+      expect(reducedQueryState.matches, 'Added from cache').to.include('foo.qux');
+      expect(reducedQueryState.matches, 'Didn\'t add duplicates').to.have.lengthOf(3);
+      expect(reducedQueryState.cache, 'Cleared cache').to.be.empty;
+    });
+
+    it('should flag as no longer querying', () => {
+      let initial = getInitStateFor(query, { querying: true }),
+          reducedQueryState;
+
+      reducedQueryState = queriesReducer(initial, action)[toQueryParams(query)];
+
+      expect(reducedQueryState.querying).to.be.false;
+    });
+
+    it('should leave matches the same if moving from cache has no effect', () => {
+      let matches = [ 'foo.bar', 'foo.baz' ],
+          initial = getInitStateFor(query, {
+            querying: true,
+            matches,
+            cache: [ 'foo.bar' ]
+          }),
+          reducedQueryState;
+
+      reducedQueryState = queriesReducer(initial, action)[toQueryParams(query)];
+
+      expect(reducedQueryState.matches, 'If result is same, should be same object').to.equal(matches);
     });
   });
 

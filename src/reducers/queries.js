@@ -1,5 +1,6 @@
 import {
   FIND_DATA,
+  FIND_DATA_SUCCESSFUL,
   FIND_DATA_FROM_API_SUCCESSFUL,
   OBSERVE_QUERY,
   SET_DATA_SUCCESSFUL,
@@ -35,6 +36,28 @@ export default function queries(state = {}, action) {
     }
 
     return state;
+  case FIND_DATA_SUCCESSFUL:
+    queryString = toQueryParams(action.query);
+
+    if (state[queryString].cache.length !== 0) {
+      let { matches, cache } = state[queryString],
+          updatedMatches;
+
+      updatedMatches = [
+        ...matches,
+        ...cache.filter(uid => matches.indexOf(uid) === -1)
+      ];
+
+      if (updatedMatches.length !== matches.length) {
+        return updateStateWithQuery(state, queryString, {
+          querying: false,
+          cache: [],
+          matches: updatedMatches
+        });
+      }
+    }
+
+    return updateStateWithQuery(state, queryString, { cache: [], querying: false });
   case FIND_DATA_FROM_API_SUCCESSFUL:
     queryString = toQueryParams(action.query);
 

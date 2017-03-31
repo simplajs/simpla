@@ -4054,6 +4054,30 @@ function queries() {
       }
 
       return state;
+    case FIND_DATA_SUCCESSFUL:
+      queryString = toQueryParams(action.query);
+
+      if (state[queryString].cache.length !== 0) {
+        var _state$queryString = state[queryString],
+            matches = _state$queryString.matches,
+            cache = _state$queryString.cache,
+            updatedMatches = void 0;
+
+
+        updatedMatches = [].concat(toConsumableArray(matches), toConsumableArray(cache.filter(function (uid) {
+          return matches.indexOf(uid) === -1;
+        })));
+
+        if (updatedMatches.length !== matches.length) {
+          return updateStateWithQuery(state, queryString, {
+            querying: false,
+            cache: [],
+            matches: updatedMatches
+          });
+        }
+      }
+
+      return updateStateWithQuery(state, queryString, { cache: [], querying: false });
     case FIND_DATA_FROM_API_SUCCESSFUL:
       queryString = toQueryParams(action.query);
 
@@ -4078,11 +4102,11 @@ function queries() {
       return state;
     case SET_DATA_SUCCESSFUL:
       return Object.keys(state).reduce(function (state, queryString) {
-        var _state$queryString = state[queryString],
-            query = _state$queryString.query,
-            matches = _state$queryString.matches,
-            cache = _state$queryString.cache,
-            querying = _state$queryString.querying,
+        var _state$queryString2 = state[queryString],
+            query = _state$queryString2.query,
+            matches = _state$queryString2.matches,
+            cache = _state$queryString2.cache,
+            querying = _state$queryString2.querying,
             response = action.response,
             uid = action.uid,
             current = querying ? cache : matches,
