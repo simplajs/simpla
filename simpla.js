@@ -4029,6 +4029,17 @@ function updateStateWithQuery(state, queryString, updates) {
   return Object.assign({}, state, defineProperty$1({}, queryString, Object.assign({}, state[queryString], updates)));
 }
 
+var notAlreadyIn = function notAlreadyIn(haystack) {
+  return function (needle) {
+    return haystack.indexOf(needle) === -1;
+  };
+};
+var isNot = function isNot(a) {
+  return function (b) {
+    return a !== b;
+  };
+};
+
 function queries() {
   var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var action = arguments[1];
@@ -4064,9 +4075,7 @@ function queries() {
             updatedMatches = void 0;
 
 
-        updatedMatches = [].concat(toConsumableArray(matches), toConsumableArray(cache.filter(function (uid) {
-          return matches.indexOf(uid) === -1;
-        })));
+        updatedMatches = [].concat(toConsumableArray(matches), toConsumableArray(cache.filter(notAlreadyIn(matches))));
 
         if (updatedMatches.length !== matches.length) {
           return updateStateWithQuery(state, queryString, {
@@ -4114,18 +4123,16 @@ function queries() {
 
 
         if (!matchesQuery(query, response)) {
-          updated = current.filter(function (match) {
-            return match !== uid;
-          });
+          updated = current.filter(isNot(uid));
         } else {
           updated = [].concat(toConsumableArray(current), [uid]);
         }
 
-        if (updated.length === current.length) {
-          return state;
+        if (updated.length !== current.length) {
+          return updateStateWithQuery(state, queryString, defineProperty$1({}, querying ? 'cache' : 'matches', updated));
         }
 
-        return updateStateWithQuery(state, queryString, defineProperty$1({}, querying ? 'cache' : 'matches', updated));
+        return state;
       }, state);
     case REMOVE_DATA_SUCCESSFUL:
       return Object.keys(state).reduce(function (state, queryString) {
@@ -4134,15 +4141,15 @@ function queries() {
             updatedMatches = void 0;
 
 
-        updatedMatches = matches.filter(function (match) {
-          return match !== uid;
-        });
+        updatedMatches = matches.filter(isNot(uid));
 
-        if (updatedMatches === matches.length) {
-          return state;
+        if (updatedMatches !== matches.length) {
+          return updateStateWithQuery(state, queryString, {
+            matches: updatedMatches
+          });
         }
 
-        return updateStateWithQuery(state, queryString, { matches: updatedMatches });
+        return state;
       }, state);
     default:
       return state;

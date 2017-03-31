@@ -14,6 +14,9 @@ function updateStateWithQuery(state, queryString, updates) {
   });
 }
 
+const notAlreadyIn = haystack => needle => haystack.indexOf(needle) === -1,
+      isNot = a => b => a !== b;
+
 export default function queries(state = {}, action) {
   let queryString;
 
@@ -45,7 +48,7 @@ export default function queries(state = {}, action) {
 
       updatedMatches = [
         ...matches,
-        ...cache.filter(uid => matches.indexOf(uid) === -1)
+        ...cache.filter(notAlreadyIn(matches))
       ];
 
       if (updatedMatches.length !== matches.length) {
@@ -89,16 +92,18 @@ export default function queries(state = {}, action) {
             updated;
 
         if (!matchesQuery(query, response)) {
-          updated = current.filter((match) => match !== uid);
+          updated = current.filter(isNot(uid));
         } else {
           updated = [ ...current, uid ];
         }
 
-        if (updated.length === current.length) {
-          return state;
+        if (updated.length !== current.length) {
+          return updateStateWithQuery(state, queryString, {
+            [ querying ? 'cache' : 'matches' ]: updated
+          });
         }
 
-        return updateStateWithQuery(state, queryString, { [ querying ? 'cache' : 'matches' ]: updated });
+        return state;
       }, state);
   case REMOVE_DATA_SUCCESSFUL:
     return Object.keys(state)
@@ -107,13 +112,15 @@ export default function queries(state = {}, action) {
             { uid } = action,
             updatedMatches;
 
-        updatedMatches = matches.filter(match => match !== uid);
+        updatedMatches = matches.filter(isNot(uid));
 
-        if (updatedMatches === matches.length) {
-          return state;
+        if (updatedMatches !== matches.length) {
+          return updateStateWithQuery(state, queryString, {
+            matches: updatedMatches
+          });
         }
 
-        return updateStateWithQuery(state, queryString, { matches: updatedMatches });
+        return state;
       }, state);
   default:
     return state;
