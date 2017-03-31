@@ -230,6 +230,53 @@ describe('Simpla', () => {
             expect(spy.callCount, 'Did not get called after child changed').to.equal(1)
           });
       });
+
+      describe('observing queries', () => {
+        let spy,
+            unobserve;
+
+        beforeEach(() => {
+          spy = sinon.spy();
+          Simpla.constructor.call(Simpla);
+          Simpla.init(project);
+          ({ unobserve } = Simpla.observeQuery({ parent: '/foo' }, spy));
+        });
+
+        afterEach(() => {
+          unobserve && unobserve();
+          return Simpla.remove('/foo');
+        });
+
+        it('should run callback for parent query when children are set', () => {
+          return Simpla.set('/foo/bar', MOCK_DATA['/foo/bar'])
+            .then(() => {
+              expect(spy.called, 'Observer should have been called').to.be.true;
+            });
+        });
+
+        it('should not run callback for parent query when non-child is set', () => {
+          return Simpla.set('/foo', MOCK_DATA['/foo'])
+            .then(() => {
+              expect(spy.called, 'Observer should not have been called').not.to.be.true;
+            });
+        });
+
+        it('should run once after a find query', () => {
+          return Simpla.find({ parent: '/foo' })
+            .then(() => {
+              expect(spy.callCount, 'Observer should have been called once').to.equal(1);
+            });
+        });
+
+        it('should be called with equivalent of find method', () => {
+          return Simpla.set('/foo/bar', MOCK_DATA['/foo/bar'])
+            .then(() => {
+              expect(spy.getCall(0).args[0]).to.deep.equal({
+                items: [ makeAndPathItem('foo.bar', MOCK_DATA['/foo/bar']) ]
+              })
+            });
+        });
+      });
     });
 
     describe('paths', () => {

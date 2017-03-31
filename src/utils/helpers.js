@@ -37,9 +37,17 @@ export function selectDataFromState(uid, state) {
   return data;
 }
 
+export function uidsToResponse(uids, state) {
+  let { content } = state[DATA_PREFIX];
+
+  return {
+    items: uids.map(uid => content[uid])
+  };
+}
+
 export function findDataInState(query, state) {
   let dataState = state[DATA_PREFIX],
-      items = [],
+      uids = [],
       content,
       hierarchy;
 
@@ -54,17 +62,14 @@ export function findDataInState(query, state) {
     let childObject = selectPropByPath(query.parent, hierarchy);
 
     if (childObject) {
-      let children = Object.keys(childObject)
-        .map(id => content[`${query.parent}.${id}`]);
-
-      items = children;
+      uids = Object.keys(childObject)
+        .map(id => `${query.parent}.${id}`);
     }
   } else {
-    items = Object.keys(content)
-      .map(uid => content[uid]);
+    uids = Object.keys(content);
   }
 
-  return { items };
+  return uidsToResponse(uids, state);
 }
 
 export function storeToObserver(store) {
@@ -95,6 +100,18 @@ export function storeToObserver(store) {
       };
     }
   }
+}
+
+export function matchesQuery(query = {}, content) {
+  if (query.parent) {
+    return content.id !== query.parent && content.id.indexOf(query.parent) === 0;
+  }
+
+  if (Object.keys(query).length === 0) {
+    return true;
+  }
+
+  return false;
 }
 
 export function ensureActionMatches(expectedType) {
@@ -159,8 +176,9 @@ export function toQueryParams(query = {}) {
 }
 
 export function hasRunQuery(query, state) {
-  const queryState = state[QUERIES_PREFIX];
-  return !!(queryState && queryState[toQueryParams(query)]);
+  const queryState = state[QUERIES_PREFIX],
+        queryParams = toQueryParams(query);
+  return !!(queryState && queryState[queryParams] && queryState[queryParams].queriedRemote);
 }
 
 export function makeBlankItem() {

@@ -2423,6 +2423,9 @@ var REMOVE_DATA_FROM_API_FAILED = 'remove-data-from-api-failed';
 var EDIT_ACTIVE = 'edit-active';
 var EDIT_INACTIVE = 'edit-inactive';
 
+// Querying
+var OBSERVE_QUERY = 'observe-query';
+
 function setOption(prop, value) {
   return {
     type: SET_OPTION,
@@ -3082,9 +3085,20 @@ function selectDataFromState(uid, state) {
   return data;
 }
 
+function uidsToResponse(uids, state) {
+  var content = state[DATA_PREFIX].content;
+
+
+  return {
+    items: uids.map(function (uid) {
+      return content[uid];
+    })
+  };
+}
+
 function findDataInState(query, state) {
   var dataState = state[DATA_PREFIX],
-      items = [],
+      uids = [],
       content = void 0,
       hierarchy = void 0;
 
@@ -3099,19 +3113,15 @@ function findDataInState(query, state) {
     var childObject = selectPropByPath(query.parent, hierarchy);
 
     if (childObject) {
-      var children = Object.keys(childObject).map(function (id) {
-        return content[query.parent + '.' + id];
+      uids = Object.keys(childObject).map(function (id) {
+        return query.parent + '.' + id;
       });
-
-      items = children;
     }
   } else {
-    items = Object.keys(content).map(function (uid) {
-      return content[uid];
-    });
+    uids = Object.keys(content);
   }
 
-  return { items: items };
+  return uidsToResponse(uids, state);
 }
 
 function storeToObserver(store) {
@@ -3146,6 +3156,21 @@ function storeToObserver(store) {
       };
     }
   };
+}
+
+function matchesQuery() {
+  var query = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var content = arguments[1];
+
+  if (query.parent) {
+    return content.id !== query.parent && content.id.indexOf(query.parent) === 0;
+  }
+
+  if (Object.keys(query).length === 0) {
+    return true;
+  }
+
+  return false;
 }
 
 function ensureActionMatches(expectedType) {
@@ -3219,8 +3244,9 @@ function toQueryParams() {
 }
 
 function hasRunQuery(query, state) {
-  var queryState = state[QUERIES_PREFIX];
-  return !!(queryState && queryState[toQueryParams(query)]);
+  var queryState = state[QUERIES_PREFIX],
+      queryParams = toQueryParams(query);
+  return !!(queryState && queryState[queryParams] && queryState[queryParams].queriedRemote);
 }
 
 function makeBlankItem() {
@@ -3639,6 +3665,13 @@ function find$1() {
   };
 }
 
+function observeQuery$1(query) {
+  return {
+    type: OBSERVE_QUERY,
+    query: query
+  };
+}
+
 function startSave() {
   return {
     type: SAVE
@@ -3992,13 +4025,132 @@ function options() {
   }
 }
 
-function options$1() {
+function updateStateWithQuery(state, queryString, updates) {
+  return Object.assign({}, state, defineProperty$1({}, queryString, Object.assign({}, state[queryString], updates)));
+}
+
+var notAlreadyIn = function notAlreadyIn(haystack) {
+  return function (needle) {
+    return haystack.indexOf(needle) === -1;
+  };
+};
+var isNot = function isNot(a) {
+  return function (b) {
+    return a !== b;
+  };
+};
+
+function queries() {
   var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var action = arguments[1];
 
+  var queryString = void 0;
+
   switch (action.type) {
+    case FIND_DATA:
+      queryString = toQueryParams(action.query);
+
+      if (!state[queryString]) {
+        return updateStateWithQuery(state, queryString, {
+          query: action.query,
+          querying: true,
+          queriedRemote: false,
+          cache: [],
+          matches: []
+        });
+      }
+
+      if (!state[queryString].querying) {
+        return updateStateWithQuery(state, queryString, { querying: true });
+      }
+
+      return state;
+    case FIND_DATA_SUCCESSFUL:
+      queryString = toQueryParams(action.query);
+
+      if (state[queryString].cache.length !== 0) {
+        var _state$queryString = state[queryString],
+            matches = _state$queryString.matches,
+            cache = _state$queryString.cache,
+            updatedMatches = void 0;
+
+
+        updatedMatches = [].concat(toConsumableArray(matches), toConsumableArray(cache.filter(notAlreadyIn(matches))));
+
+        if (updatedMatches.length !== matches.length) {
+          return updateStateWithQuery(state, queryString, {
+            querying: false,
+            cache: [],
+            matches: updatedMatches
+          });
+        }
+      }
+
+      return updateStateWithQuery(state, queryString, { cache: [], querying: false });
     case FIND_DATA_FROM_API_SUCCESSFUL:
-      return Object.assign({}, state, defineProperty$1({}, toQueryParams(action.query), true));
+      queryString = toQueryParams(action.query);
+
+      if (!state[queryString].queriedRemote) {
+        return updateStateWithQuery(state, queryString, { queriedRemote: true });
+      }
+
+      return state;
+    case OBSERVE_QUERY:
+      queryString = toQueryParams(action.query);
+
+      if (!state[queryString]) {
+        return updateStateWithQuery(state, queryString, {
+          query: action.query,
+          querying: false,
+          queriedRemote: false,
+          cache: [],
+          matches: []
+        });
+      }
+
+      return state;
+    case SET_DATA_SUCCESSFUL:
+      return Object.keys(state).reduce(function (state, queryString) {
+        var _state$queryString2 = state[queryString],
+            query = _state$queryString2.query,
+            matches = _state$queryString2.matches,
+            cache = _state$queryString2.cache,
+            querying = _state$queryString2.querying,
+            response = action.response,
+            uid = action.uid,
+            current = querying ? cache : matches,
+            updated = void 0;
+
+
+        if (!matchesQuery(query, response)) {
+          updated = current.filter(isNot(uid));
+        } else {
+          updated = [].concat(toConsumableArray(current), [uid]);
+        }
+
+        if (updated.length !== current.length) {
+          return updateStateWithQuery(state, queryString, defineProperty$1({}, querying ? 'cache' : 'matches', updated));
+        }
+
+        return state;
+      }, state);
+    case REMOVE_DATA_SUCCESSFUL:
+      return Object.keys(state).reduce(function (state, queryString) {
+        var matches = state[queryString].matches,
+            uid = action.uid,
+            updatedMatches = void 0;
+
+
+        updatedMatches = matches.filter(isNot(uid));
+
+        if (updatedMatches !== matches.length) {
+          return updateStateWithQuery(state, queryString, {
+            matches: updatedMatches
+          });
+        }
+
+        return state;
+      }, state);
     default:
       return state;
   }
@@ -4201,7 +4353,7 @@ function save$2() {
 
 var _combineReducers;
 
-var reducer = combineReducers((_combineReducers = {}, defineProperty$1(_combineReducers, DATA_PREFIX, data), defineProperty$1(_combineReducers, QUERIES_PREFIX, options$1), defineProperty$1(_combineReducers, 'authenticated', authenticated), defineProperty$1(_combineReducers, 'config', options), defineProperty$1(_combineReducers, 'editable', editable$1), defineProperty$1(_combineReducers, 'token', token), defineProperty$1(_combineReducers, 'save', save$2), _combineReducers));
+var reducer = combineReducers((_combineReducers = {}, defineProperty$1(_combineReducers, DATA_PREFIX, data), defineProperty$1(_combineReducers, QUERIES_PREFIX, queries), defineProperty$1(_combineReducers, 'authenticated', authenticated), defineProperty$1(_combineReducers, 'config', options), defineProperty$1(_combineReducers, 'editable', editable$1), defineProperty$1(_combineReducers, 'token', token), defineProperty$1(_combineReducers, 'save', save$2), _combineReducers));
 
 // Hide Default Content
 hideDefaultContent();
@@ -4332,6 +4484,27 @@ var Simpla = new (function () {
       };
 
       return storeToObserver(this._store).observe(pathInState, wrappedCallback);
+    }
+  }, {
+    key: 'observeQuery',
+    value: function observeQuery(query, callback) {
+      var _this6 = this;
+
+      var queryString = void 0,
+          pathInStore = void 0,
+          wrappedCallback = void 0;
+
+      query.parent = pathToUid(query.parent);
+      queryString = toQueryParams(query);
+      pathInStore = [QUERIES_PREFIX, queryString, 'matches'];
+
+      this._store.dispatch(observeQuery$1(query));
+
+      wrappedCallback = function wrappedCallback(uids) {
+        return callback(queryResultsToPath(uidsToResponse(uids, _this6.getState())));
+      };
+
+      return storeToObserver(this._store).observe(pathInStore, wrappedCallback);
     }
   }, {
     key: 'save',

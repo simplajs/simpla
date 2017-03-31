@@ -144,7 +144,7 @@ describe('data actions', () => {
 
     it('should just return whats in the state if the query has already run', () => {
       initialState[QUERIES_PREFIX] = {
-        [ PARENT_QUERY_STRING ]: true
+        [ PARENT_QUERY_STRING ]: { queriedRemote: true }
       };
 
       store = mockStore(initialState);

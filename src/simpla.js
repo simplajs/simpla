@@ -5,9 +5,10 @@ import { setOption } from './actions/options';
 import { editActive, editInactive } from './actions/editable';
 import { login, logout } from './actions/authentication';
 import { get, set, remove, find } from './actions/data';
+import { observeQuery } from './actions/queries';
 import save from './actions/save';
 import { AUTH_SERVER } from './constants/options';
-import { DATA_PREFIX } from './constants/state';
+import { DATA_PREFIX, QUERIES_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
 import { hideDefaultContent, configurePolymer } from './utils/prepare';
 import {
@@ -17,7 +18,9 @@ import {
   pathToUid,
   itemUidToPath,
   queryResultsToPath,
-  validatePath
+  validatePath,
+  toQueryParams,
+  uidsToResponse
 } from './utils/helpers';
 import { supportDeprecatedConfig } from './plugins/deprecation';
 import usageMonitoring from './plugins/usageMonitoring';
@@ -121,6 +124,28 @@ const Simpla = new class Simpla {
     wrappedCallback = () => this.get(path).then(callback);
 
     return storeToObserver(this._store).observe(pathInState, wrappedCallback);
+  }
+
+  observeQuery(query, callback) {
+    let queryString,
+        pathInStore,
+        wrappedCallback;
+
+    query.parent = pathToUid(query.parent);
+    queryString = toQueryParams(query);
+    pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
+
+    this._store.dispatch(observeQuery(query));
+
+    wrappedCallback = (uids) => {
+      return callback(
+        queryResultsToPath(
+          uidsToResponse(uids, this.getState())
+        )
+      );
+    }
+
+    return storeToObserver(this._store).observe(pathInStore, wrappedCallback);
   }
 
   save(...args) {

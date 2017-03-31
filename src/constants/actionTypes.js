@@ -57,3 +57,6 @@ export const REMOVE_DATA_FROM_API_FAILED = 'remove-data-from-api-failed';
 // Editable
 export const EDIT_ACTIVE = 'edit-active';
 export const EDIT_INACTIVE = 'edit-inactive';
+
+// Querying
+export const OBSERVE_QUERY = 'observe-query';
