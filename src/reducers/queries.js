@@ -1,4 +1,5 @@
 import {
+  FIND_DATA,
   FIND_DATA_FROM_API_SUCCESSFUL,
   OBSERVE_QUERY,
   SET_DATA_SUCCESSFUL,
@@ -16,16 +17,26 @@ export default function queries(state = {}, action) {
   let queryString;
 
   switch (action.type) {
-  case FIND_DATA_FROM_API_SUCCESSFUL:
+  case FIND_DATA:
     queryString = toQueryParams(action.query);
 
     if (!state[queryString]) {
       return updateStateWithQuery(state, queryString, {
         query: action.query,
-        queriedRemote: true,
+        querying: true,
+        queriedRemote: false,
+        cache: [],
         matches: []
       });
     }
+
+    if (!state[queryString].querying) {
+      return updateStateWithQuery(state, queryString, { querying: true });
+    }
+
+    return state;
+  case FIND_DATA_FROM_API_SUCCESSFUL:
+    queryString = toQueryParams(action.query);
 
     if (!state[queryString].queriedRemote) {
       return updateStateWithQuery(state, queryString, { queriedRemote: true });
@@ -35,15 +46,17 @@ export default function queries(state = {}, action) {
   case OBSERVE_QUERY:
     queryString = toQueryParams(action.query);
 
-    if (state[queryString]) {
-      return state;
+    if (!state[queryString]) {
+      return updateStateWithQuery(state, queryString, {
+        query: action.query,
+        querying: false,
+        queriedRemote: false,
+        cache: [],
+        matches: []
+      });
     }
 
-    return updateStateWithQuery(state, queryString, {
-      query: action.query,
-      queriedRemote: false,
-      matches: []
-    });
+    return state;
   case SET_DATA_SUCCESSFUL:
     return Object.keys(state)
       .reduce((state, queryString) => {

@@ -1,4 +1,5 @@
 import {
+  FIND_DATA,
   FIND_DATA_FROM_API_SUCCESSFUL,
   OBSERVE_QUERY,
   SET_DATA_SUCCESSFUL,
@@ -13,6 +14,8 @@ function getInitStateFor(query, data = {}) {
     [ toQueryParams(query) ]: Object.assign({
       query,
       queriedRemote: false,
+      querying: false,
+      cache: [],
       matches: []
     }, data)
   };
@@ -23,15 +26,29 @@ describe('queriesReducer', () => {
     expect(queriesReducer(undefined, {})).to.deep.equal({});
   });
 
-  describe(`behaviour for ${FIND_DATA_FROM_API_SUCCESSFUL} action`, () => {
-    it('should initialise an empty state with queriedRemote = true if nothing there', () => {
-      let query = { foo: 'bar' };
-      expect(queriesReducer({}, {
-        type: FIND_DATA_FROM_API_SUCCESSFUL,
-        query
-      })).to.deep.equal(getInitStateFor(query, { queriedRemote: true }));
+  describe(`behaviour for ${FIND_DATA}`, () => {
+    it('should initialise an empty state with querying true', () => {
+      let query = { foo: 'bar' },
+          reduced = queriesReducer({}, {
+            type: FIND_DATA,
+            query
+          });
+
+      expect(reduced).to.deep.equal(getInitStateFor(query, { querying: true }));
     });
 
+    it('should set querying true if state already exists', () => {
+      let query = { foo: 'bar' },
+          reduced = queriesReducer(getInitStateFor(query), {
+            type: FIND_DATA,
+            query
+          });
+
+      expect(reduced[toQueryParams(query)].querying).to.be.true;
+    });
+  });
+
+  describe(`behaviour for ${FIND_DATA_FROM_API_SUCCESSFUL} action`, () => {
     it('should update the queriedRemote flag if query state already there', () => {
       let query = { foo: 'bar' },
           queryParams = toQueryParams(query),
