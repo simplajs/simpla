@@ -119,6 +119,19 @@ describe('queriesReducer', () => {
 
       expect(reduced[queryString].matches).to.not.include(content.id);
     });
+
+    it('should add matched result to cache if currently querying', () => {
+      let query = { parent: 'foo' },
+          queryString = toQueryParams(query),
+          content = { id: 'foo.bar' },
+          initial = getInitStateFor(query, { querying: true }),
+          reduced;
+
+      reduced = queriesReducer(initial, setDataSuccessful(content.id, content));
+
+      expect(reduced[queryString].matches).to.be.empty;
+      expect(reduced[queryString].cache).to.deep.equal([ content.id ]);
+    });
   });
 
   describe(`behaviour for ${REMOVE_DATA_SUCCESSFUL} action`, () => {

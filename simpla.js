@@ -4081,24 +4081,27 @@ function queries() {
         var _state$queryString = state[queryString],
             query = _state$queryString.query,
             matches = _state$queryString.matches,
+            cache = _state$queryString.cache,
+            querying = _state$queryString.querying,
             response = action.response,
             uid = action.uid,
-            updatedMatches = void 0;
+            current = querying ? cache : matches,
+            updated = void 0;
 
 
         if (!matchesQuery(query, response)) {
-          updatedMatches = matches.filter(function (match) {
+          updated = current.filter(function (match) {
             return match !== uid;
           });
         } else {
-          updatedMatches = [].concat(toConsumableArray(matches), [uid]);
+          updated = [].concat(toConsumableArray(current), [uid]);
         }
 
-        if (updatedMatches.length === matches.length) {
+        if (updated.length === current.length) {
           return state;
         }
 
-        return updateStateWithQuery(state, queryString, { matches: updatedMatches });
+        return updateStateWithQuery(state, queryString, defineProperty$1({}, querying ? 'cache' : 'matches', updated));
       }, state);
     case REMOVE_DATA_SUCCESSFUL:
       return Object.keys(state).reduce(function (state, queryString) {

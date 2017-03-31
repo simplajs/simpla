@@ -60,21 +60,22 @@ export default function queries(state = {}, action) {
   case SET_DATA_SUCCESSFUL:
     return Object.keys(state)
       .reduce((state, queryString) => {
-        let { query, matches } = state[queryString],
+        let { query, matches, cache, querying } = state[queryString],
             { response, uid } = action,
-            updatedMatches;
+            current = querying ? cache : matches,
+            updated;
 
         if (!matchesQuery(query, response)) {
-          updatedMatches = matches.filter((match) => match !== uid);
+          updated = current.filter((match) => match !== uid);
         } else {
-          updatedMatches = [ ...matches, uid ];
+          updated = [ ...current, uid ];
         }
 
-        if (updatedMatches.length === matches.length) {
+        if (updated.length === current.length) {
           return state;
         }
 
-        return updateStateWithQuery(state, queryString, { matches: updatedMatches });
+        return updateStateWithQuery(state, queryString, { [ querying ? 'cache' : 'matches' ]: updated });
       }, state);
   case REMOVE_DATA_SUCCESSFUL:
     return Object.keys(state)
