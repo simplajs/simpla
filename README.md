@@ -24,31 +24,33 @@ There are several breaking changes introduced in the v2.0 SDK:
 
 - Elements are no longer imported (automatically or otherwise) via the SDK, use [HTML imports](https://www.webcomponents.org/community/articles/introduction-to-html-imports) directly instead
 
-- Every piece of data (ie: UID) has a predefined data schema, with several computed properties (eg: `createdAt`, `updatedAt`) and two mutable properties: `data : Object` and `type : String`. Trying to `set()` data outside of these properties will fail
+- UIDs have been replaced with Content Paths - `some.uid` becomes `/some/path`. They are functionally the same, but paths allow Simpla to defined more complex data schemas and are easier to reason about when performing queries and dealing with large datasets.
+
+- Every piece of data (ie: path) has a predefined data schema, with several computed properties (eg: `createdAt`, `updatedAt`) and two mutable properties: `data : Object` and `type : String`. Trying to `set()` data outside of these properties will fail
 
 - The `set()` method no longer directly PUTs data to the API, it sets it to the local buffer, after which calling `save()` persists all changes in the buffer to the API
 
-- Calling `get()` on the UID of a `simpla-block` no longer returns an array of its children, but rather its data (normally `null`). Use the new `find()` method instead
+- Calling `get()` on the path of a 'block' no longer returns an array of its children, but rather its data (normally `null`). Use the new `find()` method instead
 
 - Hashtracking (i.e. `#edit` triggering edit mode) is now handled by the new `simpla-admin` element. Import that element if you wish to continue using it
 
 - The cross-browser WebComponents polyfill is no longer included by the SDK, instead it should be included manually before importing elements e.g. from CDNJS
 
+- Some elements have breaking changes, such as `simpla-img` now extending a native `<img>` element (ie: `<img is="simpla-img">`), and `simpla-block` being replaced with `simpla-paths` (which no longer requires the `<simpla-block>` element)
+
+- The `sm-` elements have all been deprecated, in favor of the new SDK, the new [Simple UI elements](https://github.com/SimpleElements) we have released, and new `simpla-` elements like simpla-admin
+
 ## Installation
-The v2.0 preview can be installed either via Bower or NPM/Yarn
+Grab the latest `2.0-preview` branch directly via Bower (versions will be published to NPM/Yarn on release)
 
 ```bash
-bower install simplaio/simpla#v2.0.0-preview --save
-```
-
-```bash
-npm install simpla@2.0.0-preview --save
+bower install simplaio/simpla#2.0-preview --save
 ```
 
 Once installed, include the SDK in the `<head>` of your document
 
 ```html
-<script src="/bower_components/simpla/simpla.js"></script>
+<script src="/bower_components/simpla/simpla.min.js"></script>
 ```
 
 Or import the ES6 module and attach it as a global to the window manually
@@ -64,13 +66,13 @@ window.Simpla = Simpla;
 You will also need to install and import Simpla elements, currently only Bower is supported (Yarn support coming):
 
 ```bash
-bower install SimplaElements/simpla-text SimplaElements/simpla-img SimplaElements/simpla-block SimplaElements/simpla-admin --save
+bower install simpla-text simpla-img simpla-paths simpla-admin --save
 ```
 
 ```html
-<link rel="import" href="/bower_components/simpla-text/simpla-text.html">
-<link rel="import" href="/bower_components/simpla-img/simpla-img.html">
-<link rel="import" href="/bower_components/simpla-block/simpla-block.html">
+<link rel="import" href="/bower_components/simpla-text/simpla-text.html" async>
+<link rel="import" href="/bower_components/simpla-img/simpla-img.html" async>
+<link rel="import" href="/bower_components/simpla-paths/simpla-paths.html" async>
 <link rel="import" href="/bower_components/simpla-admin/simpla-admin.html" async>
 ```
 
@@ -83,8 +85,6 @@ You must initialise your Simpla project before using the SDK, with the `init()` 
 // TODO: replace 'project-id' with your project's ID
 Simpla.init('project-id')
 ```
-
-**NOTE:** You MUST create a new project to use with the v2 SDK, as it is not yet compatible with v1 projects, and you risk corrupting data by using it with existing v1 content
 
 ### Authentication
 Authentication methods remain unchanged from v1, use `login` to log a user into Simpla, and `logout` to clear their token and log them out
@@ -107,13 +107,13 @@ Simpla.logout()
 Data methods now operate on a local data buffer, and are persisted to Simpla's API by calling the new `save()` method.
 
 #### Get
-Fetch data from Simpla's API with the `get()` method, which takes the UID to fetch as a single argument
+Fetch data from Simpla's API with the `get()` method, which takes the path to fetch as a single argument
 
 ```js
-Simpla.get('some.uid')
+Simpla.get('/some/path')
   .then(function(data) {
     // data = {
-    //  id: 'some.uid',
+    //  path: '/some/path',
     //  type: 'Text',
     //  data: {...},
     //  createdAt: ...
@@ -122,24 +122,24 @@ Simpla.get('some.uid')
 ```
 
 #### Set
-Change data in the local buffer by calling `set()`, which takes two arguments - the UID to operate on, and the new data
+Change data in the local buffer by calling `set()`, which takes two arguments - the path to operate on, and the new data
 
 ```js
-Simpla.set('some.uid', { data: {...} })
+Simpla.set('/some/path', { data: {...} })
   .then(function() {
     // data set
     });
 ```
 
-**Note:** All element data should live inside the `data` object, and all elements should set a `type`, which is just an arbitrary hint (_not_ a JS primitive) for what kind of content this UID contains.
+**Note:** All custom data should live inside the `data` object, and elements should optionally set a `type`, which is just an arbitrary hint (_not_ a JS primitive) for what kind of content this path contains.
 
 #### Remove
-Delete a UID with the `remove` method. Remember, deleted data will not be persisted until `save` is called
+Delete a path with the `remove` method. Remember, deleted data will not be persisted until `save` is called
 
 ```js
-Simpla.remove('some.uid')
+Simpla.remove('/some/path')
   .then(function() {
-    // UID deleted
+    // Path deleted
   });
 ```
 
@@ -147,11 +147,11 @@ Simpla.remove('some.uid')
 Query Simpla's API with the `find` method. Currently it only takes a single parameter, `parent`, which is used to list the children of a block. More querying methods (sort, filter, etc) will be added soon
 
 ```js
-Simpla.find({ parent: 'some' })
+Simpla.find({ parent: '/some' })
   .then(function(result) {
     // result = {
     //  items: [
-    //    { uid: 'some.uid', ...}
+    //    { path: '/some/path', ...}
     //  ],
     //  metadata: {}
     // }
@@ -169,7 +169,7 @@ Simpla.save()
 ```
 
 ### States
-States manage the global state of Simpla and its components in a session. Currently there are two states managed by Simpla:
+States manage the global state of Simpla and its components in a session. These are the states currently managed by Simpla, there will be more added before release:
 
 - `authenticated : Boolean`, whether the user is logged in
 - `editable : Boolean`, whether Simpla is in edit mode
@@ -185,11 +185,11 @@ Simpla.getState('editable') // Returns true/false
 React to changes in a Simpla app by using observers
 
 #### Observing changes to data
-Use the `observe()` method to create an observer for a UID. It takes two arguments, the UID to observe, and the callback to execute when the data in the UID changes. It returns an object containing an `unobserve()` method used to destroy the observer
+Use the `observe()` method to create an observer for a path. It takes two arguments, the path to observe, and the callback to execute when the data in the data in the path changes. It returns an object containing an `unobserve()` method used to destroy the observer
 
 ```js
 // Create observer
-var observer = Simpla.observe('some.uid', function(item) { ... });
+var observer = Simpla.observe('/some/path', function(item) { ... });
 
 // Destroy observer
 observer.unobserve();
@@ -206,15 +206,19 @@ var observer = Simpla.observeState('editable', function(value) { ... });
 observer.unobserve();
 ```
 
+#### Observing queries
+Use the `observeQuery()` method to create an observer for a query (made using `find()`). It has the same syntax as `observe`
+
+```js
+// Create observer
+var observer = Simpla.observeQuery({ parent: '/some' }, function(result) { ... });
+
+// Destroy observer
+observer.unobserve();
+```
+
 ## Known Issues
- - `find()` requests are not cache-busted properly, resulting in stale data after subsequent saves
- - `remove()` can intermittently fail, and when it does it can cause all future requests to error out
- - User auth token is not being persisted to localstorage on login
-
-## Upcoming changes
-We expect further breaking changes to the API and SDK before final release:
-
-- UIDs will be replaced with Paths, ie: `some.uid` becomes `/some/path`. This will make data models much easier to reason about, and make querying more straightforward.
+ - Results on queries (using `find()`) are not cached on our global CDN, resulting in lower latency than we'd like. We're working on changing CDN providers to support this use-case
 
 ## Testing and feedback
 Please test out the SDK and give us feedback! File issues for any bugs you find, or with interface problems/missing use-cases. It should be largely stable enough for ongoing testing, and we're in the process of converting the current Simpla elements (and simpla.io itself) to run on it before launching live.
