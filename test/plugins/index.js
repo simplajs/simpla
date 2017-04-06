@@ -1,2 +1,2 @@
-import './usageMonitoring';
+import './ping';
 import './persistToken';

@@ -10,7 +10,7 @@ import save from './actions/save';
 import { AUTH_SERVER } from './constants/options';
 import { DATA_PREFIX, QUERIES_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
-import { hideDefaultContent, configurePolymer } from './utils/prepare';
+import { configurePolymer } from './utils/prepare';
 import {
   storeToObserver,
   dispatchThunkAndExpect,
@@ -22,14 +22,10 @@ import {
   toQueryParams,
   uidsToResponse
 } from './utils/helpers';
-import { supportDeprecatedConfig } from './plugins/deprecation';
-import usageMonitoring from './plugins/usageMonitoring';
+import ping from './plugins/ping';
 import persistToken from './plugins/persistToken';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
-
-// Hide Default Content
-hideDefaultContent();
 
 // Setup Polymer configuration
 configurePolymer();
@@ -46,7 +42,6 @@ const Simpla = new class Simpla {
     // Initialize endpoints
     this._store.dispatch(setOption('authEndpoint', AUTH_SERVER));
     this._store.dispatch(setOption('dataEndpoint', `${AUTH_SERVER}/projects/${project}/content`));
-    this._store.dispatch(setOption('hashTracking', true));
   }
 
   // Authentication
@@ -170,8 +165,7 @@ const Simpla = new class Simpla {
 
 // Init plugins
 const plugins = [
-  supportDeprecatedConfig,
-  usageMonitoring,
+  ping,
   persistToken
 ];
 
