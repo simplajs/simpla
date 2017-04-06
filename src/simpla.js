@@ -46,7 +46,6 @@ const Simpla = new class Simpla {
     // Initialize endpoints
     this._store.dispatch(setOption('authEndpoint', AUTH_SERVER));
     this._store.dispatch(setOption('dataEndpoint', `${AUTH_SERVER}/projects/${project}/content`));
-    this._store.dispatch(setOption('hashTracking', true));
   }
 
   // Authentication
