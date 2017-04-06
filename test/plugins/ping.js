@@ -1,4 +1,4 @@
-import usageMonitoring from '../../src/plugins/usageMonitoring';
+import ping from '../../src/plugins/ping';
 import fetchMock from 'fetch-mock';
 
 const SERVER = 'some-server',
@@ -7,13 +7,13 @@ const SERVER = 'some-server',
 const URL = `${SERVER}/projects/${PROJECT}/sessions`;
 
 const Simpla = {
-  getState() {
-    return {
-      config: {
+  getState(path) {
+    if (path === 'config') {
+      return {
         authEndpoint: SERVER,
         project: PROJECT
       }
-    };
+    }
   }
 }
 
@@ -39,16 +39,9 @@ describe('usage monitoring', () => {
   });
 
   beforeEach(() => {
-    window.localStorage.removeItem('sm-session');
-    sinon.stub(window, 'addEventListener');
-
-    usageMonitoring(Simpla);
+    ping(Simpla);
 
     lastOptions = fetchMock.lastOptions(URL);
-  });
-
-  afterEach(() => {
-    window.addEventListener.restore();
   });
 
   it('should call the right endpoint', () => {
@@ -59,25 +52,11 @@ describe('usage monitoring', () => {
     expect(lastOptions.method).to.equal('POST');
   });
 
-  it('should send element count with the body', () => {
-    let body = JSON.parse(lastOptions.body);
-    expect(body.elements).to.be.defined;
-  });
-
-  it('should set Content-Type to application/json', () => {
-    let headers = lastOptions.headers;
-    expect(headers['Content-Type']).to.equal('application/json');
-  });
-
-  it('should set a new token in localStorage', () => {
-    expect(window.localStorage.getItem('sm-session')).to.be.ok;
-  });
-
   describe('handling empty config', () => {
     beforeEach(() => {
       fetchMock.reset();
       window.localStorage.removeItem('sm-session');
-      usageMonitoring(BadSimpla);
+      ping(BadSimpla);
     });
 
     it('should not call fetch if config are undefined', () => {
@@ -93,26 +72,5 @@ describe('usage monitoring', () => {
       observer({ authEndpoint: SERVER, project: PROJECT });
       expect(fetchMock.calls().matched).to.have.lengthOf(1);
     });
-  });
-
-  it('should update the token on beforeunload', (done) => {
-    let current = window.localStorage.getItem('sm-session'),
-        lastCall,
-        listeningTo,
-        callback;
-
-    usageMonitoring(Simpla);
-    lastCall = window.addEventListener.lastCall
-
-    expect(lastCall).to.be.ok;
-
-    [ listeningTo, callback ] = lastCall.args;
-    expect(listeningTo).to.equal('beforeunload');
-
-    setTimeout(() => {
-      callback();
-      expect(window.localStorage.getItem('sm-session')).not.to.equal(current);
-      done();
-    }, 5);
   });
 });

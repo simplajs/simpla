@@ -3767,108 +3767,26 @@ function configurePolymer() {
   window.Polymer = window.Polymer || { dom: 'shadow' };
 }
 
-var SESSION_KEY = 'sm-session';
-var SECOND = 1000;
-var INTERVAL = 10 * SECOND;
+var ping = function (Simpla) {
+  var observer = void 0,
+      tryPing = void 0;
 
-var usageMonitoring = function (Simpla) {
-
-  /**
-   * Ping the server at the usage endpoint
-   * @return {undefined}
-   */
-  function ping(endpoint) {
-    var elements = document.querySelectorAll('simpla-text, simpla-img').length;
-
-    fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ elements: elements })
-    });
-  }
-
-  /**
-   * Check if user is still within the session time period
-   * @return {Boolean} true if still in session, false otherwise
-   */
-  function stillInSession() {
-    var expiry = void 0,
-        now = void 0;
-
-    try {
-      expiry = window.localStorage.getItem(SESSION_KEY);
-    } catch (e) {
-      expiry = null;
-    }
-
-    now = Date.now();
-
-    return expiry && parseInt(expiry) > now;
-  }
-
-  /**
-   * Update the session to now + interval time
-   * @return {undefined}
-   */
-  function resetSession() {
-    try {
-      window.localStorage.setItem(SESSION_KEY, Date.now() + INTERVAL);
-    } catch (e) {
-      // Fail silently, thisis low priority work and doesn't matter greatly if
-      //  we cant set
-    }
-  }
-
-  function checkAndPing(_ref) {
+  tryPing = function tryPing(_ref) {
     var authEndpoint = _ref.authEndpoint,
         project = _ref.project;
 
-    var endpoint = authEndpoint + '/projects/' + project + '/sessions';
-
     if (authEndpoint && project) {
-      ping(endpoint);
+      fetch(authEndpoint + '/projects/' + project + '/sessions', { method: 'POST' });
+      observer && observer.unobserve();
       return true;
     }
 
     return false;
-  }
-
-  function run() {
-    // If they're not in the session, send a ping to the server
-    if (!stillInSession()) {
-      if (!checkAndPing(Simpla.getState().config)) {
-        var _Simpla$observeState = Simpla.observeState('config', function (config) {
-          if (checkAndPing(config)) {
-            unobserve();
-          }
-        }),
-            unobserve = _Simpla$observeState.unobserve;
-      }
-    }
-
-    // Reset the session token
-    resetSession();
-  }
-
-  var documentIsReady = function documentIsReady() {
-    return document.readyState === 'interactive' || document.readyState === 'complete';
   };
-  if (documentIsReady()) {
-    run();
-  } else {
-    var listener = function listener() {
-      if (documentIsReady()) {
-        run();
-        document.removeEventListener('readystatechange', listener);
-      }
-    };
-    document.addEventListener('readystatechange', listener);
-  }
 
-  // When they leave the site, reset the session token
-  window.addEventListener('beforeunload', resetSession);
+  if (!tryPing(Simpla.getState('config'))) {
+    observer = Simpla.observeState('config', tryPing);
+  }
 };
 
 var TOKEN_KEY = 'simpla-token';
@@ -4510,7 +4428,7 @@ var Simpla = new (function () {
 }())();
 
 // Init plugins
-var plugins = [usageMonitoring, persistToken];
+var plugins = [ping, persistToken];
 
 plugins.forEach(function (plugin) {
   return plugin(Simpla);

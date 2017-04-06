@@ -22,7 +22,7 @@ import {
   toQueryParams,
   uidsToResponse
 } from './utils/helpers';
-import usageMonitoring from './plugins/usageMonitoring';
+import ping from './plugins/ping';
 import persistToken from './plugins/persistToken';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
@@ -165,7 +165,7 @@ const Simpla = new class Simpla {
 
 // Init plugins
 const plugins = [
-  usageMonitoring,
+  ping,
   persistToken
 ];
 
