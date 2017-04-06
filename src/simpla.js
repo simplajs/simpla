@@ -22,7 +22,6 @@ import {
   toQueryParams,
   uidsToResponse
 } from './utils/helpers';
-import { supportDeprecatedConfig } from './plugins/deprecation';
 import usageMonitoring from './plugins/usageMonitoring';
 import persistToken from './plugins/persistToken';
 import thunk from 'redux-thunk';
@@ -166,7 +165,6 @@ const Simpla = new class Simpla {
 
 // Init plugins
 const plugins = [
-  supportDeprecatedConfig,
   usageMonitoring,
   persistToken
 ];

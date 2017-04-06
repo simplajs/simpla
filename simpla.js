@@ -3767,26 +3767,6 @@ function configurePolymer() {
   window.Polymer = window.Polymer || { dom: 'shadow' };
 }
 
-/**
- * NOTE: Also for backwards compatibility. This below is a private API and can be
- * 	safely removed once all elements who depend on it are upgraded
- * 	@return {undefined}
- */
-function supportDeprecatedConfig(Simpla) {
-  var projectObserver = function projectObserver(project) {
-    window.simpla.config.api = project;
-  },
-      authEndpointObserver = function authEndpointObserver(authEndpoint) {
-    window.simpla.config.server = authEndpoint;
-  };
-
-  window.simpla = window.simpla || {};
-  window.simpla.config = window.simpla.config || {};
-
-  Simpla.observeState('config.project', projectObserver);
-  Simpla.observeState('config.authEndpoint', authEndpointObserver);
-}
-
 var SESSION_KEY = 'sm-session';
 var SECOND = 1000;
 var INTERVAL = 10 * SECOND;
@@ -4530,7 +4510,7 @@ var Simpla = new (function () {
 }())();
 
 // Init plugins
-var plugins = [supportDeprecatedConfig, usageMonitoring, persistToken];
+var plugins = [usageMonitoring, persistToken];
 
 plugins.forEach(function (plugin) {
   return plugin(Simpla);
