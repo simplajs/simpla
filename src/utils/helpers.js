@@ -103,6 +103,10 @@ export function storeToObserver(store) {
 }
 
 export function matchesQuery(query = {}, content) {
+  if (typeof content === 'undefined' || content === null) {
+    return false;
+  }
+
   if (query.parent) {
     return content.id !== query.parent && content.id.indexOf(query.parent) === 0;
   }

@@ -3162,6 +3162,10 @@ function matchesQuery() {
   var query = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var content = arguments[1];
 
+  if (typeof content === 'undefined' || content === null) {
+    return false;
+  }
+
   if (query.parent) {
     return content.id !== query.parent && content.id.indexOf(query.parent) === 0;
   }

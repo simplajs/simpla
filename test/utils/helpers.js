@@ -300,6 +300,11 @@ describe('helpers', () => {
           expect(matchesQuery({}, content)).to.be.true;
         });
     });
+
+    it('should return false on null / undefined content', () => {
+      expect(matchesQuery({}, null)).to.be.false;
+      expect(matchesQuery({})).to.be.false;
+    });
   });
 
   describe('runDispatchAndExpect', () => {
