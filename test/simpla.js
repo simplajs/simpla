@@ -73,8 +73,7 @@ describe('Simpla', () => {
       expect(Simpla._store.getActions()).to.deep.equal([
         setOption('project', project),
         setOption('authEndpoint', AUTH_SERVER),
-        setOption('dataEndpoint', dataEndpoint),
-        setOption('hashTracking', true)
+        setOption('dataEndpoint', dataEndpoint)
       ]);
     });
 
