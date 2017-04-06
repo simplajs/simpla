@@ -10,7 +10,7 @@ import save from './actions/save';
 import { AUTH_SERVER } from './constants/options';
 import { DATA_PREFIX, QUERIES_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
-import { hideDefaultContent, configurePolymer } from './utils/prepare';
+import { configurePolymer } from './utils/prepare';
 import {
   storeToObserver,
   dispatchThunkAndExpect,
@@ -27,9 +27,6 @@ import usageMonitoring from './plugins/usageMonitoring';
 import persistToken from './plugins/persistToken';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
-
-// Hide Default Content
-hideDefaultContent();
 
 // Setup Polymer configuration
 configurePolymer();

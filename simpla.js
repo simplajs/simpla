@@ -3760,16 +3760,6 @@ function save$1() {
 var AUTH_SERVER = 'https://api-beta-xb177olenlgv.netdna-ssl.com';
 
 /**
- * Hides <default-content> elements by injecting a style tag into the head
- * @return {undefined}
- */
-function hideDefaultContent() {
-  var style = document.createElement('style');
-  style.innerHTML = 'default-content { display: none; }';
-  document.head.appendChild(style);
-}
-
-/**
  * Configure Polymer with dom = shadow, unless Polymer is already defined
  * @return {undefined}
  */
@@ -4358,9 +4348,6 @@ function save$2() {
 var _combineReducers;
 
 var reducer = combineReducers((_combineReducers = {}, defineProperty$1(_combineReducers, DATA_PREFIX, data), defineProperty$1(_combineReducers, QUERIES_PREFIX, queries), defineProperty$1(_combineReducers, 'authenticated', authenticated), defineProperty$1(_combineReducers, 'config', options), defineProperty$1(_combineReducers, 'editable', editable$1), defineProperty$1(_combineReducers, 'token', token), defineProperty$1(_combineReducers, 'save', save$2), _combineReducers));
-
-// Hide Default Content
-hideDefaultContent();
 
 // Setup Polymer configuration
 configurePolymer();
