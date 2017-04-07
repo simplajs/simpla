@@ -17,6 +17,7 @@
   "ignore": [
     "*",
     "!simpla.js",
+    "!simpla.min.js",
     "!LICENSE"
   ]
 }
