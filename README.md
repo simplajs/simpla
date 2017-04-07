@@ -66,7 +66,7 @@ For questions and support get in touch with the team or join the community on Sl
 
 ## Contributing
 
-Whether its opening issues and pull requests, giving feedback, or sharing something you've built using Simpla, there are lots of ways you can help push the Simpla project forward:
+There are lots of ways you can help push the Simpla project forward:
 
 - **Feedback.** Try Simpla and let us know what works and what could be better - new features, API feebdack, new use-cases, breaking bugs, everything helps.
 
