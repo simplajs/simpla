@@ -1,75 +1,240 @@
 (function (global, factory) {
-                  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-                  typeof define === 'function' && define.amd ? define('Simpla', factory) :
-                  (global.Simpla = factory());
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+    typeof define === 'function' && define.amd ? define('Simpla', factory) :
+    (global.Simpla = factory());
 }(this, (function () { 'use strict';
 
-var toString$1 = {}.toString;
+var global$1 = typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};
 
-var _cof = function _cof(it) {
-  return toString$1.call(it).slice(8, -1);
+// shim for using process in browser
+// based off https://github.com/defunctzombie/node-process/blob/master/browser.js
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout() {
+    throw new Error('clearTimeout has not been defined');
+}
+var cachedSetTimeout = defaultSetTimout;
+var cachedClearTimeout = defaultClearTimeout;
+if (typeof global$1.setTimeout === 'function') {
+    cachedSetTimeout = setTimeout;
+}
+if (typeof global$1.clearTimeout === 'function') {
+    cachedClearTimeout = clearTimeout;
+}
+
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch (e) {
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch (e) {
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e) {
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e) {
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while (len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+function nextTick(fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+}
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
 };
+var title = 'browser';
+var platform = 'browser';
+var browser = true;
+var env = {};
+var argv = [];
+var version = ''; // empty string to avoid regexp issues
+var versions = {};
+var release = {};
+var config = {};
+
+function noop() {}
+
+var on = noop;
+var addListener = noop;
+var once = noop;
+var off = noop;
+var removeListener = noop;
+var removeAllListeners = noop;
+var emit = noop;
+
+function binding(name) {
+    throw new Error('process.binding is not supported');
+}
+
+function cwd() {
+    return '/';
+}
+function chdir(dir) {
+    throw new Error('process.chdir is not supported');
+}
+function umask() {
+    return 0;
+}
+
+// from https://github.com/kumavis/browser-process-hrtime/blob/master/index.js
+var performance = global$1.performance || {};
+var performanceNow = performance.now || performance.mozNow || performance.msNow || performance.oNow || performance.webkitNow || function () {
+    return new Date().getTime();
+};
+
+// generate timestamp or delta
+// see http://nodejs.org/api/process.html#process_process_hrtime
+function hrtime(previousTimestamp) {
+    var clocktime = performanceNow.call(performance) * 1e-3;
+    var seconds = Math.floor(clocktime);
+    var nanoseconds = Math.floor(clocktime % 1 * 1e9);
+    if (previousTimestamp) {
+        seconds = seconds - previousTimestamp[0];
+        nanoseconds = nanoseconds - previousTimestamp[1];
+        if (nanoseconds < 0) {
+            seconds--;
+            nanoseconds += 1e9;
+        }
+    }
+    return [seconds, nanoseconds];
+}
+
+var startTime = new Date();
+function uptime() {
+    var currentTime = new Date();
+    var dif = currentTime - startTime;
+    return dif / 1000;
+}
+
+var process = {
+    nextTick: nextTick,
+    title: title,
+    browser: browser,
+    env: env,
+    argv: argv,
+    version: version,
+    versions: versions,
+    on: on,
+    addListener: addListener,
+    once: once,
+    off: off,
+    removeListener: removeListener,
+    removeAllListeners: removeAllListeners,
+    emit: emit,
+    binding: binding,
+    cwd: cwd,
+    chdir: chdir,
+    umask: umask,
+    hrtime: hrtime,
+    platform: platform,
+    release: release,
+    config: config,
+    uptime: uptime
+};
+
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function commonjsRequire () {
+	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
+}
+
+
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
-
-var _global = createCommonjsModule(function (module) {
-  // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
-  var global = module.exports = typeof window != 'undefined' && window.Math == Math ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
-  if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
-});
-
-var global$1 = _global;
-var SHARED = '__core-js_shared__';
-var store = global$1[SHARED] || (global$1[SHARED] = {});
-var _shared = function _shared(key) {
-  return store[key] || (store[key] = {});
-};
-
-var id = 0;
-var px = Math.random();
-var _uid = function _uid(key) {
-  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
-};
-
-var _wks = createCommonjsModule(function (module) {
-  var store = _shared('wks'),
-      uid = _uid,
-      _Symbol = _global.Symbol,
-      USE_SYMBOL = typeof _Symbol == 'function';
-
-  var $exports = module.exports = function (name) {
-    return store[name] || (store[name] = USE_SYMBOL && _Symbol[name] || (USE_SYMBOL ? _Symbol : uid)('Symbol.' + name));
-  };
-
-  $exports.store = store;
-});
-
-// getting tag from 19.1.3.6 Object.prototype.toString()
-var cof = _cof;
-var TAG = _wks('toStringTag');
-var ARG = cof(function () {
-  return arguments;
-}()) == 'Arguments';
-
-// fallback for IE11 Script Access Denied error
-var tryGet = function tryGet(it, key) {
-  try {
-    return it[key];
-  } catch (e) {/* empty */}
-};
-
-var _classof = function _classof(it) {
-  var O, T, B;
-  return it === undefined ? 'Undefined' : it === null ? 'Null'
-  // @@toStringTag case
-  : typeof (T = tryGet(O = Object(it), TAG)) == 'string' ? T
-  // builtinTag case
-  : ARG ? cof(O)
-  // ES3 arguments fallback
-  : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
-};
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
@@ -115,7 +280,7 @@ var createClass = function () {
 
 
 
-var defineProperty$1 = function (obj, key, value) {
+var defineProperty = function (obj, key, value) {
   if (key in obj) {
     Object.defineProperty(obj, key, {
       value: value,
@@ -267,1378 +432,1168 @@ var toConsumableArray = function (arr) {
   }
 };
 
-var _isObject = function _isObject(it) {
-  return (typeof it === 'undefined' ? 'undefined' : _typeof(it)) === 'object' ? it !== null : typeof it === 'function';
-};
+var es6Promise = createCommonjsModule(function (module, exports) {
+  /*!
+   * @overview es6-promise - a tiny implementation of Promises/A+.
+   * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
+   * @license   Licensed under MIT license
+   *            See https://raw.githubusercontent.com/stefanpenner/es6-promise/master/LICENSE
+   * @version   4.1.0
+   */
 
-var isObject = _isObject;
-var _anObject = function _anObject(it) {
-  if (!isObject(it)) throw TypeError(it + ' is not an object!');
-  return it;
-};
+  (function (global, factory) {
+    'object' === 'object' && 'object' !== 'undefined' ? module.exports = factory() : typeof undefined === 'function' && undefined.amd ? undefined(factory) : global.ES6Promise = factory();
+  })(commonjsGlobal, function () {
+    'use strict';
 
-var _fails = function _fails(exec) {
-  try {
-    return !!exec();
-  } catch (e) {
-    return true;
-  }
-};
+    function objectOrFunction(x) {
+      return typeof x === 'function' || (typeof x === 'undefined' ? 'undefined' : _typeof(x)) === 'object' && x !== null;
+    }
 
-// Thank's IE8 for his funny defineProperty
-var _descriptors = !_fails(function () {
-  return Object.defineProperty({}, 'a', { get: function get() {
-      return 7;
-    } }).a != 7;
-});
+    function isFunction(x) {
+      return typeof x === 'function';
+    }
 
-var isObject$1 = _isObject;
-var document$1 = _global.document;
-var is = isObject$1(document$1) && isObject$1(document$1.createElement);
-var _domCreate = function _domCreate(it) {
-  return is ? document$1.createElement(it) : {};
-};
-
-var _ie8DomDefine = !_descriptors && !_fails(function () {
-  return Object.defineProperty(_domCreate('div'), 'a', { get: function get() {
-      return 7;
-    } }).a != 7;
-});
-
-// 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject$2 = _isObject;
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
-var _toPrimitive = function _toPrimitive(it, S) {
-  if (!isObject$2(it)) return it;
-  var fn, val;
-  if (S && typeof (fn = it.toString) == 'function' && !isObject$2(val = fn.call(it))) return val;
-  if (typeof (fn = it.valueOf) == 'function' && !isObject$2(val = fn.call(it))) return val;
-  if (!S && typeof (fn = it.toString) == 'function' && !isObject$2(val = fn.call(it))) return val;
-  throw TypeError("Can't convert object to primitive value");
-};
-
-var anObject = _anObject;
-var IE8_DOM_DEFINE = _ie8DomDefine;
-var toPrimitive = _toPrimitive;
-var dP$1 = Object.defineProperty;
-
-var f = _descriptors ? Object.defineProperty : function defineProperty(O, P, Attributes) {
-  anObject(O);
-  P = toPrimitive(P, true);
-  anObject(Attributes);
-  if (IE8_DOM_DEFINE) try {
-    return dP$1(O, P, Attributes);
-  } catch (e) {/* empty */}
-  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported!');
-  if ('value' in Attributes) O[P] = Attributes.value;
-  return O;
-};
-
-var _objectDp = {
-  f: f
-};
-
-var _propertyDesc = function _propertyDesc(bitmap, value) {
-  return {
-    enumerable: !(bitmap & 1),
-    configurable: !(bitmap & 2),
-    writable: !(bitmap & 4),
-    value: value
-  };
-};
-
-var dP = _objectDp;
-var createDesc = _propertyDesc;
-var _hide = _descriptors ? function (object, key, value) {
-  return dP.f(object, key, createDesc(1, value));
-} : function (object, key, value) {
-  object[key] = value;
-  return object;
-};
-
-var hasOwnProperty = {}.hasOwnProperty;
-var _has = function _has(it, key) {
-  return hasOwnProperty.call(it, key);
-};
-
-var _core = createCommonjsModule(function (module) {
-  var core = module.exports = { version: '2.4.0' };
-  if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
-});
-
-var _redefine = createCommonjsModule(function (module) {
-  var global = _global,
-      hide = _hide,
-      has = _has,
-      SRC = _uid('src'),
-      TO_STRING = 'toString',
-      $toString = Function[TO_STRING],
-      TPL = ('' + $toString).split(TO_STRING);
-
-  _core.inspectSource = function (it) {
-    return $toString.call(it);
-  };
-
-  (module.exports = function (O, key, val, safe) {
-    var isFunction = typeof val == 'function';
-    if (isFunction) has(val, 'name') || hide(val, 'name', key);
-    if (O[key] === val) return;
-    if (isFunction) has(val, SRC) || hide(val, SRC, O[key] ? '' + O[key] : TPL.join(String(key)));
-    if (O === global) {
-      O[key] = val;
+    var _isArray = undefined;
+    if (!Array.isArray) {
+      _isArray = function _isArray(x) {
+        return Object.prototype.toString.call(x) === '[object Array]';
+      };
     } else {
-      if (!safe) {
-        delete O[key];
-        hide(O, key, val);
-      } else {
-        if (O[key]) O[key] = val;else hide(O, key, val);
-      }
+      _isArray = Array.isArray;
     }
-    // add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
-  })(Function.prototype, TO_STRING, function toString() {
-    return typeof this == 'function' && this[SRC] || $toString.call(this);
-  });
-});
 
-// 19.1.3.6 Object.prototype.toString()
-var classof = _classof;
-var test = {};
-test[_wks('toStringTag')] = 'z';
-if (test + '' != '[object z]') {
-  _redefine(Object.prototype, 'toString', function toString() {
-    return '[object ' + classof(this) + ']';
-  }, true);
-}
-
-// 7.1.4 ToInteger
-var ceil = Math.ceil;
-var floor = Math.floor;
-var _toInteger = function _toInteger(it) {
-  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
-};
-
-// 7.2.1 RequireObjectCoercible(argument)
-var _defined = function _defined(it) {
-  if (it == undefined) throw TypeError("Can't call method on  " + it);
-  return it;
-};
-
-var toInteger = _toInteger;
-var defined = _defined;
-// true  -> String#at
-// false -> String#codePointAt
-var _stringAt = function _stringAt(TO_STRING) {
-  return function (that, pos) {
-    var s = String(defined(that)),
-        i = toInteger(pos),
-        l = s.length,
-        a,
-        b;
-    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
-    a = s.charCodeAt(i);
-    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff ? TO_STRING ? s.charAt(i) : a : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
-  };
-};
-
-var _library = false;
-
-var _aFunction = function _aFunction(it) {
-  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
-  return it;
-};
-
-// optional / simple context binding
-var aFunction = _aFunction;
-var _ctx = function _ctx(fn, that, length) {
-  aFunction(fn);
-  if (that === undefined) return fn;
-  switch (length) {
-    case 1:
-      return function (a) {
-        return fn.call(that, a);
-      };
-    case 2:
-      return function (a, b) {
-        return fn.call(that, a, b);
-      };
-    case 3:
-      return function (a, b, c) {
-        return fn.call(that, a, b, c);
-      };
-  }
-  return function () /* ...args */{
-    return fn.apply(that, arguments);
-  };
-};
-
-var global$2 = _global;
-var core = _core;
-var hide$1 = _hide;
-var redefine$1 = _redefine;
-var ctx = _ctx;
-var PROTOTYPE = 'prototype';
-
-var $export$1 = function $export$1(type, name, source) {
-  var IS_FORCED = type & $export$1.F,
-      IS_GLOBAL = type & $export$1.G,
-      IS_STATIC = type & $export$1.S,
-      IS_PROTO = type & $export$1.P,
-      IS_BIND = type & $export$1.B,
-      target = IS_GLOBAL ? global$2 : IS_STATIC ? global$2[name] || (global$2[name] = {}) : (global$2[name] || {})[PROTOTYPE],
-      exports = IS_GLOBAL ? core : core[name] || (core[name] = {}),
-      expProto = exports[PROTOTYPE] || (exports[PROTOTYPE] = {}),
-      key,
-      own,
-      out,
-      exp;
-  if (IS_GLOBAL) source = name;
-  for (key in source) {
-    // contains in native
-    own = !IS_FORCED && target && target[key] !== undefined;
-    // export native or passed
-    out = (own ? target : source)[key];
-    // bind timers to global for call from export context
-    exp = IS_BIND && own ? ctx(out, global$2) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
-    // extend global
-    if (target) redefine$1(target, key, out, type & $export$1.U);
-    // export
-    if (exports[key] != out) hide$1(exports, key, exp);
-    if (IS_PROTO && expProto[key] != out) expProto[key] = out;
-  }
-};
-global$2.core = core;
-// type bitmap
-$export$1.F = 1; // forced
-$export$1.G = 2; // global
-$export$1.S = 4; // static
-$export$1.P = 8; // proto
-$export$1.B = 16; // bind
-$export$1.W = 32; // wrap
-$export$1.U = 64; // safe
-$export$1.R = 128; // real proto method for `library` 
-var _export = $export$1;
-
-var _iterators = {};
-
-// fallback for non-array-like ES3 and non-enumerable old V8 strings
-var cof$1 = _cof;
-var _iobject = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
-  return cof$1(it) == 'String' ? it.split('') : Object(it);
-};
-
-// to indexed object, toObject with fallback for non-array-like ES3 strings
-var IObject = _iobject;
-var defined$1 = _defined;
-var _toIobject = function _toIobject(it) {
-  return IObject(defined$1(it));
-};
-
-// 7.1.15 ToLength
-var toInteger$1 = _toInteger;
-var min = Math.min;
-var _toLength = function _toLength(it) {
-  return it > 0 ? min(toInteger$1(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
-};
-
-var toInteger$2 = _toInteger;
-var max = Math.max;
-var min$1 = Math.min;
-var _toIndex = function _toIndex(index, length) {
-  index = toInteger$2(index);
-  return index < 0 ? max(index + length, 0) : min$1(index, length);
-};
-
-// false -> Array#indexOf
-// true  -> Array#includes
-var toIObject$1 = _toIobject;
-var toLength = _toLength;
-var toIndex = _toIndex;
-var _arrayIncludes = function _arrayIncludes(IS_INCLUDES) {
-  return function ($this, el, fromIndex) {
-    var O = toIObject$1($this),
-        length = toLength(O.length),
-        index = toIndex(fromIndex, length),
-        value;
-    // Array#includes uses SameValueZero equality algorithm
-    if (IS_INCLUDES && el != el) while (length > index) {
-      value = O[index++];
-      if (value != value) return true;
-      // Array#toIndex ignores holes, Array#includes - not
-    } else for (; length > index; index++) {
-      if (IS_INCLUDES || index in O) {
-        if (O[index] === el) return IS_INCLUDES || index || 0;
-      }
-    }return !IS_INCLUDES && -1;
-  };
-};
-
-var shared = _shared('keys');
-var uid = _uid;
-var _sharedKey = function _sharedKey(key) {
-  return shared[key] || (shared[key] = uid(key));
-};
-
-var has$1 = _has;
-var toIObject = _toIobject;
-var arrayIndexOf = _arrayIncludes(false);
-var IE_PROTO$1 = _sharedKey('IE_PROTO');
-
-var _objectKeysInternal = function _objectKeysInternal(object, names) {
-  var O = toIObject(object),
-      i = 0,
-      result = [],
-      key;
-  for (key in O) {
-    if (key != IE_PROTO$1) has$1(O, key) && result.push(key);
-  } // Don't enum bug & hidden keys
-  while (names.length > i) {
-    if (has$1(O, key = names[i++])) {
-      ~arrayIndexOf(result, key) || result.push(key);
-    }
-  }return result;
-};
-
-// IE 8- don't enum bug keys
-var _enumBugKeys = 'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'.split(',');
-
-// 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys = _objectKeysInternal;
-var enumBugKeys$1 = _enumBugKeys;
-
-var _objectKeys = Object.keys || function keys(O) {
-  return $keys(O, enumBugKeys$1);
-};
-
-var dP$2 = _objectDp;
-var anObject$2 = _anObject;
-var getKeys = _objectKeys;
-
-var _objectDps = _descriptors ? Object.defineProperties : function defineProperties(O, Properties) {
-  anObject$2(O);
-  var keys = getKeys(Properties),
-      length = keys.length,
-      i = 0,
-      P;
-  while (length > i) {
-    dP$2.f(O, P = keys[i++], Properties[P]);
-  }return O;
-};
-
-var _html = _global.document && document.documentElement;
-
-// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var anObject$1 = _anObject;
-var dPs = _objectDps;
-var enumBugKeys = _enumBugKeys;
-var IE_PROTO = _sharedKey('IE_PROTO');
-var Empty = function Empty() {/* empty */};
-var PROTOTYPE$1 = 'prototype';
-
-// Create object with fake `null` prototype: use iframe Object with cleared prototype
-var _createDict = function createDict() {
-  // Thrash, waste and sodomy: IE GC bug
-  var iframe = _domCreate('iframe'),
-      i = enumBugKeys.length,
-      lt = '<',
-      gt = '>',
-      iframeDocument;
-  iframe.style.display = 'none';
-  _html.appendChild(iframe);
-  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
-  // createDict = iframe.contentWindow.Object;
-  // html.removeChild(iframe);
-  iframeDocument = iframe.contentWindow.document;
-  iframeDocument.open();
-  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
-  iframeDocument.close();
-  _createDict = iframeDocument.F;
-  while (i--) {
-    delete _createDict[PROTOTYPE$1][enumBugKeys[i]];
-  }return _createDict();
-};
-
-var _objectCreate = Object.create || function create(O, Properties) {
-  var result;
-  if (O !== null) {
-    Empty[PROTOTYPE$1] = anObject$1(O);
-    result = new Empty();
-    Empty[PROTOTYPE$1] = null;
-    // add "__proto__" for Object.getPrototypeOf polyfill
-    result[IE_PROTO] = O;
-  } else result = _createDict();
-  return Properties === undefined ? result : dPs(result, Properties);
-};
-
-var def = _objectDp.f;
-var has$2 = _has;
-var TAG$1 = _wks('toStringTag');
-
-var _setToStringTag = function _setToStringTag(it, tag, stat) {
-  if (it && !has$2(it = stat ? it : it.prototype, TAG$1)) def(it, TAG$1, { configurable: true, value: tag });
-};
-
-var create$1 = _objectCreate;
-var descriptor = _propertyDesc;
-var setToStringTag$1 = _setToStringTag;
-var IteratorPrototype = {};
-
-// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
-_hide(IteratorPrototype, _wks('iterator'), function () {
-  return this;
-});
-
-var _iterCreate = function _iterCreate(Constructor, NAME, next) {
-  Constructor.prototype = create$1(IteratorPrototype, { next: descriptor(1, next) });
-  setToStringTag$1(Constructor, NAME + ' Iterator');
-};
-
-// 7.1.13 ToObject(argument)
-var defined$2 = _defined;
-var _toObject = function _toObject(it) {
-  return Object(defined$2(it));
-};
-
-// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
-var has$3 = _has;
-var toObject = _toObject;
-var IE_PROTO$2 = _sharedKey('IE_PROTO');
-var ObjectProto = Object.prototype;
-
-var _objectGpo = Object.getPrototypeOf || function (O) {
-  O = toObject(O);
-  if (has$3(O, IE_PROTO$2)) return O[IE_PROTO$2];
-  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
-    return O.constructor.prototype;
-  }return O instanceof Object ? ObjectProto : null;
-};
-
-var LIBRARY = _library;
-var $export = _export;
-var redefine = _redefine;
-var hide = _hide;
-var has = _has;
-var Iterators = _iterators;
-var $iterCreate = _iterCreate;
-var setToStringTag = _setToStringTag;
-var getPrototypeOf = _objectGpo;
-var ITERATOR = _wks('iterator');
-var BUGGY = !([].keys && 'next' in [].keys());
-var FF_ITERATOR = '@@iterator';
-var KEYS = 'keys';
-var VALUES = 'values';
-
-var returnThis = function returnThis() {
-  return this;
-};
-
-var _iterDefine = function _iterDefine(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
-  $iterCreate(Constructor, NAME, next);
-  var getMethod = function getMethod(kind) {
-    if (!BUGGY && kind in proto) return proto[kind];
-    switch (kind) {
-      case KEYS:
-        return function keys() {
-          return new Constructor(this, kind);
-        };
-      case VALUES:
-        return function values() {
-          return new Constructor(this, kind);
-        };
-    }return function entries() {
-      return new Constructor(this, kind);
-    };
-  };
-  var TAG = NAME + ' Iterator',
-      DEF_VALUES = DEFAULT == VALUES,
-      VALUES_BUG = false,
-      proto = Base.prototype,
-      $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT],
-      $default = $native || getMethod(DEFAULT),
-      $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined,
-      $anyNative = NAME == 'Array' ? proto.entries || $native : $native,
-      methods,
-      key,
-      IteratorPrototype;
-  // Fix native
-  if ($anyNative) {
-    IteratorPrototype = getPrototypeOf($anyNative.call(new Base()));
-    if (IteratorPrototype !== Object.prototype) {
-      // Set @@toStringTag to native iterators
-      setToStringTag(IteratorPrototype, TAG, true);
-      // fix for some old engines
-      if (!LIBRARY && !has(IteratorPrototype, ITERATOR)) hide(IteratorPrototype, ITERATOR, returnThis);
-    }
-  }
-  // fix Array#{values, @@iterator}.name in V8 / FF
-  if (DEF_VALUES && $native && $native.name !== VALUES) {
-    VALUES_BUG = true;
-    $default = function values() {
-      return $native.call(this);
-    };
-  }
-  // Define iterator
-  if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
-    hide(proto, ITERATOR, $default);
-  }
-  // Plug for library
-  Iterators[NAME] = $default;
-  Iterators[TAG] = returnThis;
-  if (DEFAULT) {
-    methods = {
-      values: DEF_VALUES ? $default : getMethod(VALUES),
-      keys: IS_SET ? $default : getMethod(KEYS),
-      entries: $entries
-    };
-    if (FORCED) for (key in methods) {
-      if (!(key in proto)) redefine(proto, key, methods[key]);
-    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
-  }
-  return methods;
-};
-
-var $at = _stringAt(true);
-
-// 21.1.3.27 String.prototype[@@iterator]()
-_iterDefine(String, 'String', function (iterated) {
-  this._t = String(iterated); // target
-  this._i = 0; // next index
-  // 21.1.5.2.1 %StringIteratorPrototype%.next()
-}, function () {
-  var O = this._t,
-      index = this._i,
-      point;
-  if (index >= O.length) return { value: undefined, done: true };
-  point = $at(O, index);
-  this._i += point.length;
-  return { value: point, done: false };
-});
-
-// 22.1.3.31 Array.prototype[@@unscopables]
-var UNSCOPABLES = _wks('unscopables');
-var ArrayProto = Array.prototype;
-if (ArrayProto[UNSCOPABLES] == undefined) _hide(ArrayProto, UNSCOPABLES, {});
-var _addToUnscopables = function _addToUnscopables(key) {
-  ArrayProto[UNSCOPABLES][key] = true;
-};
-
-var _iterStep = function _iterStep(done, value) {
-  return { value: value, done: !!done };
-};
-
-var addToUnscopables = _addToUnscopables;
-var step = _iterStep;
-var Iterators$2 = _iterators;
-var toIObject$2 = _toIobject;
-
-// 22.1.3.4 Array.prototype.entries()
-// 22.1.3.13 Array.prototype.keys()
-// 22.1.3.29 Array.prototype.values()
-// 22.1.3.30 Array.prototype[@@iterator]()
-var es6_array_iterator = _iterDefine(Array, 'Array', function (iterated, kind) {
-  this._t = toIObject$2(iterated); // target
-  this._i = 0; // next index
-  this._k = kind; // kind
-  // 22.1.5.2.1 %ArrayIteratorPrototype%.next()
-}, function () {
-  var O = this._t,
-      kind = this._k,
-      index = this._i++;
-  if (!O || index >= O.length) {
-    this._t = undefined;
-    return step(1);
-  }
-  if (kind == 'keys') return step(0, index);
-  if (kind == 'values') return step(0, O[index]);
-  return step(0, [index, O[index]]);
-}, 'values');
-
-// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
-Iterators$2.Arguments = Iterators$2.Array;
-
-addToUnscopables('keys');
-addToUnscopables('values');
-addToUnscopables('entries');
-
-var $iterators = es6_array_iterator;
-var redefine$2 = _redefine;
-var global$3 = _global;
-var hide$2 = _hide;
-var Iterators$1 = _iterators;
-var wks = _wks;
-var ITERATOR$1 = wks('iterator');
-var TO_STRING_TAG = wks('toStringTag');
-var ArrayValues = Iterators$1.Array;
-
-for (var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList', 'CSSRuleList'], i = 0; i < 5; i++) {
-  var NAME = collections[i],
-      Collection = global$3[NAME],
-      proto = Collection && Collection.prototype,
-      key;
-  if (proto) {
-    if (!proto[ITERATOR$1]) hide$2(proto, ITERATOR$1, ArrayValues);
-    if (!proto[TO_STRING_TAG]) hide$2(proto, TO_STRING_TAG, NAME);
-    Iterators$1[NAME] = ArrayValues;
-    for (key in $iterators) {
-      if (!proto[key]) redefine$2(proto, key, $iterators[key], true);
-    }
-  }
-}
-
-var _anInstance = function _anInstance(it, Constructor, name, forbiddenField) {
-  if (!(it instanceof Constructor) || forbiddenField !== undefined && forbiddenField in it) {
-    throw TypeError(name + ': incorrect invocation!');
-  }return it;
-};
-
-// call something on iterator step with safe closing on error
-var anObject$3 = _anObject;
-var _iterCall = function _iterCall(iterator, fn, value, entries) {
-  try {
-    return entries ? fn(anObject$3(value)[0], value[1]) : fn(value);
-    // 7.4.6 IteratorClose(iterator, completion)
-  } catch (e) {
-    var ret = iterator['return'];
-    if (ret !== undefined) anObject$3(ret.call(iterator));
-    throw e;
-  }
-};
-
-// check on default Array iterator
-var Iterators$3 = _iterators;
-var ITERATOR$2 = _wks('iterator');
-var ArrayProto$1 = Array.prototype;
-
-var _isArrayIter = function _isArrayIter(it) {
-  return it !== undefined && (Iterators$3.Array === it || ArrayProto$1[ITERATOR$2] === it);
-};
-
-var classof$2 = _classof;
-var ITERATOR$3 = _wks('iterator');
-var Iterators$4 = _iterators;
-var core_getIteratorMethod = _core.getIteratorMethod = function (it) {
-  if (it != undefined) return it[ITERATOR$3] || it['@@iterator'] || Iterators$4[classof$2(it)];
-};
-
-var _forOf = createCommonjsModule(function (module) {
-  var ctx = _ctx,
-      call = _iterCall,
-      isArrayIter = _isArrayIter,
-      anObject = _anObject,
-      toLength = _toLength,
-      getIterFn = core_getIteratorMethod,
-      BREAK = {},
-      RETURN = {};
-  var exports = module.exports = function (iterable, entries, fn, that, ITERATOR) {
-    var iterFn = ITERATOR ? function () {
-      return iterable;
-    } : getIterFn(iterable),
-        f = ctx(fn, that, entries ? 2 : 1),
-        index = 0,
-        length,
-        step,
-        iterator,
-        result;
-    if (typeof iterFn != 'function') throw TypeError(iterable + ' is not iterable!');
-    // fast case for arrays with default iterator
-    if (isArrayIter(iterFn)) for (length = toLength(iterable.length); length > index; index++) {
-      result = entries ? f(anObject(step = iterable[index])[0], step[1]) : f(iterable[index]);
-      if (result === BREAK || result === RETURN) return result;
-    } else for (iterator = iterFn.call(iterable); !(step = iterator.next()).done;) {
-      result = call(iterator, f, step.value, entries);
-      if (result === BREAK || result === RETURN) return result;
-    }
-  };
-  exports.BREAK = BREAK;
-  exports.RETURN = RETURN;
-});
-
-// 7.3.20 SpeciesConstructor(O, defaultConstructor)
-var anObject$4 = _anObject;
-var aFunction$2 = _aFunction;
-var SPECIES = _wks('species');
-var _speciesConstructor = function _speciesConstructor(O, D) {
-  var C = anObject$4(O).constructor,
-      S;
-  return C === undefined || (S = anObject$4(C)[SPECIES]) == undefined ? D : aFunction$2(S);
-};
-
-// fast apply, http://jsperf.lnkit.com/fast-apply/5
-var _invoke = function _invoke(fn, args, that) {
-                  var un = that === undefined;
-                  switch (args.length) {
-                                    case 0:
-                                                      return un ? fn() : fn.call(that);
-                                    case 1:
-                                                      return un ? fn(args[0]) : fn.call(that, args[0]);
-                                    case 2:
-                                                      return un ? fn(args[0], args[1]) : fn.call(that, args[0], args[1]);
-                                    case 3:
-                                                      return un ? fn(args[0], args[1], args[2]) : fn.call(that, args[0], args[1], args[2]);
-                                    case 4:
-                                                      return un ? fn(args[0], args[1], args[2], args[3]) : fn.call(that, args[0], args[1], args[2], args[3]);
-                  }return fn.apply(that, args);
-};
-
-var ctx$2 = _ctx;
-var invoke = _invoke;
-var html = _html;
-var cel = _domCreate;
-var global$5 = _global;
-var process$1 = global$5.process;
-var setTask = global$5.setImmediate;
-var clearTask = global$5.clearImmediate;
-var MessageChannel = global$5.MessageChannel;
-var counter = 0;
-var queue = {};
-var ONREADYSTATECHANGE = 'onreadystatechange';
-var defer;
-var channel;
-var port;
-var run = function run() {
-  var id = +this;
-  if (queue.hasOwnProperty(id)) {
-    var fn = queue[id];
-    delete queue[id];
-    fn();
-  }
-};
-var listener = function listener(event) {
-  run.call(event.data);
-};
-// Node.js 0.9+ & IE10+ has setImmediate, otherwise:
-if (!setTask || !clearTask) {
-  setTask = function setImmediate(fn) {
-    var args = [],
-        i = 1;
-    while (arguments.length > i) {
-      args.push(arguments[i++]);
-    }queue[++counter] = function () {
-      invoke(typeof fn == 'function' ? fn : Function(fn), args);
-    };
-    defer(counter);
-    return counter;
-  };
-  clearTask = function clearImmediate(id) {
-    delete queue[id];
-  };
-  // Node.js 0.8-
-  if (_cof(process$1) == 'process') {
-    defer = function defer(id) {
-      process$1.nextTick(ctx$2(run, id, 1));
-    };
-    // Browsers with MessageChannel, includes WebWorkers
-  } else if (MessageChannel) {
-    channel = new MessageChannel();
-    port = channel.port2;
-    channel.port1.onmessage = listener;
-    defer = ctx$2(port.postMessage, port, 1);
-    // Browsers with postMessage, skip WebWorkers
-    // IE8 has postMessage, but it's sync & typeof its postMessage is 'object'
-  } else if (global$5.addEventListener && typeof postMessage == 'function' && !global$5.importScripts) {
-    defer = function defer(id) {
-      global$5.postMessage(id + '', '*');
-    };
-    global$5.addEventListener('message', listener, false);
-    // IE8-
-  } else if (ONREADYSTATECHANGE in cel('script')) {
-    defer = function defer(id) {
-      html.appendChild(cel('script'))[ONREADYSTATECHANGE] = function () {
-        html.removeChild(this);
-        run.call(id);
-      };
-    };
-    // Rest old browsers
-  } else {
-    defer = function defer(id) {
-      setTimeout(ctx$2(run, id, 1), 0);
-    };
-  }
-}
-var _task = {
-  set: setTask,
-  clear: clearTask
-};
-
-var global$6 = _global;
-var macrotask = _task.set;
-var Observer = global$6.MutationObserver || global$6.WebKitMutationObserver;
-var process$2 = global$6.process;
-var Promise$1 = global$6.Promise;
-var isNode$1 = _cof(process$2) == 'process';
-
-var _microtask = function _microtask() {
-  var head, last, notify;
-
-  var flush = function flush() {
-    var parent, fn;
-    if (isNode$1 && (parent = process$2.domain)) parent.exit();
-    while (head) {
-      fn = head.fn;
-      head = head.next;
-      try {
-        fn();
-      } catch (e) {
-        if (head) notify();else last = undefined;
-        throw e;
-      }
-    }last = undefined;
-    if (parent) parent.enter();
-  };
-
-  // Node.js
-  if (isNode$1) {
-    notify = function notify() {
-      process$2.nextTick(flush);
-    };
-    // browsers with MutationObserver
-  } else if (Observer) {
-    var toggle = true,
-        node = document.createTextNode('');
-    new Observer(flush).observe(node, { characterData: true }); // eslint-disable-line no-new
-    notify = function notify() {
-      node.data = toggle = !toggle;
-    };
-    // environments with maybe non-completely correct, but existent Promise
-  } else if (Promise$1 && Promise$1.resolve) {
-    var promise = Promise$1.resolve();
-    notify = function notify() {
-      promise.then(flush);
-    };
-    // for other environments - macrotask based on:
-    // - setImmediate
-    // - MessageChannel
-    // - window.postMessag
-    // - onreadystatechange
-    // - setTimeout
-  } else {
-    notify = function notify() {
-      // strange IE + webpack dev server bug - use .call(global)
-      macrotask.call(global$6, flush);
-    };
-  }
-
-  return function (fn) {
-    var task = { fn: fn, next: undefined };
-    if (last) last.next = task;
-    if (!head) {
-      head = task;
-      notify();
-    }last = task;
-  };
-};
-
-var redefine$3 = _redefine;
-var _redefineAll = function _redefineAll(target, src, safe) {
-  for (var key in src) {
-    redefine$3(target, key, src[key], safe);
-  }return target;
-};
-
-var global$7 = _global;
-var dP$3 = _objectDp;
-var DESCRIPTORS = _descriptors;
-var SPECIES$1 = _wks('species');
-
-var _setSpecies = function _setSpecies(KEY) {
-  var C = global$7[KEY];
-  if (DESCRIPTORS && C && !C[SPECIES$1]) dP$3.f(C, SPECIES$1, {
-    configurable: true,
-    get: function get() {
-      return this;
-    }
-  });
-};
-
-var ITERATOR$4 = _wks('iterator');
-var SAFE_CLOSING = false;
-
-try {
-  var riter = [7][ITERATOR$4]();
-  riter['return'] = function () {
-    SAFE_CLOSING = true;
-  };
-  Array.from(riter, function () {
-    throw 2;
-  });
-} catch (e) {/* empty */}
-
-var _iterDetect = function _iterDetect(exec, skipClosing) {
-  if (!skipClosing && !SAFE_CLOSING) return false;
-  var safe = false;
-  try {
-    var arr = [7],
-        iter = arr[ITERATOR$4]();
-    iter.next = function () {
-      return { done: safe = true };
-    };
-    arr[ITERATOR$4] = function () {
-      return iter;
-    };
-    exec(arr);
-  } catch (e) {/* empty */}
-  return safe;
-};
-
-var LIBRARY$1 = _library;
-var global$4 = _global;
-var ctx$1 = _ctx;
-var classof$1 = _classof;
-var $export$2 = _export;
-var isObject$3 = _isObject;
-var aFunction$1 = _aFunction;
-var anInstance = _anInstance;
-var forOf = _forOf;
-var speciesConstructor = _speciesConstructor;
-var task = _task.set;
-var microtask = _microtask();
-var PROMISE = 'Promise';
-var TypeError$1 = global$4.TypeError;
-var process = global$4.process;
-var $Promise = global$4[PROMISE];
-var process = global$4.process;
-var isNode = classof$1(process) == 'process';
-var empty = function empty() {/* empty */};
-var Internal;
-var GenericPromiseCapability;
-var Wrapper;
-
-var USE_NATIVE = !!function () {
-  try {
-    // correct subclassing with @@species support
-    var promise = $Promise.resolve(1),
-        FakePromise = (promise.constructor = {})[_wks('species')] = function (exec) {
-      exec(empty, empty);
-    };
-    // unhandled rejections tracking support, NodeJS Promise without it fails @@species test
-    return (isNode || typeof PromiseRejectionEvent == 'function') && promise.then(empty) instanceof FakePromise;
-  } catch (e) {/* empty */}
-}();
-
-// helpers
-var sameConstructor = function sameConstructor(a, b) {
-  // with library wrapper special case
-  return a === b || a === $Promise && b === Wrapper;
-};
-var isThenable = function isThenable(it) {
-  var then;
-  return isObject$3(it) && typeof (then = it.then) == 'function' ? then : false;
-};
-var newPromiseCapability = function newPromiseCapability(C) {
-  return sameConstructor($Promise, C) ? new PromiseCapability(C) : new GenericPromiseCapability(C);
-};
-var PromiseCapability = GenericPromiseCapability = function GenericPromiseCapability(C) {
-  var resolve, reject;
-  this.promise = new C(function ($$resolve, $$reject) {
-    if (resolve !== undefined || reject !== undefined) throw TypeError$1('Bad Promise constructor');
-    resolve = $$resolve;
-    reject = $$reject;
-  });
-  this.resolve = aFunction$1(resolve);
-  this.reject = aFunction$1(reject);
-};
-var perform = function perform(exec) {
-  try {
-    exec();
-  } catch (e) {
-    return { error: e };
-  }
-};
-var notify = function notify(promise, isReject) {
-  if (promise._n) return;
-  promise._n = true;
-  var chain = promise._c;
-  microtask(function () {
-    var value = promise._v,
-        ok = promise._s == 1,
-        i = 0;
-    var run = function run(reaction) {
-      var handler = ok ? reaction.ok : reaction.fail,
-          resolve = reaction.resolve,
-          reject = reaction.reject,
-          domain = reaction.domain,
-          result,
-          then;
-      try {
-        if (handler) {
-          if (!ok) {
-            if (promise._h == 2) onHandleUnhandled(promise);
-            promise._h = 1;
-          }
-          if (handler === true) result = value;else {
-            if (domain) domain.enter();
-            result = handler(value);
-            if (domain) domain.exit();
-          }
-          if (result === reaction.promise) {
-            reject(TypeError$1('Promise-chain cycle'));
-          } else if (then = isThenable(result)) {
-            then.call(result, resolve, reject);
-          } else resolve(result);
-        } else reject(value);
-      } catch (e) {
-        reject(e);
-      }
-    };
-    while (chain.length > i) {
-      run(chain[i++]);
-    } // variable length - can't use forEach
-    promise._c = [];
-    promise._n = false;
-    if (isReject && !promise._h) onUnhandled(promise);
-  });
-};
-var onUnhandled = function onUnhandled(promise) {
-  task.call(global$4, function () {
-    var value = promise._v,
-        abrupt,
-        handler,
-        console;
-    if (isUnhandled(promise)) {
-      abrupt = perform(function () {
-        if (isNode) {
-          process.emit('unhandledRejection', value, promise);
-        } else if (handler = global$4.onunhandledrejection) {
-          handler({ promise: promise, reason: value });
-        } else if ((console = global$4.console) && console.error) {
-          console.error('Unhandled promise rejection', value);
+    var isArray = _isArray;
+
+    var len = 0;
+    var vertxNext = undefined;
+    var customSchedulerFn = undefined;
+
+    var asap = function asap(callback, arg) {
+      queue[len] = callback;
+      queue[len + 1] = arg;
+      len += 2;
+      if (len === 2) {
+        // If len is 2, that means that we need to schedule an async flush.
+        // If additional callbacks are queued before the queue is flushed, they
+        // will be processed by this flush that we are scheduling.
+        if (customSchedulerFn) {
+          customSchedulerFn(flush);
+        } else {
+          scheduleFlush();
         }
-      });
-      // Browsers should not trigger `rejectionHandled` event if it was handled here, NodeJS - should
-      promise._h = isNode || isUnhandled(promise) ? 2 : 1;
-    }promise._a = undefined;
-    if (abrupt) throw abrupt.error;
-  });
-};
-var isUnhandled = function isUnhandled(promise) {
-  if (promise._h == 1) return false;
-  var chain = promise._a || promise._c,
-      i = 0,
-      reaction;
-  while (chain.length > i) {
-    reaction = chain[i++];
-    if (reaction.fail || !isUnhandled(reaction.promise)) return false;
-  }return true;
-};
-var onHandleUnhandled = function onHandleUnhandled(promise) {
-  task.call(global$4, function () {
-    var handler;
+      }
+    };
+
+    function setScheduler(scheduleFn) {
+      customSchedulerFn = scheduleFn;
+    }
+
+    function setAsap(asapFn) {
+      asap = asapFn;
+    }
+
+    var browserWindow = typeof window !== 'undefined' ? window : undefined;
+    var browserGlobal = browserWindow || {};
+    var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
+    var isNode = typeof self === 'undefined' && typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
+
+    // test for web worker but not in IE10
+    var isWorker = typeof Uint8ClampedArray !== 'undefined' && typeof importScripts !== 'undefined' && typeof MessageChannel !== 'undefined';
+
+    // node
+    function useNextTick() {
+      // node version 0.10.x displays a deprecation warning when nextTick is used recursively
+      // see https://github.com/cujojs/when/issues/410 for details
+      return function () {
+        return nextTick(flush);
+      };
+    }
+
+    // vertx
+    function useVertxTimer() {
+      if (typeof vertxNext !== 'undefined') {
+        return function () {
+          vertxNext(flush);
+        };
+      }
+
+      return useSetTimeout();
+    }
+
+    function useMutationObserver() {
+      var iterations = 0;
+      var observer = new BrowserMutationObserver(flush);
+      var node = document.createTextNode('');
+      observer.observe(node, { characterData: true });
+
+      return function () {
+        node.data = iterations = ++iterations % 2;
+      };
+    }
+
+    // web worker
+    function useMessageChannel() {
+      var channel = new MessageChannel();
+      channel.port1.onmessage = flush;
+      return function () {
+        return channel.port2.postMessage(0);
+      };
+    }
+
+    function useSetTimeout() {
+      // Store setTimeout reference so es6-promise will be unaffected by
+      // other code modifying setTimeout (like sinon.useFakeTimers())
+      var globalSetTimeout = setTimeout;
+      return function () {
+        return globalSetTimeout(flush, 1);
+      };
+    }
+
+    var queue = new Array(1000);
+    function flush() {
+      for (var i = 0; i < len; i += 2) {
+        var callback = queue[i];
+        var arg = queue[i + 1];
+
+        callback(arg);
+
+        queue[i] = undefined;
+        queue[i + 1] = undefined;
+      }
+
+      len = 0;
+    }
+
+    function attemptVertx() {
+      try {
+        var r = commonjsRequire;
+        var vertx = r('vertx');
+        vertxNext = vertx.runOnLoop || vertx.runOnContext;
+        return useVertxTimer();
+      } catch (e) {
+        return useSetTimeout();
+      }
+    }
+
+    var scheduleFlush = undefined;
+    // Decide what async method to use to triggering processing of queued callbacks:
     if (isNode) {
-      process.emit('rejectionHandled', promise);
-    } else if (handler = global$4.onrejectionhandled) {
-      handler({ promise: promise, reason: promise._v });
-    }
-  });
-};
-var $reject = function $reject(value) {
-  var promise = this;
-  if (promise._d) return;
-  promise._d = true;
-  promise = promise._w || promise; // unwrap
-  promise._v = value;
-  promise._s = 2;
-  if (!promise._a) promise._a = promise._c.slice();
-  notify(promise, true);
-};
-var $resolve = function $resolve(value) {
-  var promise = this,
-      then;
-  if (promise._d) return;
-  promise._d = true;
-  promise = promise._w || promise; // unwrap
-  try {
-    if (promise === value) throw TypeError$1("Promise can't be resolved itself");
-    if (then = isThenable(value)) {
-      microtask(function () {
-        var wrapper = { _w: promise, _d: false }; // wrap
-        try {
-          then.call(value, ctx$1($resolve, wrapper, 1), ctx$1($reject, wrapper, 1));
-        } catch (e) {
-          $reject.call(wrapper, e);
-        }
-      });
+      scheduleFlush = useNextTick();
+    } else if (BrowserMutationObserver) {
+      scheduleFlush = useMutationObserver();
+    } else if (isWorker) {
+      scheduleFlush = useMessageChannel();
+    } else if (browserWindow === undefined && typeof commonjsRequire === 'function') {
+      scheduleFlush = attemptVertx();
     } else {
-      promise._v = value;
-      promise._s = 1;
-      notify(promise, false);
+      scheduleFlush = useSetTimeout();
     }
-  } catch (e) {
-    $reject.call({ _w: promise, _d: false }, e); // wrap
-  }
-};
 
-// constructor polyfill
-if (!USE_NATIVE) {
-  // 25.4.3.1 Promise(executor)
-  $Promise = function Promise(executor) {
-    anInstance(this, $Promise, PROMISE, '_h');
-    aFunction$1(executor);
-    Internal.call(this);
-    try {
-      executor(ctx$1($resolve, this, 1), ctx$1($reject, this, 1));
-    } catch (err) {
-      $reject.call(this, err);
+    function then(onFulfillment, onRejection) {
+      var _arguments = arguments;
+
+      var parent = this;
+
+      var child = new this.constructor(noop);
+
+      if (child[PROMISE_ID] === undefined) {
+        makePromise(child);
+      }
+
+      var _state = parent._state;
+
+      if (_state) {
+        (function () {
+          var callback = _arguments[_state - 1];
+          asap(function () {
+            return invokeCallback(_state, child, callback, parent._result);
+          });
+        })();
+      } else {
+        subscribe(parent, child, onFulfillment, onRejection);
+      }
+
+      return child;
     }
-  };
-  Internal = function Promise(executor) {
-    this._c = []; // <- awaiting reactions
-    this._a = undefined; // <- checked in isUnhandled reactions
-    this._s = 0; // <- state
-    this._d = false; // <- done
-    this._v = undefined; // <- value
-    this._h = 0; // <- rejection state, 0 - default, 1 - handled, 2 - unhandled
-    this._n = false; // <- notify
-  };
-  Internal.prototype = _redefineAll($Promise.prototype, {
-    // 25.4.5.3 Promise.prototype.then(onFulfilled, onRejected)
-    then: function then(onFulfilled, onRejected) {
-      var reaction = newPromiseCapability(speciesConstructor(this, $Promise));
-      reaction.ok = typeof onFulfilled == 'function' ? onFulfilled : true;
-      reaction.fail = typeof onRejected == 'function' && onRejected;
-      reaction.domain = isNode ? process.domain : undefined;
-      this._c.push(reaction);
-      if (this._a) this._a.push(reaction);
-      if (this._s) notify(this, false);
-      return reaction.promise;
-    },
-    // 25.4.5.1 Promise.prototype.catch(onRejected)
-    'catch': function _catch(onRejected) {
-      return this.then(undefined, onRejected);
-    }
-  });
-  PromiseCapability = function PromiseCapability() {
-    var promise = new Internal();
-    this.promise = promise;
-    this.resolve = ctx$1($resolve, promise, 1);
-    this.reject = ctx$1($reject, promise, 1);
-  };
-}
 
-$export$2($export$2.G + $export$2.W + $export$2.F * !USE_NATIVE, { Promise: $Promise });
-_setToStringTag($Promise, PROMISE);
-_setSpecies(PROMISE);
-Wrapper = _core[PROMISE];
-
-// statics
-$export$2($export$2.S + $export$2.F * !USE_NATIVE, PROMISE, {
-  // 25.4.4.5 Promise.reject(r)
-  reject: function reject(r) {
-    var capability = newPromiseCapability(this),
-        $$reject = capability.reject;
-    $$reject(r);
-    return capability.promise;
-  }
-});
-$export$2($export$2.S + $export$2.F * (LIBRARY$1 || !USE_NATIVE), PROMISE, {
-  // 25.4.4.6 Promise.resolve(x)
-  resolve: function resolve(x) {
-    // instanceof instead of internal slot check because we should fix it without replacement native Promise core
-    if (x instanceof $Promise && sameConstructor(x.constructor, this)) return x;
-    var capability = newPromiseCapability(this),
-        $$resolve = capability.resolve;
-    $$resolve(x);
-    return capability.promise;
-  }
-});
-$export$2($export$2.S + $export$2.F * !(USE_NATIVE && _iterDetect(function (iter) {
-  $Promise.all(iter)['catch'](empty);
-})), PROMISE, {
-  // 25.4.4.1 Promise.all(iterable)
-  all: function all(iterable) {
-    var C = this,
-        capability = newPromiseCapability(C),
-        resolve = capability.resolve,
-        reject = capability.reject;
-    var abrupt = perform(function () {
-      var values = [],
-          index = 0,
-          remaining = 1;
-      forOf(iterable, false, function (promise) {
-        var $index = index++,
-            alreadyCalled = false;
-        values.push(undefined);
-        remaining++;
-        C.resolve(promise).then(function (value) {
-          if (alreadyCalled) return;
-          alreadyCalled = true;
-          values[$index] = value;
-          --remaining || resolve(values);
-        }, reject);
+    /**
+      `Promise.resolve` returns a promise that will become resolved with the
+      passed `value`. It is shorthand for the following:
+    
+      ```javascript
+      let promise = new Promise(function(resolve, reject){
+        resolve(1);
       });
-      --remaining || resolve(values);
-    });
-    if (abrupt) reject(abrupt.error);
-    return capability.promise;
-  },
-  // 25.4.4.4 Promise.race(iterable)
-  race: function race(iterable) {
-    var C = this,
-        capability = newPromiseCapability(C),
-        reject = capability.reject;
-    var abrupt = perform(function () {
-      forOf(iterable, false, function (promise) {
-        C.resolve(promise).then(capability.resolve, reject);
+    
+      promise.then(function(value){
+        // value === 1
       });
-    });
-    if (abrupt) reject(abrupt.error);
-    return capability.promise;
-  }
-});
+      ```
+    
+      Instead of writing the above, your code now simply becomes the following:
+    
+      ```javascript
+      let promise = Promise.resolve(1);
+    
+      promise.then(function(value){
+        // value === 1
+      });
+      ```
+    
+      @method resolve
+      @static
+      @param {Any} value value that the returned promise will be resolved with
+      Useful for tooling.
+      @return {Promise} a promise that will become fulfilled with the given
+      `value`
+    */
+    function resolve(object) {
+      /*jshint validthis:true */
+      var Constructor = this;
 
-var global$8 = typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};
+      if (object && (typeof object === 'undefined' ? 'undefined' : _typeof(object)) === 'object' && object.constructor === Constructor) {
+        return object;
+      }
 
-// shim for using process in browser
-// based off https://github.com/defunctzombie/node-process/blob/master/browser.js
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout() {
-    throw new Error('clearTimeout has not been defined');
-}
-var cachedSetTimeout = defaultSetTimout;
-var cachedClearTimeout = defaultClearTimeout;
-if (typeof global$8.setTimeout === 'function') {
-    cachedSetTimeout = setTimeout;
-}
-if (typeof global$8.clearTimeout === 'function') {
-    cachedClearTimeout = clearTimeout;
-}
-
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
+      var promise = new Constructor(noop);
+      _resolve(promise, object);
+      return promise;
     }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
+
+    var PROMISE_ID = Math.random().toString(36).substring(16);
+
+    function noop() {}
+
+    var PENDING = void 0;
+    var FULFILLED = 1;
+    var REJECTED = 2;
+
+    var GET_THEN_ERROR = new ErrorObject();
+
+    function selfFulfillment() {
+      return new TypeError("You cannot resolve a promise with itself");
     }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch (e) {
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch (e) {
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
+
+    function cannotReturnOwn() {
+      return new TypeError('A promises callback cannot return that same promise.');
+    }
+
+    function getThen(promise) {
+      try {
+        return promise.then;
+      } catch (error) {
+        GET_THEN_ERROR.error = error;
+        return GET_THEN_ERROR;
+      }
+    }
+
+    function tryThen(then, value, fulfillmentHandler, rejectionHandler) {
+      try {
+        then.call(value, fulfillmentHandler, rejectionHandler);
+      } catch (e) {
+        return e;
+      }
+    }
+
+    function handleForeignThenable(promise, thenable, then) {
+      asap(function (promise) {
+        var sealed = false;
+        var error = tryThen(then, thenable, function (value) {
+          if (sealed) {
+            return;
+          }
+          sealed = true;
+          if (thenable !== value) {
+            _resolve(promise, value);
+          } else {
+            fulfill(promise, value);
+          }
+        }, function (reason) {
+          if (sealed) {
+            return;
+          }
+          sealed = true;
+
+          _reject(promise, reason);
+        }, 'Settle: ' + (promise._label || ' unknown promise'));
+
+        if (!sealed && error) {
+          sealed = true;
+          _reject(promise, error);
         }
+      }, promise);
     }
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
+
+    function handleOwnThenable(promise, thenable) {
+      if (thenable._state === FULFILLED) {
+        fulfill(promise, thenable._result);
+      } else if (thenable._state === REJECTED) {
+        _reject(promise, thenable._result);
+      } else {
+        subscribe(thenable, undefined, function (value) {
+          return _resolve(promise, value);
+        }, function (reason) {
+          return _reject(promise, reason);
+        });
+      }
     }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e) {
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e) {
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
+
+    function handleMaybeThenable(promise, maybeThenable, then$$) {
+      if (maybeThenable.constructor === promise.constructor && then$$ === then && maybeThenable.constructor.resolve === resolve) {
+        handleOwnThenable(promise, maybeThenable);
+      } else {
+        if (then$$ === GET_THEN_ERROR) {
+          _reject(promise, GET_THEN_ERROR.error);
+          GET_THEN_ERROR.error = null;
+        } else if (then$$ === undefined) {
+          fulfill(promise, maybeThenable);
+        } else if (isFunction(then$$)) {
+          handleForeignThenable(promise, maybeThenable, then$$);
+        } else {
+          fulfill(promise, maybeThenable);
         }
+      }
     }
-}
-var queue$1 = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
 
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
+    function _resolve(promise, value) {
+      if (promise === value) {
+        _reject(promise, selfFulfillment());
+      } else if (objectOrFunction(value)) {
+        handleMaybeThenable(promise, value, getThen(value));
+      } else {
+        fulfill(promise, value);
+      }
+    }
+
+    function publishRejection(promise) {
+      if (promise._onerror) {
+        promise._onerror(promise._result);
+      }
+
+      publish(promise);
+    }
+
+    function fulfill(promise, value) {
+      if (promise._state !== PENDING) {
         return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue$1 = currentQueue.concat(queue$1);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue$1.length) {
-        drainQueue();
-    }
-}
+      }
 
-function drainQueue() {
-    if (draining) {
+      promise._result = value;
+      promise._state = FULFILLED;
+
+      if (promise._subscribers.length !== 0) {
+        asap(publish, promise);
+      }
+    }
+
+    function _reject(promise, reason) {
+      if (promise._state !== PENDING) {
         return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
+      }
+      promise._state = REJECTED;
+      promise._result = reason;
 
-    var len = queue$1.length;
-    while (len) {
-        currentQueue = queue$1;
-        queue$1 = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
+      asap(publishRejection, promise);
+    }
+
+    function subscribe(parent, child, onFulfillment, onRejection) {
+      var _subscribers = parent._subscribers;
+      var length = _subscribers.length;
+
+      parent._onerror = null;
+
+      _subscribers[length] = child;
+      _subscribers[length + FULFILLED] = onFulfillment;
+      _subscribers[length + REJECTED] = onRejection;
+
+      if (length === 0 && parent._state) {
+        asap(publish, parent);
+      }
+    }
+
+    function publish(promise) {
+      var subscribers = promise._subscribers;
+      var settled = promise._state;
+
+      if (subscribers.length === 0) {
+        return;
+      }
+
+      var child = undefined,
+          callback = undefined,
+          detail = promise._result;
+
+      for (var i = 0; i < subscribers.length; i += 3) {
+        child = subscribers[i];
+        callback = subscribers[i + settled];
+
+        if (child) {
+          invokeCallback(settled, child, callback, detail);
+        } else {
+          callback(detail);
+        }
+      }
+
+      promise._subscribers.length = 0;
+    }
+
+    function ErrorObject() {
+      this.error = null;
+    }
+
+    var TRY_CATCH_ERROR = new ErrorObject();
+
+    function tryCatch(callback, detail) {
+      try {
+        return callback(detail);
+      } catch (e) {
+        TRY_CATCH_ERROR.error = e;
+        return TRY_CATCH_ERROR;
+      }
+    }
+
+    function invokeCallback(settled, promise, callback, detail) {
+      var hasCallback = isFunction(callback),
+          value = undefined,
+          error = undefined,
+          succeeded = undefined,
+          failed = undefined;
+
+      if (hasCallback) {
+        value = tryCatch(callback, detail);
+
+        if (value === TRY_CATCH_ERROR) {
+          failed = true;
+          error = value.error;
+          value.error = null;
+        } else {
+          succeeded = true;
+        }
+
+        if (promise === value) {
+          _reject(promise, cannotReturnOwn());
+          return;
+        }
+      } else {
+        value = detail;
+        succeeded = true;
+      }
+
+      if (promise._state !== PENDING) {
+        // noop
+      } else if (hasCallback && succeeded) {
+        _resolve(promise, value);
+      } else if (failed) {
+        _reject(promise, error);
+      } else if (settled === FULFILLED) {
+        fulfill(promise, value);
+      } else if (settled === REJECTED) {
+        _reject(promise, value);
+      }
+    }
+
+    function initializePromise(promise, resolver) {
+      try {
+        resolver(function resolvePromise(value) {
+          _resolve(promise, value);
+        }, function rejectPromise(reason) {
+          _reject(promise, reason);
+        });
+      } catch (e) {
+        _reject(promise, e);
+      }
+    }
+
+    var id = 0;
+    function nextId() {
+      return id++;
+    }
+
+    function makePromise(promise) {
+      promise[PROMISE_ID] = id++;
+      promise._state = undefined;
+      promise._result = undefined;
+      promise._subscribers = [];
+    }
+
+    function Enumerator(Constructor, input) {
+      this._instanceConstructor = Constructor;
+      this.promise = new Constructor(noop);
+
+      if (!this.promise[PROMISE_ID]) {
+        makePromise(this.promise);
+      }
+
+      if (isArray(input)) {
+        this._input = input;
+        this.length = input.length;
+        this._remaining = input.length;
+
+        this._result = new Array(this.length);
+
+        if (this.length === 0) {
+          fulfill(this.promise, this._result);
+        } else {
+          this.length = this.length || 0;
+          this._enumerate();
+          if (this._remaining === 0) {
+            fulfill(this.promise, this._result);
+          }
+        }
+      } else {
+        _reject(this.promise, validationError());
+      }
+    }
+
+    function validationError() {
+      return new Error('Array Methods must be provided an Array');
+    }
+
+    Enumerator.prototype._enumerate = function () {
+      var length = this.length;
+      var _input = this._input;
+
+      for (var i = 0; this._state === PENDING && i < length; i++) {
+        this._eachEntry(_input[i], i);
+      }
+    };
+
+    Enumerator.prototype._eachEntry = function (entry, i) {
+      var c = this._instanceConstructor;
+      var resolve$$ = c.resolve;
+
+      if (resolve$$ === resolve) {
+        var _then = getThen(entry);
+
+        if (_then === then && entry._state !== PENDING) {
+          this._settledAt(entry._state, i, entry._result);
+        } else if (typeof _then !== 'function') {
+          this._remaining--;
+          this._result[i] = entry;
+        } else if (c === Promise) {
+          var promise = new c(noop);
+          handleMaybeThenable(promise, entry, _then);
+          this._willSettleAt(promise, i);
+        } else {
+          this._willSettleAt(new c(function (resolve$$) {
+            return resolve$$(entry);
+          }), i);
+        }
+      } else {
+        this._willSettleAt(resolve$$(entry), i);
+      }
+    };
+
+    Enumerator.prototype._settledAt = function (state, i, value) {
+      var promise = this.promise;
+
+      if (promise._state === PENDING) {
+        this._remaining--;
+
+        if (state === REJECTED) {
+          _reject(promise, value);
+        } else {
+          this._result[i] = value;
+        }
+      }
+
+      if (this._remaining === 0) {
+        fulfill(promise, this._result);
+      }
+    };
+
+    Enumerator.prototype._willSettleAt = function (promise, i) {
+      var enumerator = this;
+
+      subscribe(promise, undefined, function (value) {
+        return enumerator._settledAt(FULFILLED, i, value);
+      }, function (reason) {
+        return enumerator._settledAt(REJECTED, i, reason);
+      });
+    };
+
+    /**
+      `Promise.all` accepts an array of promises, and returns a new promise which
+      is fulfilled with an array of fulfillment values for the passed promises, or
+      rejected with the reason of the first passed promise to be rejected. It casts all
+      elements of the passed iterable to promises as it runs this algorithm.
+    
+      Example:
+    
+      ```javascript
+      let promise1 = resolve(1);
+      let promise2 = resolve(2);
+      let promise3 = resolve(3);
+      let promises = [ promise1, promise2, promise3 ];
+    
+      Promise.all(promises).then(function(array){
+        // The array here would be [ 1, 2, 3 ];
+      });
+      ```
+    
+      If any of the `promises` given to `all` are rejected, the first promise
+      that is rejected will be given as an argument to the returned promises's
+      rejection handler. For example:
+    
+      Example:
+    
+      ```javascript
+      let promise1 = resolve(1);
+      let promise2 = reject(new Error("2"));
+      let promise3 = reject(new Error("3"));
+      let promises = [ promise1, promise2, promise3 ];
+    
+      Promise.all(promises).then(function(array){
+        // Code here never runs because there are rejected promises!
+      }, function(error) {
+        // error.message === "2"
+      });
+      ```
+    
+      @method all
+      @static
+      @param {Array} entries array of promises
+      @param {String} label optional string for labeling the promise.
+      Useful for tooling.
+      @return {Promise} promise that is fulfilled when all `promises` have been
+      fulfilled, or rejected if any of them become rejected.
+      @static
+    */
+    function all(entries) {
+      return new Enumerator(this, entries).promise;
+    }
+
+    /**
+      `Promise.race` returns a new promise which is settled in the same way as the
+      first passed promise to settle.
+    
+      Example:
+    
+      ```javascript
+      let promise1 = new Promise(function(resolve, reject){
+        setTimeout(function(){
+          resolve('promise 1');
+        }, 200);
+      });
+    
+      let promise2 = new Promise(function(resolve, reject){
+        setTimeout(function(){
+          resolve('promise 2');
+        }, 100);
+      });
+    
+      Promise.race([promise1, promise2]).then(function(result){
+        // result === 'promise 2' because it was resolved before promise1
+        // was resolved.
+      });
+      ```
+    
+      `Promise.race` is deterministic in that only the state of the first
+      settled promise matters. For example, even if other promises given to the
+      `promises` array argument are resolved, but the first settled promise has
+      become rejected before the other promises became fulfilled, the returned
+      promise will become rejected:
+    
+      ```javascript
+      let promise1 = new Promise(function(resolve, reject){
+        setTimeout(function(){
+          resolve('promise 1');
+        }, 200);
+      });
+    
+      let promise2 = new Promise(function(resolve, reject){
+        setTimeout(function(){
+          reject(new Error('promise 2'));
+        }, 100);
+      });
+    
+      Promise.race([promise1, promise2]).then(function(result){
+        // Code here never runs
+      }, function(reason){
+        // reason.message === 'promise 2' because promise 2 became rejected before
+        // promise 1 became fulfilled
+      });
+      ```
+    
+      An example real-world use case is implementing timeouts:
+    
+      ```javascript
+      Promise.race([ajax('foo.json'), timeout(5000)])
+      ```
+    
+      @method race
+      @static
+      @param {Array} promises array of promises to observe
+      Useful for tooling.
+      @return {Promise} a promise which settles in the same way as the first passed
+      promise to settle.
+    */
+    function race(entries) {
+      /*jshint validthis:true */
+      var Constructor = this;
+
+      if (!isArray(entries)) {
+        return new Constructor(function (_, reject) {
+          return reject(new TypeError('You must pass an array to race.'));
+        });
+      } else {
+        return new Constructor(function (resolve, reject) {
+          var length = entries.length;
+          for (var i = 0; i < length; i++) {
+            Constructor.resolve(entries[i]).then(resolve, reject);
+          }
+        });
+      }
+    }
+
+    /**
+      `Promise.reject` returns a promise rejected with the passed `reason`.
+      It is shorthand for the following:
+    
+      ```javascript
+      let promise = new Promise(function(resolve, reject){
+        reject(new Error('WHOOPS'));
+      });
+    
+      promise.then(function(value){
+        // Code here doesn't run because the promise is rejected!
+      }, function(reason){
+        // reason.message === 'WHOOPS'
+      });
+      ```
+    
+      Instead of writing the above, your code now simply becomes the following:
+    
+      ```javascript
+      let promise = Promise.reject(new Error('WHOOPS'));
+    
+      promise.then(function(value){
+        // Code here doesn't run because the promise is rejected!
+      }, function(reason){
+        // reason.message === 'WHOOPS'
+      });
+      ```
+    
+      @method reject
+      @static
+      @param {Any} reason value that the returned promise will be rejected with.
+      Useful for tooling.
+      @return {Promise} a promise rejected with the given `reason`.
+    */
+    function reject(reason) {
+      /*jshint validthis:true */
+      var Constructor = this;
+      var promise = new Constructor(noop);
+      _reject(promise, reason);
+      return promise;
+    }
+
+    function needsResolver() {
+      throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
+    }
+
+    function needsNew() {
+      throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
+    }
+
+    /**
+      Promise objects represent the eventual result of an asynchronous operation. The
+      primary way of interacting with a promise is through its `then` method, which
+      registers callbacks to receive either a promise's eventual value or the reason
+      why the promise cannot be fulfilled.
+    
+      Terminology
+      -----------
+    
+      - `promise` is an object or function with a `then` method whose behavior conforms to this specification.
+      - `thenable` is an object or function that defines a `then` method.
+      - `value` is any legal JavaScript value (including undefined, a thenable, or a promise).
+      - `exception` is a value that is thrown using the throw statement.
+      - `reason` is a value that indicates why a promise was rejected.
+      - `settled` the final resting state of a promise, fulfilled or rejected.
+    
+      A promise can be in one of three states: pending, fulfilled, or rejected.
+    
+      Promises that are fulfilled have a fulfillment value and are in the fulfilled
+      state.  Promises that are rejected have a rejection reason and are in the
+      rejected state.  A fulfillment value is never a thenable.
+    
+      Promises can also be said to *resolve* a value.  If this value is also a
+      promise, then the original promise's settled state will match the value's
+      settled state.  So a promise that *resolves* a promise that rejects will
+      itself reject, and a promise that *resolves* a promise that fulfills will
+      itself fulfill.
+    
+    
+      Basic Usage:
+      ------------
+    
+      ```js
+      let promise = new Promise(function(resolve, reject) {
+        // on success
+        resolve(value);
+    
+        // on failure
+        reject(reason);
+      });
+    
+      promise.then(function(value) {
+        // on fulfillment
+      }, function(reason) {
+        // on rejection
+      });
+      ```
+    
+      Advanced Usage:
+      ---------------
+    
+      Promises shine when abstracting away asynchronous interactions such as
+      `XMLHttpRequest`s.
+    
+      ```js
+      function getJSON(url) {
+        return new Promise(function(resolve, reject){
+          let xhr = new XMLHttpRequest();
+    
+          xhr.open('GET', url);
+          xhr.onreadystatechange = handler;
+          xhr.responseType = 'json';
+          xhr.setRequestHeader('Accept', 'application/json');
+          xhr.send();
+    
+          function handler() {
+            if (this.readyState === this.DONE) {
+              if (this.status === 200) {
+                resolve(this.response);
+              } else {
+                reject(new Error('getJSON: `' + url + '` failed with status: [' + this.status + ']'));
+              }
             }
-        }
-        queueIndex = -1;
-        len = queue$1.length;
+          };
+        });
+      }
+    
+      getJSON('/posts.json').then(function(json) {
+        // on fulfillment
+      }, function(reason) {
+        // on rejection
+      });
+      ```
+    
+      Unlike callbacks, promises are great composable primitives.
+    
+      ```js
+      Promise.all([
+        getJSON('/posts'),
+        getJSON('/comments')
+      ]).then(function(values){
+        values[0] // => postsJSON
+        values[1] // => commentsJSON
+    
+        return values;
+      });
+      ```
+    
+      @class Promise
+      @param {function} resolver
+      Useful for tooling.
+      @constructor
+    */
+    function Promise(resolver) {
+      this[PROMISE_ID] = nextId();
+      this._result = this._state = undefined;
+      this._subscribers = [];
+
+      if (noop !== resolver) {
+        typeof resolver !== 'function' && needsResolver();
+        this instanceof Promise ? initializePromise(this, resolver) : needsNew();
+      }
     }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
 
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
+    Promise.all = all;
+    Promise.race = race;
+    Promise.resolve = resolve;
+    Promise.reject = reject;
+    Promise._setScheduler = setScheduler;
+    Promise._setAsap = setAsap;
+    Promise._asap = asap;
 
+    Promise.prototype = {
+      constructor: Promise,
 
+      /**
+        The primary way of interacting with a promise is through its `then` method,
+        which registers callbacks to receive either a promise's eventual value or the
+        reason why the promise cannot be fulfilled.
+      
+        ```js
+        findUser().then(function(user){
+          // user is available
+        }, function(reason){
+          // user is unavailable, and you are given the reason why
+        });
+        ```
+      
+        Chaining
+        --------
+      
+        The return value of `then` is itself a promise.  This second, 'downstream'
+        promise is resolved with the return value of the first promise's fulfillment
+        or rejection handler, or rejected if the handler throws an exception.
+      
+        ```js
+        findUser().then(function (user) {
+          return user.name;
+        }, function (reason) {
+          return 'default name';
+        }).then(function (userName) {
+          // If `findUser` fulfilled, `userName` will be the user's name, otherwise it
+          // will be `'default name'`
+        });
+      
+        findUser().then(function (user) {
+          throw new Error('Found user, but still unhappy');
+        }, function (reason) {
+          throw new Error('`findUser` rejected and we're unhappy');
+        }).then(function (value) {
+          // never reached
+        }, function (reason) {
+          // if `findUser` fulfilled, `reason` will be 'Found user, but still unhappy'.
+          // If `findUser` rejected, `reason` will be '`findUser` rejected and we're unhappy'.
+        });
+        ```
+        If the downstream promise does not specify a rejection handler, rejection reasons will be propagated further downstream.
+      
+        ```js
+        findUser().then(function (user) {
+          throw new PedagogicalException('Upstream error');
+        }).then(function (value) {
+          // never reached
+        }).then(function (value) {
+          // never reached
+        }, function (reason) {
+          // The `PedgagocialException` is propagated all the way down to here
+        });
+        ```
+      
+        Assimilation
+        ------------
+      
+        Sometimes the value you want to propagate to a downstream promise can only be
+        retrieved asynchronously. This can be achieved by returning a promise in the
+        fulfillment or rejection handler. The downstream promise will then be pending
+        until the returned promise is settled. This is called *assimilation*.
+      
+        ```js
+        findUser().then(function (user) {
+          return findCommentsByAuthor(user);
+        }).then(function (comments) {
+          // The user's comments are now available
+        });
+        ```
+      
+        If the assimliated promise rejects, then the downstream promise will also reject.
+      
+        ```js
+        findUser().then(function (user) {
+          return findCommentsByAuthor(user);
+        }).then(function (comments) {
+          // If `findCommentsByAuthor` fulfills, we'll have the value here
+        }, function (reason) {
+          // If `findCommentsByAuthor` rejects, we'll have the reason here
+        });
+        ```
+      
+        Simple Example
+        --------------
+      
+        Synchronous Example
+      
+        ```javascript
+        let result;
+      
+        try {
+          result = findResult();
+          // success
+        } catch(reason) {
+          // failure
+        }
+        ```
+      
+        Errback Example
+      
+        ```js
+        findResult(function(result, err){
+          if (err) {
+            // failure
+          } else {
+            // success
+          }
+        });
+        ```
+      
+        Promise Example;
+      
+        ```javascript
+        findResult().then(function(result){
+          // success
+        }, function(reason){
+          // failure
+        });
+        ```
+      
+        Advanced Example
+        --------------
+      
+        Synchronous Example
+      
+        ```javascript
+        let author, books;
+      
+        try {
+          author = findAuthor();
+          books  = findBooksByAuthor(author);
+          // success
+        } catch(reason) {
+          // failure
+        }
+        ```
+      
+        Errback Example
+      
+        ```js
+      
+        function foundBooks(books) {
+      
+        }
+      
+        function failure(reason) {
+      
+        }
+      
+        findAuthor(function(author, err){
+          if (err) {
+            failure(err);
+            // failure
+          } else {
+            try {
+              findBoooksByAuthor(author, function(books, err) {
+                if (err) {
+                  failure(err);
+                } else {
+                  try {
+                    foundBooks(books);
+                  } catch(reason) {
+                    failure(reason);
+                  }
+                }
+              });
+            } catch(error) {
+              failure(err);
+            }
+            // success
+          }
+        });
+        ```
+      
+        Promise Example;
+      
+        ```javascript
+        findAuthor().
+          then(findBooksByAuthor).
+          then(function(books){
+            // found books
+        }).catch(function(reason){
+          // something went wrong
+        });
+        ```
+      
+        @method then
+        @param {Function} onFulfilled
+        @param {Function} onRejected
+        Useful for tooling.
+        @return {Promise}
+      */
+      then: then,
 
+      /**
+        `catch` is simply sugar for `then(undefined, onRejection)` which makes it the same
+        as the catch block of a try/catch statement.
+      
+        ```js
+        function findAuthor(){
+          throw new Error('couldn't find that author');
+        }
+      
+        // synchronous
+        try {
+          findAuthor();
+        } catch(reason) {
+          // something went wrong
+        }
+      
+        // async with promises
+        findAuthor().catch(function(reason){
+          // something went wrong
+        });
+        ```
+      
+        @method catch
+        @param {Function} onRejection
+        Useful for tooling.
+        @return {Promise}
+      */
+      'catch': function _catch(onRejection) {
+        return this.then(null, onRejection);
+      }
+    };
 
+    function polyfill() {
+      var local = undefined;
 
- // empty string to avoid regexp issues
+      if (typeof commonjsGlobal !== 'undefined') {
+        local = commonjsGlobal;
+      } else if (typeof self !== 'undefined') {
+        local = self;
+      } else {
+        try {
+          local = Function('return this')();
+        } catch (e) {
+          throw new Error('polyfill failed because global object is unavailable in this environment');
+        }
+      }
 
+      var P = local.Promise;
 
+      if (P) {
+        var promiseToString = null;
+        try {
+          promiseToString = Object.prototype.toString.call(P.resolve());
+        } catch (e) {
+          // silently ignored
+        }
 
+        if (promiseToString === '[object Promise]' && !P.cast) {
+          return;
+        }
+      }
 
+      local.Promise = Promise;
+    }
 
+    // Strange compat..
+    Promise.polyfill = polyfill;
+    Promise.Promise = Promise;
 
+    return Promise;
+  });
+  });
 
-
-
-
-
-
-
-
-
-
-
-
-// from https://github.com/kumavis/browser-process-hrtime/blob/master/index.js
-var performance = global$8.performance || {};
-var performanceNow = performance.now || performance.mozNow || performance.msNow || performance.oNow || performance.webkitNow || function () {
-    return new Date().getTime();
-};
-
-// generate timestamp or delta
-// see http://nodejs.org/api/process.html#process_process_hrtime
+var auto = es6Promise.polyfill();
 
 /** Detect free variable `global` from Node.js. */
-var freeGlobal = (typeof global$8 === 'undefined' ? 'undefined' : _typeof(global$8)) == 'object' && global$8 && global$8.Object === Object && global$8;
+var freeGlobal = (typeof global$1 === 'undefined' ? 'undefined' : _typeof(global$1)) == 'object' && global$1 && global$1.Object === Object && global$1;
 
 /** Detect free variable `self`. */
 var freeSelf = (typeof self === 'undefined' ? 'undefined' : _typeof(self)) == 'object' && self && self.Object === Object && self;
@@ -1653,7 +1608,7 @@ var _Symbol = root.Symbol;
 var objectProto$1 = Object.prototype;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$2 = objectProto$1.hasOwnProperty;
+var hasOwnProperty$1 = objectProto$1.hasOwnProperty;
 
 /**
  * Used to resolve the
@@ -1673,7 +1628,7 @@ var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
  * @returns {string} Returns the raw `toStringTag`.
  */
 function getRawTag(value) {
-  var isOwn = hasOwnProperty$2.call(value, symToStringTag$1),
+  var isOwn = hasOwnProperty$1.call(value, symToStringTag$1),
       tag = value[symToStringTag$1];
 
   try {
@@ -1790,7 +1745,7 @@ var objectProto = Object.prototype;
 var funcToString = funcProto.toString;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$1 = objectProto.hasOwnProperty;
+var hasOwnProperty = objectProto.hasOwnProperty;
 
 /** Used to infer the `Object` constructor. */
 var objectCtorString = funcToString.call(Object);
@@ -1831,7 +1786,7 @@ function isPlainObject(value) {
   if (proto === null) {
     return true;
   }
-  var Ctor = hasOwnProperty$1.call(proto, 'constructor') && proto.constructor;
+  var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
   return typeof Ctor == 'function' && Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString;
 }
 
@@ -1860,8 +1815,8 @@ if (typeof self !== 'undefined') {
   root$2 = self;
 } else if (typeof window !== 'undefined') {
   root$2 = window;
-} else if (typeof global$8 !== 'undefined') {
-  root$2 = global$8;
+} else if (typeof global$1 !== 'undefined') {
+  root$2 = global$1;
 } else if (typeof module !== 'undefined') {
   root$2 = module;
 } else {
@@ -2405,470 +2360,87 @@ function editInactive() {
   };
 }
 
-(function (self) {
-  'use strict';
-
-  if (self.fetch) {
-    return;
-  }
-
-  var support = {
-    searchParams: 'URLSearchParams' in self,
-    iterable: 'Symbol' in self && 'iterator' in Symbol,
-    blob: 'FileReader' in self && 'Blob' in self && function () {
-      try {
-        new Blob();
-        return true;
-      } catch (e) {
-        return false;
-      }
-    }(),
-    formData: 'FormData' in self,
-    arrayBuffer: 'ArrayBuffer' in self
-  };
-
-  if (support.arrayBuffer) {
-    var viewClasses = ['[object Int8Array]', '[object Uint8Array]', '[object Uint8ClampedArray]', '[object Int16Array]', '[object Uint16Array]', '[object Int32Array]', '[object Uint32Array]', '[object Float32Array]', '[object Float64Array]'];
-
-    var isDataView = function isDataView(obj) {
-      return obj && DataView.prototype.isPrototypeOf(obj);
-    };
-
-    var isArrayBufferView = ArrayBuffer.isView || function (obj) {
-      return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1;
-    };
-  }
-
-  function normalizeName(name) {
-    if (typeof name !== 'string') {
-      name = String(name);
-    }
-    if (/[^a-z0-9\-#$%&'*+.\^_`|~]/i.test(name)) {
-      throw new TypeError('Invalid character in header field name');
-    }
-    return name.toLowerCase();
-  }
-
-  function normalizeValue(value) {
-    if (typeof value !== 'string') {
-      value = String(value);
-    }
-    return value;
-  }
-
-  // Build a destructive iterator for the value list
-  function iteratorFor(items) {
-    var iterator = {
-      next: function next() {
-        var value = items.shift();
-        return { done: value === undefined, value: value };
-      }
-    };
-
-    if (support.iterable) {
-      iterator[Symbol.iterator] = function () {
-        return iterator;
-      };
-    }
-
-    return iterator;
-  }
-
-  function Headers(headers) {
-    this.map = {};
-
-    if (headers instanceof Headers) {
-      headers.forEach(function (value, name) {
-        this.append(name, value);
-      }, this);
-    } else if (Array.isArray(headers)) {
-      headers.forEach(function (header) {
-        this.append(header[0], header[1]);
-      }, this);
-    } else if (headers) {
-      Object.getOwnPropertyNames(headers).forEach(function (name) {
-        this.append(name, headers[name]);
-      }, this);
-    }
-  }
-
-  Headers.prototype.append = function (name, value) {
-    name = normalizeName(name);
-    value = normalizeValue(value);
-    var oldValue = this.map[name];
-    this.map[name] = oldValue ? oldValue + ',' + value : value;
-  };
-
-  Headers.prototype['delete'] = function (name) {
-    delete this.map[normalizeName(name)];
-  };
-
-  Headers.prototype.get = function (name) {
-    name = normalizeName(name);
-    return this.has(name) ? this.map[name] : null;
-  };
-
-  Headers.prototype.has = function (name) {
-    return this.map.hasOwnProperty(normalizeName(name));
-  };
-
-  Headers.prototype.set = function (name, value) {
-    this.map[normalizeName(name)] = normalizeValue(value);
-  };
-
-  Headers.prototype.forEach = function (callback, thisArg) {
-    for (var name in this.map) {
-      if (this.map.hasOwnProperty(name)) {
-        callback.call(thisArg, this.map[name], name, this);
-      }
-    }
-  };
-
-  Headers.prototype.keys = function () {
-    var items = [];
-    this.forEach(function (value, name) {
-      items.push(name);
-    });
-    return iteratorFor(items);
-  };
-
-  Headers.prototype.values = function () {
-    var items = [];
-    this.forEach(function (value) {
-      items.push(value);
-    });
-    return iteratorFor(items);
-  };
-
-  Headers.prototype.entries = function () {
-    var items = [];
-    this.forEach(function (value, name) {
-      items.push([name, value]);
-    });
-    return iteratorFor(items);
-  };
-
-  if (support.iterable) {
-    Headers.prototype[Symbol.iterator] = Headers.prototype.entries;
-  }
-
-  function consumed(body) {
-    if (body.bodyUsed) {
-      return Promise.reject(new TypeError('Already read'));
-    }
-    body.bodyUsed = true;
-  }
-
-  function fileReaderReady(reader) {
-    return new Promise(function (resolve, reject) {
-      reader.onload = function () {
-        resolve(reader.result);
-      };
-      reader.onerror = function () {
-        reject(reader.error);
-      };
-    });
-  }
-
-  function readBlobAsArrayBuffer(blob) {
-    var reader = new FileReader();
-    var promise = fileReaderReady(reader);
-    reader.readAsArrayBuffer(blob);
-    return promise;
-  }
-
-  function readBlobAsText(blob) {
-    var reader = new FileReader();
-    var promise = fileReaderReady(reader);
-    reader.readAsText(blob);
-    return promise;
-  }
-
-  function readArrayBufferAsText(buf) {
-    var view = new Uint8Array(buf);
-    var chars = new Array(view.length);
-
-    for (var i = 0; i < view.length; i++) {
-      chars[i] = String.fromCharCode(view[i]);
-    }
-    return chars.join('');
-  }
-
-  function bufferClone(buf) {
-    if (buf.slice) {
-      return buf.slice(0);
-    } else {
-      var view = new Uint8Array(buf.byteLength);
-      view.set(new Uint8Array(buf));
-      return view.buffer;
-    }
-  }
-
-  function Body() {
-    this.bodyUsed = false;
-
-    this._initBody = function (body) {
-      this._bodyInit = body;
-      if (!body) {
-        this._bodyText = '';
-      } else if (typeof body === 'string') {
-        this._bodyText = body;
-      } else if (support.blob && Blob.prototype.isPrototypeOf(body)) {
-        this._bodyBlob = body;
-      } else if (support.formData && FormData.prototype.isPrototypeOf(body)) {
-        this._bodyFormData = body;
-      } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
-        this._bodyText = body.toString();
-      } else if (support.arrayBuffer && support.blob && isDataView(body)) {
-        this._bodyArrayBuffer = bufferClone(body.buffer);
-        // IE 10-11 can't handle a DataView body.
-        this._bodyInit = new Blob([this._bodyArrayBuffer]);
-      } else if (support.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(body) || isArrayBufferView(body))) {
-        this._bodyArrayBuffer = bufferClone(body);
-      } else {
-        throw new Error('unsupported BodyInit type');
-      }
-
-      if (!this.headers.get('content-type')) {
-        if (typeof body === 'string') {
-          this.headers.set('content-type', 'text/plain;charset=UTF-8');
-        } else if (this._bodyBlob && this._bodyBlob.type) {
-          this.headers.set('content-type', this._bodyBlob.type);
-        } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
-          this.headers.set('content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
-        }
-      }
-    };
-
-    if (support.blob) {
-      this.blob = function () {
-        var rejected = consumed(this);
-        if (rejected) {
-          return rejected;
-        }
-
-        if (this._bodyBlob) {
-          return Promise.resolve(this._bodyBlob);
-        } else if (this._bodyArrayBuffer) {
-          return Promise.resolve(new Blob([this._bodyArrayBuffer]));
-        } else if (this._bodyFormData) {
-          throw new Error('could not read FormData body as blob');
-        } else {
-          return Promise.resolve(new Blob([this._bodyText]));
-        }
-      };
-
-      this.arrayBuffer = function () {
-        if (this._bodyArrayBuffer) {
-          return consumed(this) || Promise.resolve(this._bodyArrayBuffer);
-        } else {
-          return this.blob().then(readBlobAsArrayBuffer);
-        }
-      };
-    }
-
-    this.text = function () {
-      var rejected = consumed(this);
-      if (rejected) {
-        return rejected;
-      }
-
-      if (this._bodyBlob) {
-        return readBlobAsText(this._bodyBlob);
-      } else if (this._bodyArrayBuffer) {
-        return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer));
-      } else if (this._bodyFormData) {
-        throw new Error('could not read FormData body as text');
-      } else {
-        return Promise.resolve(this._bodyText);
-      }
-    };
-
-    if (support.formData) {
-      this.formData = function () {
-        return this.text().then(decode);
-      };
-    }
-
-    this.json = function () {
-      return this.text().then(JSON.parse);
-    };
-
-    return this;
-  }
-
-  // HTTP methods whose capitalization should be normalized
-  var methods = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'];
-
-  function normalizeMethod(method) {
-    var upcased = method.toUpperCase();
-    return methods.indexOf(upcased) > -1 ? upcased : method;
-  }
-
-  function Request(input, options) {
-    options = options || {};
-    var body = options.body;
-
-    if (input instanceof Request) {
-      if (input.bodyUsed) {
-        throw new TypeError('Already read');
-      }
-      this.url = input.url;
-      this.credentials = input.credentials;
-      if (!options.headers) {
-        this.headers = new Headers(input.headers);
-      }
-      this.method = input.method;
-      this.mode = input.mode;
-      if (!body && input._bodyInit != null) {
-        body = input._bodyInit;
-        input.bodyUsed = true;
-      }
-    } else {
-      this.url = String(input);
-    }
-
-    this.credentials = options.credentials || this.credentials || 'omit';
-    if (options.headers || !this.headers) {
-      this.headers = new Headers(options.headers);
-    }
-    this.method = normalizeMethod(options.method || this.method || 'GET');
-    this.mode = options.mode || this.mode || null;
-    this.referrer = null;
-
-    if ((this.method === 'GET' || this.method === 'HEAD') && body) {
-      throw new TypeError('Body not allowed for GET or HEAD requests');
-    }
-    this._initBody(body);
-  }
-
-  Request.prototype.clone = function () {
-    return new Request(this, { body: this._bodyInit });
-  };
-
-  function decode(body) {
-    var form = new FormData();
-    body.trim().split('&').forEach(function (bytes) {
-      if (bytes) {
-        var split = bytes.split('=');
-        var name = split.shift().replace(/\+/g, ' ');
-        var value = split.join('=').replace(/\+/g, ' ');
-        form.append(decodeURIComponent(name), decodeURIComponent(value));
-      }
-    });
-    return form;
-  }
-
-  function parseHeaders(rawHeaders) {
-    var headers = new Headers();
-    rawHeaders.split(/\r?\n/).forEach(function (line) {
-      var parts = line.split(':');
-      var key = parts.shift().trim();
-      if (key) {
-        var value = parts.join(':').trim();
-        headers.append(key, value);
-      }
-    });
-    return headers;
-  }
-
-  Body.call(Request.prototype);
-
-  function Response(bodyInit, options) {
-    if (!options) {
-      options = {};
-    }
-
-    this.type = 'default';
-    this.status = 'status' in options ? options.status : 200;
-    this.ok = this.status >= 200 && this.status < 300;
-    this.statusText = 'statusText' in options ? options.statusText : 'OK';
-    this.headers = new Headers(options.headers);
-    this.url = options.url || '';
-    this._initBody(bodyInit);
-  }
-
-  Body.call(Response.prototype);
-
-  Response.prototype.clone = function () {
-    return new Response(this._bodyInit, {
-      status: this.status,
-      statusText: this.statusText,
-      headers: new Headers(this.headers),
-      url: this.url
-    });
-  };
-
-  Response.error = function () {
-    var response = new Response(null, { status: 0, statusText: '' });
-    response.type = 'error';
-    return response;
-  };
-
-  var redirectStatuses = [301, 302, 303, 307, 308];
-
-  Response.redirect = function (url, status) {
-    if (redirectStatuses.indexOf(status) === -1) {
-      throw new RangeError('Invalid status code');
-    }
-
-    return new Response(null, { status: status, headers: { location: url } });
-  };
-
-  self.Headers = Headers;
-  self.Request = Request;
-  self.Response = Response;
-
-  self.fetch = function (input, init) {
-    return new Promise(function (resolve, reject) {
-      var request = new Request(input, init);
-      var xhr = new XMLHttpRequest();
-
-      xhr.onload = function () {
-        var options = {
-          status: xhr.status,
-          statusText: xhr.statusText,
-          headers: parseHeaders(xhr.getAllResponseHeaders() || '')
-        };
-        options.url = 'responseURL' in xhr ? xhr.responseURL : options.headers.get('X-Request-URL');
-        var body = 'response' in xhr ? xhr.response : xhr.responseText;
-        resolve(new Response(body, options));
-      };
-
-      xhr.onerror = function () {
-        reject(new TypeError('Network request failed'));
-      };
-
-      xhr.ontimeout = function () {
-        reject(new TypeError('Network request failed'));
-      };
-
-      xhr.open(request.method, request.url, true);
-
-      if (request.credentials === 'include') {
-        xhr.withCredentials = true;
-      }
-
-      if ('responseType' in xhr && support.blob) {
-        xhr.responseType = 'blob';
-      }
-
-      request.headers.forEach(function (value, name) {
-        xhr.setRequestHeader(name, value);
-      });
-
-      xhr.send(typeof request._bodyInit === 'undefined' ? null : request._bodyInit);
-    });
-  };
-  self.fetch.polyfill = true;
-})(typeof self !== 'undefined' ? self : undefined);
-
-// the whatwg-fetch polyfill installs the fetch() function
-// on the global object (window or self)
-//
-// Return that as the export for use in Webpack, Browserify etc.
-
-var fetchNpmBrowserify = self.fetch.bind(self);
+var index = typeof fetch == 'function' ? fetch : function (url, options) {
+	options = options || {};
+	return new Promise(function (resolve, reject) {
+		var request = new XMLHttpRequest();
+
+		request.open(options.method || 'get', url);
+
+		for (var i in options.headers) {
+			request.setRequestHeader(i, options.headers[i]);
+		}
+
+		request.withCredentials = options.credentials == 'include';
+
+		request.onload = function () {
+			resolve(response());
+		};
+
+		request.onerror = reject;
+
+		request.send(options.body);
+
+		function response() {
+			var _keys = [],
+			    all = [],
+			    headers = {},
+			    header;
+
+			request.getAllResponseHeaders().replace(/^(.*?):\s*([\s\S]*?)$/gm, function (m, key, value) {
+				_keys.push(key = key.toLowerCase());
+				all.push([key, value]);
+				header = headers[key];
+				headers[key] = header ? header + "," + value : value;
+			});
+
+			return {
+				ok: (request.status / 200 | 0) == 1, // 200-399
+				status: request.status,
+				statusText: request.statusText,
+				url: request.responseURL,
+				clone: response,
+				text: function text() {
+					return Promise.resolve(request.responseText);
+				},
+				json: function json() {
+					return Promise.resolve(request.responseText).then(JSON.parse);
+				},
+				xml: function xml() {
+					return Promise.resolve(request.responseXML);
+				},
+				blob: function blob() {
+					return Promise.resolve(new Blob([request.response]));
+				},
+				headers: {
+					keys: function keys() {
+						return _keys;
+					},
+					entries: function entries() {
+						return all;
+					},
+					get: function get(n) {
+						return headers[n.toLowerCase()];
+					},
+					has: function has(n) {
+						return n.toLowerCase() in headers;
+					}
+				}
+			};
+		}
+	});
+};
+
+
+
+
+var unfetch_es = Object.freeze({
+	default: index
+});
+
+var require$$0$1 = ( unfetch_es && unfetch_es['default'] ) || unfetch_es;
+
+if (!window.fetch) window.fetch = require$$0$1.default || require$$0$1;
 
 /**
  * Check Status and request courtesy of feathers-rest
@@ -3874,14 +3446,14 @@ function options() {
 
   switch (action.type) {
     case SET_OPTION:
-      return _extends({}, state, defineProperty$1({}, action.prop, action.value));
+      return _extends({}, state, defineProperty({}, action.prop, action.value));
     default:
       return state;
   }
 }
 
 function updateStateWithQuery(state, queryString, updates) {
-  return _extends({}, state, defineProperty$1({}, queryString, _extends({}, state[queryString], updates)));
+  return _extends({}, state, defineProperty({}, queryString, _extends({}, state[queryString], updates)));
 }
 
 var notAlreadyIn = function notAlreadyIn(haystack) {
@@ -3984,7 +3556,7 @@ function queries() {
         }
 
         if (updated.length !== current.length) {
-          return updateStateWithQuery(state, queryString, defineProperty$1({}, querying ? 'cache' : 'matches', updated));
+          return updateStateWithQuery(state, queryString, defineProperty({}, querying ? 'cache' : 'matches', updated));
         }
 
         return state;
@@ -4035,7 +3607,7 @@ function markAt(state, path) {
   var key = path[0],
       value = path.length === 1 ? {} : markAt(state[key] || {}, path.slice(1));
 
-  return _extends({}, state, defineProperty$1({}, key, value));
+  return _extends({}, state, defineProperty({}, key, value));
 }
 
 function pruneAt(state, path) {
@@ -4048,7 +3620,7 @@ function pruneAt(state, path) {
   }
 
   if (state.hasOwnProperty(key)) {
-    return _extends({}, state, defineProperty$1({}, key, pruneAt(state[key], path.slice(1))));
+    return _extends({}, state, defineProperty({}, key, pruneAt(state[key], path.slice(1))));
   }
 
   return state;
@@ -4081,13 +3653,13 @@ function content() {
         return state;
       }
 
-      return _extends({}, state, defineProperty$1({}, action.uid, clone(action.response)));
+      return _extends({}, state, defineProperty({}, action.uid, clone(action.response)));
     case REMOVE_DATA_SUCCESSFUL:
       if (state[action.uid] === null) {
         return state;
       }
 
-      return _extends({}, state, defineProperty$1({}, action.uid, null));
+      return _extends({}, state, defineProperty({}, action.uid, null));
     default:
       return state;
   }
@@ -4170,7 +3742,7 @@ function save$2() {
       var oldSubstate = whole[id],
           newSubstate = reducePart(whole[id], data, remote);
 
-      return oldSubstate === newSubstate ? state : _extends({}, whole, defineProperty$1({}, id, newSubstate));
+      return oldSubstate === newSubstate ? state : _extends({}, whole, defineProperty({}, id, newSubstate));
     };
   };
 
@@ -4208,7 +3780,7 @@ function save$2() {
 
 var _combineReducers;
 
-var reducer = combineReducers((_combineReducers = {}, defineProperty$1(_combineReducers, DATA_PREFIX, data), defineProperty$1(_combineReducers, QUERIES_PREFIX, queries), defineProperty$1(_combineReducers, 'authenticated', authenticated), defineProperty$1(_combineReducers, 'config', options), defineProperty$1(_combineReducers, 'editable', editable$1), defineProperty$1(_combineReducers, 'token', token), defineProperty$1(_combineReducers, 'save', save$2), _combineReducers));
+var reducer = combineReducers((_combineReducers = {}, defineProperty(_combineReducers, DATA_PREFIX, data), defineProperty(_combineReducers, QUERIES_PREFIX, queries), defineProperty(_combineReducers, 'authenticated', authenticated), defineProperty(_combineReducers, 'config', options), defineProperty(_combineReducers, 'editable', editable$1), defineProperty(_combineReducers, 'token', token), defineProperty(_combineReducers, 'save', save$2), _combineReducers));
 
 // Setup Polymer configuration
 configurePolymer();
