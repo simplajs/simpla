@@ -3761,7 +3761,7 @@ function save$1() {
   };
 }
 
-var AUTH_SERVER = 'https://api-beta-xb177olenlgv.netdna-ssl.com';
+var AUTH_SERVER = 'https://api.simpla.io';
 
 /**
  * Configure Polymer with dom = shadow, unless Polymer is already defined
