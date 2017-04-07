@@ -83,7 +83,7 @@ Simpla's development happens in the open:
 - Track [releases](https://github.com/simplaio/simpla/releases) and [issues](https://github.com/simplaio/simpla/issues) here and on [element repositories](https://github.com/SimplaElements)
 - Follow the public [development roadmap](https://trello.com/b/tZEZa1rN/simpla-public-roadmap)
 - Follow us on Twitter [@simplaio](https://twitter.com/simplaio)
-- Monitor platform status at [status.simpla.io](http://status.simpla.io)
+- Monitor platform status at [status.simpla.io](https://status.simpla.io)
 
 ***
 
