@@ -1,4 +1,4 @@
-import 'isomorphic-fetch';
+import 'unfetch/polyfill';
 
 /**
  * Check Status and request courtesy of feathers-rest
