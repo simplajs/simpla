@@ -170,23 +170,41 @@ describe('Simpla', () => {
         ]));
     });
 
-    it('should be able to get leaf node', () => {
-      return Simpla.get('/foo/bar')
-        .then(data => {
-          expect(data).to.deep.equal(makeAndPathItem('foo.bar', MOCK_DATA['/foo/bar']));
-        });
+    describe('get', () => {
+      it('should be able to get leaf node', () => {
+        return Simpla.get('/foo/bar')
+          .then(data => {
+            expect(data).to.deep.equal(makeAndPathItem('foo.bar', MOCK_DATA['/foo/bar']));
+          });
+      });
     });
 
-    it('should be able to remove data', () => {
-      return Simpla.get('/foo/bar')
-        .then(response => {
-          expect(response).to.not.be.null;
-        })
-        .then(() => Simpla.remove('/foo/bar'))
-        .then(() => Simpla.get('/foo/bar'))
-        .then(response => {
-          expect(response).to.be.null;
-        });
+    describe('remove', () => {
+      it('should be able to remove data', () => {
+        return Simpla.get('/foo/bar')
+          .then(response => {
+            expect(response).to.not.be.null;
+          })
+          .then(() => Simpla.remove('/foo/bar'))
+          .then(() => Simpla.get('/foo/bar'))
+          .then(response => {
+            expect(response).to.be.null;
+          });
+      });
+    });
+
+    describe('set', () => {
+      it('should set patch data, not replace', () => {
+        let firstSet = { type: 'Foo', data: { foo: 'bar' } },
+            secondSet = { data: { bar: 'foo' } };
+
+        return Simpla.set('/foo', firstSet)
+          .then(() => Simpla.set('/foo', secondSet))
+          .then(() => Simpla.get('/foo'))
+          .then(response => {
+            expect(response).to.deep.equal(Object.assign({ path: '/foo' }, firstSet, secondSet));
+          });
+      });
     });
 
     describe('observing', () => {
