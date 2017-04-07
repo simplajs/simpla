@@ -1,4 +1,3 @@
-import 'core-js/fn/object/assign';
 import 'core-js/fn/promise';
 import { createStore, applyMiddleware, compose } from 'redux';
 import { setOption } from './actions/options';

@@ -4,6 +4,12 @@
                   (global.Simpla = factory());
 }(this, (function () { 'use strict';
 
+var toString$1 = {}.toString;
+
+var _cof = function _cof(it) {
+  return toString$1.call(it).slice(8, -1);
+};
+
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
@@ -14,10 +20,56 @@ var _global = createCommonjsModule(function (module) {
   if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
 });
 
-var _core = createCommonjsModule(function (module) {
-  var core = module.exports = { version: '2.4.0' };
-  if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+var global$1 = _global;
+var SHARED = '__core-js_shared__';
+var store = global$1[SHARED] || (global$1[SHARED] = {});
+var _shared = function _shared(key) {
+  return store[key] || (store[key] = {});
+};
+
+var id = 0;
+var px = Math.random();
+var _uid = function _uid(key) {
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+};
+
+var _wks = createCommonjsModule(function (module) {
+  var store = _shared('wks'),
+      uid = _uid,
+      _Symbol = _global.Symbol,
+      USE_SYMBOL = typeof _Symbol == 'function';
+
+  var $exports = module.exports = function (name) {
+    return store[name] || (store[name] = USE_SYMBOL && _Symbol[name] || (USE_SYMBOL ? _Symbol : uid)('Symbol.' + name));
+  };
+
+  $exports.store = store;
 });
+
+// getting tag from 19.1.3.6 Object.prototype.toString()
+var cof = _cof;
+var TAG = _wks('toStringTag');
+var ARG = cof(function () {
+  return arguments;
+}()) == 'Arguments';
+
+// fallback for IE11 Script Access Denied error
+var tryGet = function tryGet(it, key) {
+  try {
+    return it[key];
+  } catch (e) {/* empty */}
+};
+
+var _classof = function _classof(it) {
+  var O, T, B;
+  return it === undefined ? 'Undefined' : it === null ? 'Null'
+  // @@toStringTag case
+  : typeof (T = tryGet(O = Object(it), TAG)) == 'string' ? T
+  // builtinTag case
+  : ARG ? cof(O)
+  // ES3 arguments fallback
+  : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
+};
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
@@ -76,6 +128,20 @@ var defineProperty$1 = function (obj, key, value) {
   }
 
   return obj;
+};
+
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
 };
 
 var get$1 = function get$1(object, property, receiver) {
@@ -296,11 +362,10 @@ var _has = function _has(it, key) {
   return hasOwnProperty.call(it, key);
 };
 
-var id = 0;
-var px = Math.random();
-var _uid = function _uid(key) {
-  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
-};
+var _core = createCommonjsModule(function (module) {
+  var core = module.exports = { version: '2.4.0' };
+  if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+});
 
 var _redefine = createCommonjsModule(function (module) {
   var global = _global,
@@ -336,6 +401,48 @@ var _redefine = createCommonjsModule(function (module) {
   });
 });
 
+// 19.1.3.6 Object.prototype.toString()
+var classof = _classof;
+var test = {};
+test[_wks('toStringTag')] = 'z';
+if (test + '' != '[object z]') {
+  _redefine(Object.prototype, 'toString', function toString() {
+    return '[object ' + classof(this) + ']';
+  }, true);
+}
+
+// 7.1.4 ToInteger
+var ceil = Math.ceil;
+var floor = Math.floor;
+var _toInteger = function _toInteger(it) {
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+// 7.2.1 RequireObjectCoercible(argument)
+var _defined = function _defined(it) {
+  if (it == undefined) throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+var toInteger = _toInteger;
+var defined = _defined;
+// true  -> String#at
+// false -> String#codePointAt
+var _stringAt = function _stringAt(TO_STRING) {
+  return function (that, pos) {
+    var s = String(defined(that)),
+        i = toInteger(pos),
+        l = s.length,
+        a,
+        b;
+    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
+    a = s.charCodeAt(i);
+    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff ? TO_STRING ? s.charAt(i) : a : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
+  };
+};
+
+var _library = false;
+
 var _aFunction = function _aFunction(it) {
   if (typeof it != 'function') throw TypeError(it + ' is not a function!');
   return it;
@@ -365,10 +472,10 @@ var _ctx = function _ctx(fn, that, length) {
   };
 };
 
-var global$1 = _global;
+var global$2 = _global;
 var core = _core;
-var hide = _hide;
-var redefine = _redefine;
+var hide$1 = _hide;
+var redefine$1 = _redefine;
 var ctx = _ctx;
 var PROTOTYPE = 'prototype';
 
@@ -378,7 +485,7 @@ var $export$1 = function $export$1(type, name, source) {
       IS_STATIC = type & $export$1.S,
       IS_PROTO = type & $export$1.P,
       IS_BIND = type & $export$1.B,
-      target = IS_GLOBAL ? global$1 : IS_STATIC ? global$1[name] || (global$1[name] = {}) : (global$1[name] || {})[PROTOTYPE],
+      target = IS_GLOBAL ? global$2 : IS_STATIC ? global$2[name] || (global$2[name] = {}) : (global$2[name] || {})[PROTOTYPE],
       exports = IS_GLOBAL ? core : core[name] || (core[name] = {}),
       expProto = exports[PROTOTYPE] || (exports[PROTOTYPE] = {}),
       key,
@@ -392,15 +499,15 @@ var $export$1 = function $export$1(type, name, source) {
     // export native or passed
     out = (own ? target : source)[key];
     // bind timers to global for call from export context
-    exp = IS_BIND && own ? ctx(out, global$1) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+    exp = IS_BIND && own ? ctx(out, global$2) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
     // extend global
-    if (target) redefine(target, key, out, type & $export$1.U);
+    if (target) redefine$1(target, key, out, type & $export$1.U);
     // export
-    if (exports[key] != out) hide(exports, key, exp);
+    if (exports[key] != out) hide$1(exports, key, exp);
     if (IS_PROTO && expProto[key] != out) expProto[key] = out;
   }
 };
-global$1.core = core;
+global$2.core = core;
 // type bitmap
 $export$1.F = 1; // forced
 $export$1.G = 2; // global
@@ -412,50 +519,33 @@ $export$1.U = 64; // safe
 $export$1.R = 128; // real proto method for `library` 
 var _export = $export$1;
 
-var toString$1 = {}.toString;
-
-var _cof = function _cof(it) {
-  return toString$1.call(it).slice(8, -1);
-};
+var _iterators = {};
 
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
-var cof = _cof;
+var cof$1 = _cof;
 var _iobject = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
-  return cof(it) == 'String' ? it.split('') : Object(it);
-};
-
-// 7.2.1 RequireObjectCoercible(argument)
-var _defined = function _defined(it) {
-  if (it == undefined) throw TypeError("Can't call method on  " + it);
-  return it;
+  return cof$1(it) == 'String' ? it.split('') : Object(it);
 };
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
-var IObject$1 = _iobject;
-var defined = _defined;
+var IObject = _iobject;
+var defined$1 = _defined;
 var _toIobject = function _toIobject(it) {
-  return IObject$1(defined(it));
-};
-
-// 7.1.4 ToInteger
-var ceil = Math.ceil;
-var floor = Math.floor;
-var _toInteger = function _toInteger(it) {
-  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+  return IObject(defined$1(it));
 };
 
 // 7.1.15 ToLength
-var toInteger = _toInteger;
+var toInteger$1 = _toInteger;
 var min = Math.min;
 var _toLength = function _toLength(it) {
-  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+  return it > 0 ? min(toInteger$1(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
 };
 
-var toInteger$1 = _toInteger;
+var toInteger$2 = _toInteger;
 var max = Math.max;
 var min$1 = Math.min;
 var _toIndex = function _toIndex(index, length) {
-  index = toInteger$1(index);
+  index = toInteger$2(index);
   return index < 0 ? max(index + length, 0) : min$1(index, length);
 };
 
@@ -483,23 +573,16 @@ var _arrayIncludes = function _arrayIncludes(IS_INCLUDES) {
   };
 };
 
-var global$2 = _global;
-var SHARED = '__core-js_shared__';
-var store = global$2[SHARED] || (global$2[SHARED] = {});
-var _shared = function _shared(key) {
-  return store[key] || (store[key] = {});
-};
-
 var shared = _shared('keys');
 var uid = _uid;
 var _sharedKey = function _sharedKey(key) {
   return shared[key] || (shared[key] = uid(key));
 };
 
-var has = _has;
+var has$1 = _has;
 var toIObject = _toIobject;
 var arrayIndexOf = _arrayIncludes(false);
-var IE_PROTO = _sharedKey('IE_PROTO');
+var IE_PROTO$1 = _sharedKey('IE_PROTO');
 
 var _objectKeysInternal = function _objectKeysInternal(object, names) {
   var O = toIObject(object),
@@ -507,10 +590,10 @@ var _objectKeysInternal = function _objectKeysInternal(object, names) {
       result = [],
       key;
   for (key in O) {
-    if (key != IE_PROTO) has(O, key) && result.push(key);
+    if (key != IE_PROTO$1) has$1(O, key) && result.push(key);
   } // Don't enum bug & hidden keys
   while (names.length > i) {
-    if (has(O, key = names[i++])) {
+    if (has$1(O, key = names[i++])) {
       ~arrayIndexOf(result, key) || result.push(key);
     }
   }return result;
@@ -521,149 +604,19 @@ var _enumBugKeys = 'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerabl
 
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys = _objectKeysInternal;
-var enumBugKeys = _enumBugKeys;
+var enumBugKeys$1 = _enumBugKeys;
 
 var _objectKeys = Object.keys || function keys(O) {
-  return $keys(O, enumBugKeys);
+  return $keys(O, enumBugKeys$1);
 };
-
-var f$1 = Object.getOwnPropertySymbols;
-
-var _objectGops = {
-	f: f$1
-};
-
-var f$2 = {}.propertyIsEnumerable;
-
-var _objectPie = {
-	f: f$2
-};
-
-// 7.1.13 ToObject(argument)
-var defined$1 = _defined;
-var _toObject = function _toObject(it) {
-  return Object(defined$1(it));
-};
-
-// 19.1.2.1 Object.assign(target, source, ...)
-var getKeys = _objectKeys;
-var gOPS = _objectGops;
-var pIE = _objectPie;
-var toObject = _toObject;
-var IObject = _iobject;
-var $assign = Object.assign;
-
-// should work with symbols and should have deterministic property order (V8 bug)
-var _objectAssign = !$assign || _fails(function () {
-  var A = {},
-      B = {},
-      S = Symbol(),
-      K = 'abcdefghijklmnopqrst';
-  A[S] = 7;
-  K.split('').forEach(function (k) {
-    B[k] = k;
-  });
-  return $assign({}, A)[S] != 7 || Object.keys($assign({}, B)).join('') != K;
-}) ? function assign(target, source) {
-  // eslint-disable-line no-unused-vars
-  var T = toObject(target),
-      aLen = arguments.length,
-      index = 1,
-      getSymbols = gOPS.f,
-      isEnum = pIE.f;
-  while (aLen > index) {
-    var S = IObject(arguments[index++]),
-        keys = getSymbols ? getKeys(S).concat(getSymbols(S)) : getKeys(S),
-        length = keys.length,
-        j = 0,
-        key;
-    while (length > j) {
-      if (isEnum.call(S, key = keys[j++])) T[key] = S[key];
-    }
-  }return T;
-} : $assign;
-
-// 19.1.3.1 Object.assign(target, source)
-var $export = _export;
-
-$export($export.S + $export.F, 'Object', { assign: _objectAssign });
-
-var _wks = createCommonjsModule(function (module) {
-  var store = _shared('wks'),
-      uid = _uid,
-      _Symbol = _global.Symbol,
-      USE_SYMBOL = typeof _Symbol == 'function';
-
-  var $exports = module.exports = function (name) {
-    return store[name] || (store[name] = USE_SYMBOL && _Symbol[name] || (USE_SYMBOL ? _Symbol : uid)('Symbol.' + name));
-  };
-
-  $exports.store = store;
-});
-
-// getting tag from 19.1.3.6 Object.prototype.toString()
-var cof$1 = _cof;
-var TAG = _wks('toStringTag');
-var ARG = cof$1(function () {
-  return arguments;
-}()) == 'Arguments';
-
-// fallback for IE11 Script Access Denied error
-var tryGet = function tryGet(it, key) {
-  try {
-    return it[key];
-  } catch (e) {/* empty */}
-};
-
-var _classof = function _classof(it) {
-  var O, T, B;
-  return it === undefined ? 'Undefined' : it === null ? 'Null'
-  // @@toStringTag case
-  : typeof (T = tryGet(O = Object(it), TAG)) == 'string' ? T
-  // builtinTag case
-  : ARG ? cof$1(O)
-  // ES3 arguments fallback
-  : (B = cof$1(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
-};
-
-// 19.1.3.6 Object.prototype.toString()
-var classof = _classof;
-var test = {};
-test[_wks('toStringTag')] = 'z';
-if (test + '' != '[object z]') {
-  _redefine(Object.prototype, 'toString', function toString() {
-    return '[object ' + classof(this) + ']';
-  }, true);
-}
-
-var toInteger$2 = _toInteger;
-var defined$2 = _defined;
-// true  -> String#at
-// false -> String#codePointAt
-var _stringAt = function _stringAt(TO_STRING) {
-  return function (that, pos) {
-    var s = String(defined$2(that)),
-        i = toInteger$2(pos),
-        l = s.length,
-        a,
-        b;
-    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
-    a = s.charCodeAt(i);
-    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff ? TO_STRING ? s.charAt(i) : a : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
-  };
-};
-
-var _library = false;
-
-var _iterators = {};
 
 var dP$2 = _objectDp;
 var anObject$2 = _anObject;
-var getKeys$1 = _objectKeys;
+var getKeys = _objectKeys;
 
 var _objectDps = _descriptors ? Object.defineProperties : function defineProperties(O, Properties) {
   anObject$2(O);
-  var keys = getKeys$1(Properties),
+  var keys = getKeys(Properties),
       length = keys.length,
       i = 0,
       P;
@@ -677,8 +630,8 @@ var _html = _global.document && document.documentElement;
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject$1 = _anObject;
 var dPs = _objectDps;
-var enumBugKeys$1 = _enumBugKeys;
-var IE_PROTO$1 = _sharedKey('IE_PROTO');
+var enumBugKeys = _enumBugKeys;
+var IE_PROTO = _sharedKey('IE_PROTO');
 var Empty = function Empty() {/* empty */};
 var PROTOTYPE$1 = 'prototype';
 
@@ -686,7 +639,7 @@ var PROTOTYPE$1 = 'prototype';
 var _createDict = function createDict() {
   // Thrash, waste and sodomy: IE GC bug
   var iframe = _domCreate('iframe'),
-      i = enumBugKeys$1.length,
+      i = enumBugKeys.length,
       lt = '<',
       gt = '>',
       iframeDocument;
@@ -701,7 +654,7 @@ var _createDict = function createDict() {
   iframeDocument.close();
   _createDict = iframeDocument.F;
   while (i--) {
-    delete _createDict[PROTOTYPE$1][enumBugKeys$1[i]];
+    delete _createDict[PROTOTYPE$1][enumBugKeys[i]];
   }return _createDict();
 };
 
@@ -712,7 +665,7 @@ var _objectCreate = Object.create || function create(O, Properties) {
     result = new Empty();
     Empty[PROTOTYPE$1] = null;
     // add "__proto__" for Object.getPrototypeOf polyfill
-    result[IE_PROTO$1] = O;
+    result[IE_PROTO] = O;
   } else result = _createDict();
   return Properties === undefined ? result : dPs(result, Properties);
 };
@@ -740,14 +693,20 @@ var _iterCreate = function _iterCreate(Constructor, NAME, next) {
   setToStringTag$1(Constructor, NAME + ' Iterator');
 };
 
+// 7.1.13 ToObject(argument)
+var defined$2 = _defined;
+var _toObject = function _toObject(it) {
+  return Object(defined$2(it));
+};
+
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has$3 = _has;
-var toObject$1 = _toObject;
+var toObject = _toObject;
 var IE_PROTO$2 = _sharedKey('IE_PROTO');
 var ObjectProto = Object.prototype;
 
 var _objectGpo = Object.getPrototypeOf || function (O) {
-  O = toObject$1(O);
+  O = toObject(O);
   if (has$3(O, IE_PROTO$2)) return O[IE_PROTO$2];
   if (typeof O.constructor == 'function' && O instanceof O.constructor) {
     return O.constructor.prototype;
@@ -755,10 +714,10 @@ var _objectGpo = Object.getPrototypeOf || function (O) {
 };
 
 var LIBRARY = _library;
-var $export$2 = _export;
-var redefine$1 = _redefine;
-var hide$1 = _hide;
-var has$1 = _has;
+var $export = _export;
+var redefine = _redefine;
+var hide = _hide;
+var has = _has;
 var Iterators = _iterators;
 var $iterCreate = _iterCreate;
 var setToStringTag = _setToStringTag;
@@ -808,7 +767,7 @@ var _iterDefine = function _iterDefine(Base, NAME, Constructor, next, DEFAULT, I
       // Set @@toStringTag to native iterators
       setToStringTag(IteratorPrototype, TAG, true);
       // fix for some old engines
-      if (!LIBRARY && !has$1(IteratorPrototype, ITERATOR)) hide$1(IteratorPrototype, ITERATOR, returnThis);
+      if (!LIBRARY && !has(IteratorPrototype, ITERATOR)) hide(IteratorPrototype, ITERATOR, returnThis);
     }
   }
   // fix Array#{values, @@iterator}.name in V8 / FF
@@ -820,7 +779,7 @@ var _iterDefine = function _iterDefine(Base, NAME, Constructor, next, DEFAULT, I
   }
   // Define iterator
   if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
-    hide$1(proto, ITERATOR, $default);
+    hide(proto, ITERATOR, $default);
   }
   // Plug for library
   Iterators[NAME] = $default;
@@ -832,8 +791,8 @@ var _iterDefine = function _iterDefine(Base, NAME, Constructor, next, DEFAULT, I
       entries: $entries
     };
     if (FORCED) for (key in methods) {
-      if (!(key in proto)) redefine$1(proto, key, methods[key]);
-    } else $export$2($export$2.P + $export$2.F * (BUGGY || VALUES_BUG), NAME, methods);
+      if (!(key in proto)) redefine(proto, key, methods[key]);
+    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
   }
   return methods;
 };
@@ -1225,7 +1184,7 @@ var LIBRARY$1 = _library;
 var global$4 = _global;
 var ctx$1 = _ctx;
 var classof$1 = _classof;
-var $export$3 = _export;
+var $export$2 = _export;
 var isObject$3 = _isObject;
 var aFunction$1 = _aFunction;
 var anInstance = _anInstance;
@@ -1455,13 +1414,13 @@ if (!USE_NATIVE) {
   };
 }
 
-$export$3($export$3.G + $export$3.W + $export$3.F * !USE_NATIVE, { Promise: $Promise });
+$export$2($export$2.G + $export$2.W + $export$2.F * !USE_NATIVE, { Promise: $Promise });
 _setToStringTag($Promise, PROMISE);
 _setSpecies(PROMISE);
 Wrapper = _core[PROMISE];
 
 // statics
-$export$3($export$3.S + $export$3.F * !USE_NATIVE, PROMISE, {
+$export$2($export$2.S + $export$2.F * !USE_NATIVE, PROMISE, {
   // 25.4.4.5 Promise.reject(r)
   reject: function reject(r) {
     var capability = newPromiseCapability(this),
@@ -1470,7 +1429,7 @@ $export$3($export$3.S + $export$3.F * !USE_NATIVE, PROMISE, {
     return capability.promise;
   }
 });
-$export$3($export$3.S + $export$3.F * (LIBRARY$1 || !USE_NATIVE), PROMISE, {
+$export$2($export$2.S + $export$2.F * (LIBRARY$1 || !USE_NATIVE), PROMISE, {
   // 25.4.4.6 Promise.resolve(x)
   resolve: function resolve(x) {
     // instanceof instead of internal slot check because we should fix it without replacement native Promise core
@@ -1481,7 +1440,7 @@ $export$3($export$3.S + $export$3.F * (LIBRARY$1 || !USE_NATIVE), PROMISE, {
     return capability.promise;
   }
 });
-$export$3($export$3.S + $export$3.F * !(USE_NATIVE && _iterDetect(function (iter) {
+$export$2($export$2.S + $export$2.F * !(USE_NATIVE && _iterDetect(function (iter) {
   $Promise.all(iter)['catch'](empty);
 })), PROMISE, {
   // 25.4.4.1 Promise.all(iterable)
@@ -2930,15 +2889,15 @@ function checkStatus(response) {
 }
 
 function request(options) {
-  var fetchOptions = Object.assign({}, options);
+  var fetchOptions = _extends({}, options);
 
-  fetchOptions.headers = Object.assign({
+  fetchOptions.headers = _extends({
     Accept: 'application/json'
   }, fetchOptions.headers);
 
   if (options.body) {
     fetchOptions.body = JSON.stringify(options.body);
-    fetchOptions.headers = Object.assign({
+    fetchOptions.headers = _extends({
       'Content-Type': 'application/json'
     }, fetchOptions.headers);
   }
@@ -2952,7 +2911,7 @@ function requestWithToken(options) {
   var token = options.token;
 
   if (token) {
-    options.headers = Object.assign({
+    options.headers = _extends({
       'Authorization': 'Bearer ' + token
     }, options.headers);
   }
@@ -2962,16 +2921,16 @@ function requestWithToken(options) {
 
 var client = {
   get: function get(url, options) {
-    return request(Object.assign({ method: 'GET' }, options, { url: url }));
+    return request(_extends({ method: 'GET' }, options, { url: url }));
   },
   post: function post(url, options) {
-    return requestWithToken(Object.assign({ method: 'POST' }, options, { url: url }));
+    return requestWithToken(_extends({ method: 'POST' }, options, { url: url }));
   },
   put: function put(url, options) {
-    return requestWithToken(Object.assign({ method: 'PUT' }, options, { url: url }));
+    return requestWithToken(_extends({ method: 'PUT' }, options, { url: url }));
   },
   delete: function _delete(url, options) {
-    return requestWithToken(Object.assign({ method: 'DELETE' }, options, { url: url }));
+    return requestWithToken(_extends({ method: 'DELETE' }, options, { url: url }));
   }
 };
 
@@ -3265,7 +3224,7 @@ function makeItemWith(uid, item) {
     return null;
   }
 
-  return Object.assign(clone(item), { id: uid });
+  return _extends(clone(item), { id: uid });
 }
 
 function pathToUid(path) {
@@ -3300,7 +3259,7 @@ function itemUidToPath(item) {
   }
 
   path = uidToPath(item.id);
-  transformed = Object.assign({}, item, { path: path });
+  transformed = _extends({}, item, { path: path });
   delete transformed.id;
 
   return transformed;
@@ -3315,7 +3274,7 @@ function queryResultsToPath(results) {
 
   items = results.items.map(itemUidToPath);
 
-  return Object.assign({}, results, { items: items });
+  return _extends({}, results, { items: items });
 }
 
 function validatePath(path) {
@@ -3382,7 +3341,7 @@ function generateHandler(method, paramsToObj, _ref2, validateUid) {
           endpoint = config.dataEndpoint,
           options = void 0;
 
-      options = Object.assign({ method: method, endpoint: endpoint, token: token, validateUid: validateUid }, paramsToObj.apply(undefined, args));
+      options = _extends({ method: method, endpoint: endpoint, token: token, validateUid: validateUid }, paramsToObj.apply(undefined, args));
 
       dispatch(start.apply(undefined, args));
       return formatAndRun(options).then(function (response) {
@@ -3488,7 +3447,7 @@ function setData$$1(uid, data) {
 function setDataSuccessful$$1(uid, response) {
   var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-  options = Object.assign({ persist: true }, options);
+  options = _extends({ persist: true }, options);
   var _options = options,
       persist = _options.persist;
 
@@ -3519,7 +3478,7 @@ function removeData$$1(uid) {
 function removeDataSuccessful$$1(uid) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-  options = Object.assign({ persist: true }, options);
+  options = _extends({ persist: true }, options);
   var _options2 = options,
       persist = _options2.persist;
 
@@ -3534,7 +3493,7 @@ function removeDataSuccessful$$1(uid) {
 function set$2(uid, data) {
   var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-  options = Object.assign({
+  options = _extends({
     validate: true,
     createAncestry: true,
     persist: true
@@ -3566,7 +3525,7 @@ function set$2(uid, data) {
     } else {
       var currentData = selectDataFromState(uid, getState());
 
-      data = Object.assign({}, currentData, data);
+      data = _extends({}, currentData, data);
 
       action = setDataSuccessful$$1(uid, data, { persist: persist });
     }
@@ -3580,7 +3539,7 @@ function set$2(uid, data) {
 function remove$1(uid) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-  options = Object.assign({ persist: true }, options);
+  options = _extends({ persist: true }, options);
   var _options4 = options,
       persist = _options4.persist;
 
@@ -3915,14 +3874,14 @@ function options() {
 
   switch (action.type) {
     case SET_OPTION:
-      return Object.assign({}, state, defineProperty$1({}, action.prop, action.value));
+      return _extends({}, state, defineProperty$1({}, action.prop, action.value));
     default:
       return state;
   }
 }
 
 function updateStateWithQuery(state, queryString, updates) {
-  return Object.assign({}, state, defineProperty$1({}, queryString, Object.assign({}, state[queryString], updates)));
+  return _extends({}, state, defineProperty$1({}, queryString, _extends({}, state[queryString], updates)));
 }
 
 var notAlreadyIn = function notAlreadyIn(haystack) {
@@ -4076,20 +4035,20 @@ function markAt(state, path) {
   var key = path[0],
       value = path.length === 1 ? {} : markAt(state[key] || {}, path.slice(1));
 
-  return Object.assign({}, state, defineProperty$1({}, key, value));
+  return _extends({}, state, defineProperty$1({}, key, value));
 }
 
 function pruneAt(state, path) {
   var key = path[0];
 
   if (path.length === 1) {
-    var newState = Object.assign({}, state);
+    var newState = _extends({}, state);
     delete newState[key];
     return newState;
   }
 
   if (state.hasOwnProperty(key)) {
-    return Object.assign({}, state, defineProperty$1({}, key, pruneAt(state[key], path.slice(1))));
+    return _extends({}, state, defineProperty$1({}, key, pruneAt(state[key], path.slice(1))));
   }
 
   return state;
@@ -4122,13 +4081,13 @@ function content() {
         return state;
       }
 
-      return Object.assign({}, state, defineProperty$1({}, action.uid, clone(action.response)));
+      return _extends({}, state, defineProperty$1({}, action.uid, clone(action.response)));
     case REMOVE_DATA_SUCCESSFUL:
       if (state[action.uid] === null) {
         return state;
       }
 
-      return Object.assign({}, state, defineProperty$1({}, action.uid, null));
+      return _extends({}, state, defineProperty$1({}, action.uid, null));
     default:
       return state;
   }
@@ -4189,7 +4148,7 @@ function reducePart() {
 
   changed = isDifferent(remote, local);
 
-  return Object.assign({}, state, { local: local, remote: remote, changed: changed });
+  return _extends({}, state, { local: local, remote: remote, changed: changed });
 }
 
 /**
@@ -4211,7 +4170,7 @@ function save$2() {
       var oldSubstate = whole[id],
           newSubstate = reducePart(whole[id], data, remote);
 
-      return oldSubstate === newSubstate ? state : Object.assign({}, whole, defineProperty$1({}, id, newSubstate));
+      return oldSubstate === newSubstate ? state : _extends({}, whole, defineProperty$1({}, id, newSubstate));
     };
   };
 
@@ -4236,7 +4195,7 @@ function save$2() {
       return updateLocal(state, action.uid, action.response);
     case REMOVE_DATA_SUCCESSFUL:
       if (!action.persist) {
-        var purged = Object.assign({}, state);
+        var purged = _extends({}, state);
         delete purged[action.uid];
         return purged;
       }
