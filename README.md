@@ -76,7 +76,7 @@ Whether its opening issues and pull requests, giving feedback, or sharing someth
 
 - **Build your own elements!** Simpla is an open ecosystem, build your own content elements and [publish them to the catalogue](https://github.com/simplaio/simpla-elements/#publishing-your-element).
 
-#### Following development
+## Following development
 
 Simpla's development happens in the open:
 
