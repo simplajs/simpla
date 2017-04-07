@@ -118,7 +118,7 @@ gulp.task('demo', () => bs.init(OPTIONS.browserSync));
 
 gulp.task('refresh', () => bs.reload());
 
-gulp.task('test', ['lint', 'build', 'build:tests', 'test:local']);
+gulp.task('test', () => gulprun(['lint', 'build', 'build:tests'], 'test:local'));
 
 gulp.task('watch:src', () => gulp.watch(['src/**/*'], () => gulprun('lint', 'build', 'refresh')));
 
