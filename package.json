@@ -16,12 +16,25 @@
     "cms framework",
     "web components"
   ],
+  "files": [
+    "src",
+    "simpla.js",
+    "simpla.min.js",
+    "simpla-lite.js",
+    "simpla-lite.min.js"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/simplaio/simpla.git"
   },
   "bugs": {
     "url": "https://github.com/simplaio/simpla/issues"
+  },
+  "dependencies": {
+    "redux": "^3.5.2",
+    "redux-thunk": "^2.1.0",
+    "unfetch": "^2.1.2",
+    "es6-promise": "^4.1.0"
   },
   "devDependencies": {
     "babel-eslint": "^6.1.0",
@@ -49,11 +62,5 @@
     "run-sequence": "^1.1.5",
     "web-component-tester": "^4.2.2",
     "yargs": "^4.6.0"
-  },
-  "dependencies": {
-    "redux": "^3.5.2",
-    "redux-thunk": "^2.1.0",
-    "unfetch": "^2.1.2",
-    "es6-promise": "^4.1.0"
   }
 }
