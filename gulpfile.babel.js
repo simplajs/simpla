@@ -80,7 +80,7 @@ gulp.task('lint', () => {
 });
 
 gulp.task('build', () => {
-  return gulp.src('src/simpla.js')
+  return gulp.src('src/*.js')
           .pipe(errorNotifier())
 
             .pipe(gulpif(argv.debug, sourcemaps.init()))
@@ -91,7 +91,7 @@ gulp.task('build', () => {
             // Minify and pipe out
             .pipe(gulpif(!argv.debug, uglify(OPTIONS.uglify)))
             .pipe(gulpif(argv.debug, sourcemaps.write()))
-            .pipe(rename('simpla.min.js'))
+            .pipe(rename(path => path.extname = '.min.js'))
             .pipe(size({ gzip: true }))
 
           .pipe(gulp.dest('.'))
