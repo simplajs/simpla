@@ -1,18 +1,20 @@
 {
   "name": "simpla",
   "version": "2.0.0-preview",
-  "description": "Dynamic content, without the CMS",
+  "description": "Content management ecosystem build on Web Components",
   "main": "simpla.js",
+  "module": "src/simpla.js",
   "scripts": {
     "test": "gulp test:local"
   },
-  "author": "Simpla <admin@simpla.io>",
+  "author": "Simpla <friends@simpla.io>",
   "license": "MIT",
   "keywords": [
-    "simpla",
-    "web component",
-    "polymer",
-    "api"
+    "content",
+    "content management",
+    "cms",
+    "cms framework",
+    "web components"
   ],
   "repository": {
     "type": "git",

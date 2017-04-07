@@ -1,21 +1,22 @@
 {
   "name": "simpla",
-  "description": "Dynamic content, without the CMS",
+  "description": "Content management ecosystem build on Web Components",
   "version": "2.0.0-preview",
   "authors": [
-    "Simpla <admin@simpla.io>"
+    "Simpla <friends@simpla.io>"
   ],
   "license": "MIT",
-  "main": "simpla.js",
+  "main": "simpla.min.js",
   "keywords": [
-    "simpla",
-    "web component",
-    "polymer",
     "content",
-    "cms"
+    "content management",
+    "cms",
+    "cms framework",
+    "web components"
   ],
   "ignore": [
     "*",
+    "!src",
     "!simpla.js",
     "!simpla.min.js",
     "!LICENSE"
