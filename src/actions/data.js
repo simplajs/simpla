@@ -127,9 +127,13 @@ export function set(uid, data, options = {}) {
 
     dispatch(setData(uid, data));
 
-    if (validate && !dataIsValid( data)) {
+    if (validate && !dataIsValid(data)) {
       action = setDataFailed(uid, new Error(INVALID_DATA));
     } else {
+      let currentData = selectDataFromState(uid, getState());
+
+      data = Object.assign({}, currentData, data);
+
       action = setDataSuccessful(uid, data, { persist });
     }
 

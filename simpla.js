@@ -3564,6 +3564,10 @@ function set$2(uid, data) {
     if (validate && !dataIsValid(data)) {
       action = setDataFailed$$1(uid, new Error(INVALID_DATA));
     } else {
+      var currentData = selectDataFromState(uid, getState());
+
+      data = Object.assign({}, currentData, data);
+
       action = setDataSuccessful$$1(uid, data, { persist: persist });
     }
 
