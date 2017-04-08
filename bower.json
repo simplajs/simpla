@@ -1,6 +1,6 @@
 {
   "name": "simpla",
-  "description": "Content management ecosystem build on Web Components",
+  "description": "Simpla is a content management framework built on Web Components",
   "version": "2.0.0-preview",
   "authors": [
     "Simpla <friends@simpla.io>"
@@ -19,6 +19,9 @@
     "!src",
     "!simpla.js",
     "!simpla.min.js",
-    "!LICENSE"
+    "!simpla-lite.js",
+    "!simpla-lite.min.js",
+    "!LICENSE",
+    "!README.md"
   ]
 }

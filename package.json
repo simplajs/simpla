@@ -1,7 +1,7 @@
 {
   "name": "simpla",
   "version": "2.0.0-preview",
-  "description": "Content management ecosystem build on Web Components",
+  "description": "Simpla is a content management framework built on Web Components",
   "main": "simpla.js",
   "module": "src/simpla.js",
   "scripts": {
@@ -12,9 +12,9 @@
   "keywords": [
     "content",
     "content management",
-    "cms",
     "cms framework",
-    "web components"
+    "web components",
+    "custom elements"
   ],
   "files": [
     "src",
@@ -31,10 +31,10 @@
     "url": "https://github.com/simplaio/simpla/issues"
   },
   "dependencies": {
+    "es6-promise": "^4.1.0",
     "redux": "^3.5.2",
     "redux-thunk": "^2.1.0",
-    "unfetch": "^2.1.2",
-    "es6-promise": "^4.1.0"
+    "unfetch": "^2.1.2"
   },
   "devDependencies": {
     "babel-eslint": "^6.1.0",
@@ -42,7 +42,6 @@
     "babel-preset-es2015-rollup": "^1.1.1",
     "browser-sync": "^2.12.5",
     "eslint": "^3.14.0",
-    "eventemitter3": "^1.2.0",
     "fetch-mock": "^4.6.0",
     "gulp": "^3.9.1",
     "gulp-eslint": "^3.0.0",
