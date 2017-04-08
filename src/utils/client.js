@@ -1,3 +1,5 @@
+import 'unfetch/polyfill';
+
 /**
  * Check Status and request courtesy of feathers-rest
  * See https://github.com/feathersjs/feathers-rest/blob/master/src/client/fetch.js

@@ -1120,6 +1120,88 @@ function editInactive() {
   };
 }
 
+var index = typeof fetch == 'function' ? fetch : function (url, options) {
+	options = options || {};
+	return new Promise(function (resolve, reject) {
+		var request = new XMLHttpRequest();
+
+		request.open(options.method || 'get', url);
+
+		for (var i in options.headers) {
+			request.setRequestHeader(i, options.headers[i]);
+		}
+
+		request.withCredentials = options.credentials == 'include';
+
+		request.onload = function () {
+			resolve(response());
+		};
+
+		request.onerror = reject;
+
+		request.send(options.body);
+
+		function response() {
+			var _keys = [],
+			    all = [],
+			    headers = {},
+			    header;
+
+			request.getAllResponseHeaders().replace(/^(.*?):\s*([\s\S]*?)$/gm, function (m, key, value) {
+				_keys.push(key = key.toLowerCase());
+				all.push([key, value]);
+				header = headers[key];
+				headers[key] = header ? header + "," + value : value;
+			});
+
+			return {
+				ok: (request.status / 200 | 0) == 1, // 200-399
+				status: request.status,
+				statusText: request.statusText,
+				url: request.responseURL,
+				clone: response,
+				text: function text() {
+					return Promise.resolve(request.responseText);
+				},
+				json: function json() {
+					return Promise.resolve(request.responseText).then(JSON.parse);
+				},
+				xml: function xml() {
+					return Promise.resolve(request.responseXML);
+				},
+				blob: function blob() {
+					return Promise.resolve(new Blob([request.response]));
+				},
+				headers: {
+					keys: function keys() {
+						return _keys;
+					},
+					entries: function entries() {
+						return all;
+					},
+					get: function get(n) {
+						return headers[n.toLowerCase()];
+					},
+					has: function has(n) {
+						return n.toLowerCase() in headers;
+					}
+				}
+			};
+		}
+	});
+};
+
+
+
+
+var unfetch_es = Object.freeze({
+	default: index
+});
+
+var require$$0 = ( unfetch_es && unfetch_es['default'] ) || unfetch_es;
+
+if (!window.fetch) window.fetch = require$$0.default || require$$0;
+
 /**
  * Check Status and request courtesy of feathers-rest
  * See https://github.com/feathersjs/feathers-rest/blob/master/src/client/fetch.js
