@@ -4,8 +4,7 @@ language: node_js
 node_js:
 - '6'
 before_script:
-  - npm i -g bower web-component-tester
-  - bower install
+  - npm i -g web-component-tester
   - gulp build:tests
 script: gulp lint && xvfb-run wct
 cache:
