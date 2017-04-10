@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://www.simpla.io">
-    <img src="https://cdn.simpla.io/img/logo/logo-wordmark-sml.png" alt="Simpla" width="300">
-  </a>
+    <img src="https://cdn.simpla.io/img/logo/logo-wordmark.png" alt="Simpla" width="300">
+  </a> 
 </p>
 
 <p align="center">
