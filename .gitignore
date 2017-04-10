@@ -1,3 +1,9 @@
+# Dist
+simpla.js
+simpla.min.js
+simpla-lite.js
+simpla-lite.min.js
+
 # Deps
 node_modules
 bower_components

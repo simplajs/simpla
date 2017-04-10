@@ -5,6 +5,7 @@
   "main": "simpla.js",
   "module": "src/simpla.js",
   "scripts": {
+    "prepublishOnly": "gulp build",
     "test": "gulp test:local"
   },
   "author": "Simpla <friends@simpla.io>",
