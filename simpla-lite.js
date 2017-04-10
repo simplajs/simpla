@@ -1191,17 +1191,6 @@ var index = typeof fetch == 'function' ? fetch : function (url, options) {
 	});
 };
 
-
-
-
-var unfetch_es = Object.freeze({
-	default: index
-});
-
-var require$$0 = ( unfetch_es && unfetch_es['default'] ) || unfetch_es;
-
-if (!window.fetch) window.fetch = require$$0.default || require$$0;
-
 /**
  * Check Status and request courtesy of feathers-rest
  * See https://github.com/feathersjs/feathers-rest/blob/master/src/client/fetch.js
@@ -1234,7 +1223,7 @@ function request(options) {
     }, fetchOptions.headers);
   }
 
-  return fetch(options.url, fetchOptions).then(checkStatus).then(function (response) {
+  return index(options.url, fetchOptions).then(checkStatus).then(function (response) {
     return response.status === 204 ? null : response.json();
   });
 }
@@ -2071,7 +2060,7 @@ var ping = function (Simpla) {
         project = _ref.project;
 
     if (authEndpoint && project) {
-      fetch(authEndpoint + '/projects/' + project + '/sessions', { method: 'POST' });
+      index(authEndpoint + '/projects/' + project + '/sessions', { method: 'POST' });
       observer && observer.unobserve();
       return true;
     }

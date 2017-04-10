@@ -1,4 +1,4 @@
-import 'unfetch/polyfill';
+import fetch from 'unfetch';
 
 /**
  * Check Status and request courtesy of feathers-rest
