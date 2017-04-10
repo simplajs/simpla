@@ -7,9 +7,8 @@
 <p align="center">
   <a href="https://travis-ci.org/simplaio/simpla"><img src="https://travis-ci.org/simplaio/simpla.svg?branch=master" alt="Test status"></a>
   <a href="https://david-dm.org/simplaio/simpla"><img src="https://img.shields.io/david/simplaio/simpla.svg" alt="Dependencies"></a>
-  <img src="https://badges.herokuapp.com/size/github/simplaio/simpla/master/simpla.min.js?gzip=true" alt="Size (gzip)">
+  <img src="http://img.badgesize.io/https://unpkg.com/simpla?compression=gzip&label=size%20(gzip)" alt="Size (gzip)">
   <a href="https://www.npmjs.com/package/simpla"><img src="https://img.shields.io/npm/v/simpla.svg" alt="NPM version"></a>
-  <!-- <a href="https://github.com/simplaio/simpla/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/simpla.svg" alt="License"></a> -->
   <a href="https://slack.simpla.io"><img src="http://slack.simpla.io/badge.svg" alt="Slack"></a>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome"> 
 </p>
