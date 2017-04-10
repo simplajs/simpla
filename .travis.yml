@@ -4,9 +4,10 @@ language: node_js
 node_js:
 - '6'
 before_script:
-  - npm i -g web-component-tester
+  - npm i
+  - gulp build
   - gulp build:tests
-script: gulp lint && xvfb-run wct
+script: gulp test:local
 cache:
   directories:
     - node_modules
