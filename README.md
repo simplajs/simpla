@@ -44,14 +44,25 @@ Simpla is available on NPM and the Unpkg CDN as `simpla`. Setup a project on [si
 </script>
 ```
 
+You can also import Simpla as a UMD module:
+
+```js
+import Simpla from 'simpla';
+
+window.Simpla = Simpla;
+Simpla.init('project-id');
+```
+
 Install and add elements to your page with Bower (Yarn support coming soon) and HTML imports. You can find elements in the [elements catalogue](https://www.simpla.io/elements). 
 
 ```sh
-$ bower install simpla-text --save
+$ bower install simpla-text simpla-img simpla-admin --save
 ```
 
 ```html
 <link rel="import" href="/bower_components/simpla-text/simpla-text.html" async>
+<link rel="import" href="/bower_components/simpla-img/simpla-img.html" async>
+<link rel="import" href="/bower_components/simpla-admin/simpla-admin.html" async>
 ```
 
 **[See full documentation & API references](https://www.simpla.io/docs)**
