@@ -21,9 +21,7 @@
   "files": [
     "src",
     "simpla.js",
-    "simpla.min.js",
-    "simpla-lite.js",
-    "simpla-lite.min.js"
+    "simpla.min.js"
   ],
   "repository": {
     "type": "git",
