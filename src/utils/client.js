@@ -1,4 +1,4 @@
-import fetch from 'unfetch';
+import fetch from './fetch';
 
 /**
  * Check Status and request courtesy of feathers-rest

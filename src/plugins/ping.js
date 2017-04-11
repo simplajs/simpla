@@ -1,4 +1,4 @@
-import fetch from 'unfetch';
+import fetch from '../utils/fetch';
 
 export default function(Simpla) {
   let observer,
