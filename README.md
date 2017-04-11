@@ -37,7 +37,7 @@ Simpla is available on NPM and the Unpkg CDN as `simpla`. Setup a project on [si
 ```html
 <!-- Include Simpla and cross-browser polyfill, then init project -->
 <script src="https://unpkg.com/webcomponents.js@^0.7.24/webcomponents-lite.min.js"></script>
-<script src="https://unpkg.com/simpla@^2.0.0/simpla.min.js"></script>
+<script src="https://unpkg.com/simpla@^2.0.0"></script>
 <script>
   // TODO: Replace 'project-id' with your Project ID
   Simpla.init('project-id');
