@@ -1,18 +1,27 @@
 {
   "name": "simpla",
   "version": "2.0.0-preview",
-  "description": "Dynamic content, without the CMS",
+  "description": "Simpla is a content management framework built on Web Components",
   "main": "simpla.js",
+  "module": "src/simpla.js",
+  "unpkg": "simpla.min.js",
   "scripts": {
+    "prepublishOnly": "gulp build",
     "test": "gulp test:local"
   },
-  "author": "Simpla <admin@simpla.io>",
+  "author": "Simpla <friends@simpla.io>",
   "license": "MIT",
   "keywords": [
-    "simpla",
-    "web component",
-    "polymer",
-    "api"
+    "content",
+    "content management",
+    "cms framework",
+    "web components",
+    "custom elements"
+  ],
+  "files": [
+    "src",
+    "simpla.js",
+    "simpla.min.js"
   ],
   "repository": {
     "type": "git",
@@ -21,13 +30,18 @@
   "bugs": {
     "url": "https://github.com/simplaio/simpla/issues"
   },
+  "dependencies": {
+    "es6-promise": "^4.1.0",
+    "redux": "^3.5.2",
+    "redux-thunk": "^2.1.0",
+    "unfetch": "^2.1.2"
+  },
   "devDependencies": {
     "babel-eslint": "^6.1.0",
-    "babel-preset-es2015-rollup": "^1.1.1",
-    "browser-sync": "^2.12.5",
-    "core-js": "^2.4.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-object-assign": "^6.22.0",
+    "babel-preset-env": "^1.3.3",
     "eslint": "^3.14.0",
-    "eventemitter3": "^1.2.0",
     "fetch-mock": "^4.6.0",
     "gulp": "^3.9.1",
     "gulp-eslint": "^3.0.0",
@@ -39,9 +53,7 @@
     "gulp-size": "^2.1.0",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-uglify": "^1.5.4",
-    "isomorphic-fetch": "^2.2.1",
-    "redux": "^3.5.2",
-    "redux-thunk": "^2.1.0",
+    "lazypipe": "^1.0.1",
     "rollup-plugin-babel": "^2.6.0",
     "rollup-plugin-commonjs": "^7.0.0",
     "rollup-plugin-node-globals": "^1.0.5",

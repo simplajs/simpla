@@ -1,5 +1,4 @@
-import 'core-js/fn/object/assign';
-import 'core-js/fn/promise';
+import 'es6-promise/auto';
 import { createStore, applyMiddleware, compose } from 'redux';
 import { setOption } from './actions/options';
 import { editActive, editInactive } from './actions/editable';

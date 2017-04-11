@@ -1,14 +1,14 @@
 <p align="center">
   <a href="https://www.simpla.io">
-    <img src="https://cdn.simpla.io/img/logo/logo-wordmark-sml.png" alt="Simpla" width="300">
-  </a>
+    <img src="https://cdn.simpla.io/img/logo/logo-wordmark.png" alt="Simpla" width="300">
+  </a> 
 </p>
 
 <p align="center">
   <a href="https://travis-ci.org/simplaio/simpla"><img src="https://travis-ci.org/simplaio/simpla.svg?branch=master" alt="Test status"></a>
+  <a href="https://david-dm.org/simplaio/simpla"><img src="https://img.shields.io/david/simplaio/simpla.svg" alt="Dependencies"></a>
+  <img src="http://img.badgesize.io/https://unpkg.com/simpla?compression=gzip&label=size%20(gzip)" alt="Size (gzip)">
   <a href="https://www.npmjs.com/package/simpla"><img src="https://img.shields.io/npm/v/simpla.svg" alt="NPM version"></a>
-  <a href="https://github.com/simplaio/simpla/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/simpla.svg" alt="License"></a>
-  <img src="https://badges.herokuapp.com/size/github/simplaio/simpla/master/simpla.min.js?gzip=true" alt="Size (gzip)">
   <a href="https://slack.simpla.io"><img src="http://slack.simpla.io/badge.svg" alt="Slack"></a>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome"> 
 </p>
@@ -44,14 +44,25 @@ Simpla is available on NPM and the Unpkg CDN as `simpla`. Setup a project on [si
 </script>
 ```
 
+You can also import Simpla as a UMD module:
+
+```js
+import Simpla from 'simpla';
+
+window.Simpla = Simpla;
+Simpla.init('project-id');
+```
+
 Install and add elements to your page with Bower (Yarn support coming soon) and HTML imports. You can find elements in the [elements catalogue](https://www.simpla.io/elements). 
 
 ```sh
-$ bower install simpla-text --save
+$ bower install simpla-text simpla-img simpla-admin --save
 ```
 
 ```html
 <link rel="import" href="/bower_components/simpla-text/simpla-text.html" async>
+<link rel="import" href="/bower_components/simpla-img/simpla-img.html" async>
+<link rel="import" href="/bower_components/simpla-admin/simpla-admin.html" async>
 ```
 
 **[See full documentation & API references](https://www.simpla.io/docs)**
@@ -66,7 +77,7 @@ For questions and support get in touch with the team or join the community on Sl
 
 ## Contributing
 
-Whether its opening issues and pull requests, giving feedback, or sharing something you've built using Simpla, there are lots of ways you can help push the Simpla project forward:
+There are lots of ways you can help push the Simpla project forward:
 
 - **Feedback.** Try Simpla and let us know what works and what could be better - new features, API feebdack, new use-cases, breaking bugs, everything helps.
 

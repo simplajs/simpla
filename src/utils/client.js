@@ -1,21 +1,33 @@
-import 'isomorphic-fetch';
+import fetch from './fetch';
 
 /**
  * Check Status and request courtesy of feathers-rest
  * See https://github.com/feathersjs/feathers-rest/blob/master/src/client/fetch.js
  */
 function checkStatus(response) {
+  let rejectAsError;
+
   if (response.ok) {
     return response;
   }
 
+  rejectAsError = (body = {}) => {
+    let code = body.code || response.status,
+        statusText = body.statusText || response.statusText,
+        error = new Error(statusText);
+
+    error.code = code;
+    error.statusText = statusText;
+
+    return Promise.reject(error);
+  }
+
   return Promise.resolve()
     .then(() => response.json())
-    .then(error => {
-      error.code = error.code || response.status;
-      error.statusText = error.statusText || response.statusText;
-      return Promise.reject(error);
-    });
+    .then(
+      (body) => rejectAsError(body),
+      () => rejectAsError({ code: response.status, statusText: response.statusText })
+    );
 }
 
 function request(options) {

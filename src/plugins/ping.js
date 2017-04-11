@@ -1,3 +1,5 @@
+import fetch from '../utils/fetch';
+
 export default function(Simpla) {
   let observer,
       tryPing;
