@@ -1,6 +1,6 @@
 {
   "name": "simpla",
-  "version": "1.2.4",
+  "version": "2.0.0",
   "description": "Simpla is a content management framework built on Web Components",
   "main": "simpla.js",
   "module": "src/simpla.js",
