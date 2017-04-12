@@ -1,4 +1,5 @@
 import { DATA_PREFIX, QUERIES_PREFIX } from '../constants/state';
+import Observable from 'zen-observable';
 
 export function selectPropByPath(path, obj) {
   let selector,
@@ -99,6 +100,27 @@ export function storeToObserver(store) {
         unobserve: store.subscribe(handleChange)
       };
     }
+  }
+}
+
+export function storeToObservableFactory(store) {
+  return (selector) => {
+    let getState = selector ? () => selectPropByPath(selector, store.getState()) : () => store.getState();
+
+    return new Observable(observer => {
+      let lastState = getState();
+
+      // Call observer with initial value in the state
+      observer.next(lastState);
+
+      return store.subscribe(() => {
+        let currentState = getState();
+        if (currentState !== lastState) {
+          observer.next(currentState);
+          lastState = currentState;
+        }
+      });
+    });
   }
 }
 

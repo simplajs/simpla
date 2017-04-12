@@ -4634,9 +4634,9 @@ ternary-stream@^2.0.1:
     merge-stream "^1.0.0"
     through2 "^2.0.1"
 
-"test-fixture@github:polymerelements/test-fixture":
+test-fixture@PolymerElements/test-fixture:
   version "3.0.0-rc.1"
-  resolved "https://codeload.github.com/polymerelements/test-fixture/tar.gz/26118ef0467501c33c02316e7016a2837baba10f"
+  resolved "https://codeload.github.com/PolymerElements/test-fixture/tar.gz/26118ef0467501c33c02316e7016a2837baba10f"
 
 text-table@~0.2.0:
   version "0.2.0"
@@ -5166,6 +5166,10 @@ yauzl@^2.5.0:
 yeast@0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/yeast/-/yeast-0.1.2.tgz#008e06d8094320c372dbc2f8ed76a0ca6c8ac419"
+
+zen-observable@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/zen-observable/-/zen-observable-0.5.1.tgz#a2a57908a276b569504f42fdf2fa2f643bc02d72"
 
 zip-stream@~0.5.0:
   version "0.5.2"

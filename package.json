@@ -34,7 +34,8 @@
     "es6-promise": "^4.1.0",
     "redux": "^3.5.2",
     "redux-thunk": "^2.1.0",
-    "unfetch": "^2.1.2"
+    "unfetch": "^2.1.2",
+    "zen-observable": "^0.5.1"
   },
   "devDependencies": {
     "babel-eslint": "^6.1.0",

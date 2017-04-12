@@ -12,6 +12,7 @@ import * as types from './constants/actionTypes';
 import { configurePolymer } from './utils/prepare';
 import {
   storeToObserver,
+  storeToObservableFactory,
   dispatchThunkAndExpect,
   selectPropByPath,
   pathToUid,
@@ -33,6 +34,7 @@ const Simpla = new class Simpla {
   constructor() {
     const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
     this._store = createStore(rootReducer, composeEnhancers(applyMiddleware(thunk)));
+    this._observableFor = storeToObservableFactory(this._store);
   }
 
   init(project) {
@@ -140,6 +142,86 @@ const Simpla = new class Simpla {
     }
 
     return storeToObserver(this._store).observe(pathInStore, wrappedCallback);
+  }
+
+  path(path) {
+    validatePath(path);
+
+    const uid = pathToUid(path);
+    const self = this;
+
+    let observable = this._observableFor([ DATA_PREFIX, 'content', uid ]);
+
+    return {
+      subscribe(callback) {
+        return observable.subscribe({ next: value => callback(itemUidToPath(value)) });
+      },
+
+      unsubscribe(...args) {
+        return observable.unsubscribe(...args);
+      },
+
+      get(callback) {
+        if (!callback) {
+          return self.get(path);
+        }
+
+        self.get(path).then(callback);
+      },
+
+      value(...args) {
+        return this.get(...args);
+      },
+
+      result(...args) {
+        return this.get(...args);
+      }
+    };
+  }
+
+  query(query) {
+    const self = this;
+
+    let originalQuery = Object.assign({}, query),
+        queryString,
+        pathInStore,
+        observable;
+
+    query.parent = pathToUid(query.parent);
+    queryString = toQueryParams(query);
+    pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
+
+    this._store.dispatch(observeQuery(query));
+
+    observable = this._observableFor(pathInStore);
+
+    return {
+      subscribe(callback) {
+        return observable.subscribe({
+          next: uids => callback(queryResultsToPath(uidsToResponse(uids, self.getState())))
+        });
+      },
+
+      unsubscribe(...args) {
+        return observable.unsubscribe(...args);
+      },
+
+      get(callback) {
+        if (!callback) {
+          return self.find(Object.assign({}, originalQuery));
+        }
+
+        self.find(Object.assign({}, originalQuery)).then(callback);
+      },
+
+      value(...args) {
+        return this.get(...args);
+      },
+
+      result(...args) {
+        return this.get(...args);
+      }
+    };
   }
 
   save(...args) {
