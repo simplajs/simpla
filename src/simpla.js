@@ -16,6 +16,11 @@ import usageMonitoring from './plugins/usageMonitoring';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
+const DEPRECATION_WARNING = 'You are using a deprecated version of Simpla. See https://www.simpla.io/docs/guides/migrating-from-v1 for more details.'
+
+// Issue deprecation warning to all v1 users
+console.warn(DEPRECATION_WARNING);
+
 // Create core store
 const store = createStore(rootReducer, applyMiddleware(thunk));
 
