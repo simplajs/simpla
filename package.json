@@ -22,8 +22,10 @@
     "url": "https://github.com/simplaio/simpla/issues"
   },
   "devDependencies": {
-    "babel-eslint": "^6.1.0",
-    "babel-preset-es2015-rollup": "^1.1.1",
+    "babel-core": "^6.2.1",
+    "babel-eslint": "^7.1.1",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-es2015": "^6.22.0",
     "browser-sync": "^2.12.5",
     "core-js": "^2.4.0",
     "eventemitter3": "^1.2.0",
