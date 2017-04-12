@@ -6,7 +6,7 @@
   "module": "src/simpla.js",
   "unpkg": "simpla.min.js",
   "scripts": {
-    "prepublishOnly": "gulp build",
+    "prepublish": "gulp build",
     "test": "gulp test:local"
   },
   "author": "Simpla <friends@simpla.io>",
