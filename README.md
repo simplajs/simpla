@@ -1,139 +1,101 @@
 <p align="center">
- <a href="https://www.simpla.io"><img src="https://storage.googleapis.com/simpla-assets/img/logo-wordmark-sml.png" alt="Simpla logo" width="350" /></a> 
+  <a href="https://www.simpla.io">
+    <img src="https://cdn.simpla.io/img/logo/logo-wordmark.png" alt="Simpla" width="300">
+  </a> 
 </p>
 
 <p align="center">
-  <a href="https://travis-ci.org/simplaio/simpla"><img src="https://travis-ci.org/simplaio/simpla.svg?branch=master" alt="Test satus" title="Test satus" /></a>
-
-  <a href="https://david-dm.org/simplaio/simpla#info=devDependencies" target="_blank"> <img src="https://img.shields.io/david/dev/simplaio/simpla.svg?theme=shields.io" alt="Dependencies" title="Dependencies"> </a>
-
-  <img src="https://img.shields.io/bower/v/simpla.svg" alt="Bower version" title="Bower version">
-
-  <img src="https://badges.herokuapp.com/size/github/simplaio/simpla/master/simpla.js?gzip=true&color=blue" alt="Size of library" title="Size of library">
-
-  <a href="http://slack.simpla.io"><img src="http://slack.simpla.io/badge.svg" alt="Slack group" title="Slack group"></a>
-</p> 
-
-<p align="center">
- <a href="https://travis-ci.org/simplaio/simpla"><img src="https://badges.herokuapp.com/travis/simplaio/simpla/sauce/simpla?labels=none" alt="Cross browser test status" title="Cross browser test status"></a>
+  <a href="https://travis-ci.org/simplaio/simpla"><img src="https://travis-ci.org/simplaio/simpla.svg?branch=master" alt="Test status"></a>
+  <a href="https://david-dm.org/simplaio/simpla"><img src="https://img.shields.io/david/simplaio/simpla.svg" alt="Dependencies"></a>
+  <img src="http://img.badgesize.io/https://unpkg.com/simpla?compression=gzip&label=size%20(gzip)" alt="Size (gzip)">
+  <a href="https://www.npmjs.com/package/simpla"><img src="https://img.shields.io/npm/v/simpla.svg" alt="NPM version"></a>
+  <a href="https://slack.simpla.io"><img src="http://slack.simpla.io/badge.svg" alt="Slack"></a>
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome"> 
 </p>
-
-Simpla lets you build dynamic content in plain HTML. It's a collection of new HTML elements powered by a RESTful API. You use them to create, structure, and manipulate content in your code. No CMS needed. 
-
-They're built on top of the emerging [Web Components](https://www.w3.org/wiki/WebComponents/) spec. They look like this:
+ 
+Simpla is a modern replacement for your Content Management System. It's an open ecosystem of tools built on top of [Web Components](https://webcomponents.org), powered by a JSON API. Use them to assemble your own modular CMS.
 
 ```html
-<simpla-text sid="text"></simpla-text>
-<simpla-img sid="img"></simpla-img>
+<!-- Block of editable richtext -->
+<simpla-text path="/my-text"></simpla-text>
+
+<!-- An editable image -->
+<img is="simpla-img" path="/my-img">
+
+<!-- A markdown article -->
+<simpla-markdown path="/my-article"></simpla-markdown>
 ```
 
-<p align="center"><img src="https://storage.googleapis.com/simpla-assets/img/editing-demo.gif" alt="Demo of Simpla"></p>
+<p align="center">
+  <img src="https://cdn.simpla.io/img/laptop-demo.gif" width="600" alt="Demo of Simpla">
+</p>
 
-<br/>
-<p align="center"><a href="https://www.simpla.io/docs"><strong>Read the full docs on simpla.io</strong></a></p>
+## Installation
 
-<br/>
+Simpla is available on NPM and the Unpkg CDN as `simpla`. Setup a project on [simpla.io](https://www.simpla.io), then include the library and a polyfill for Web Components on your page. Initialize your project by calling `Simpla.init()`.
 
-## Installation and setup
-The easiest way to get started with Simpla is by using the [simpla.io](https://simpla.io) platform. Create a free project, then include this library and call `Simpla()` with your project ID
-
-```html  
-<script src="https://app.simpla.io"></script>
+```html
+<!-- Include Simpla and cross-browser polyfill, then init project -->
+<script src="https://unpkg.com/webcomponents.js@^0.7.24/webcomponents-lite.min.js"></script>
+<script src="https://unpkg.com/simpla@^2.0.0"></script>
 <script>
-  // TODO: Enter project ID
-  Simpla('PROJECT-ID');
+  // TODO: Replace 'project-id' with your Project ID
+  Simpla.init('project-id');
 </script>
 ```
 
-You can also install Simpla locally with Bower
-
-```bash
-$ bower install simpla --save
-```
-
-### Setting options
-Simpla is configurable via the `Simpla()` initializer
+You can also import Simpla as a UMD module:
 
 ```js
-Simpla({
-  project: 'PROJECT-ID',
-  api: 'https://api.simpla.io',
-  ...
-});
+import Simpla from 'simpla';
+
+window.Simpla = Simpla;
+Simpla.init('project-id');
 ```
 
-[Read more about available options](https://www.simpla.io/docs/#options)
+Install and add elements to your page with Bower (Yarn support coming soon) and HTML imports. You can find elements in the [elements catalogue](https://www.simpla.io/elements). 
 
-## Usage
-
-Drop Simpla's new HTML elements into your code wherever you want editable content.
-
-- Use `<simpla-text>` for editable text
-
-- Use `<simpla-img>` for editable images.
-
-Every element must have a unique Content ID (usually contained in the `sid` attribute) and both opening and closing HTML tags.
+```sh
+$ bower install simpla-text simpla-img simpla-admin --save
+```
 
 ```html
-<simpla-text sid="my-text"></simpla-text>
-<simpla-img sid="my-img"></simpla-text> 
+<link rel="import" href="/bower_components/simpla-text/simpla-text.html" async>
+<link rel="import" href="/bower_components/simpla-img/simpla-img.html" async>
+<link rel="import" href="/bower_components/simpla-admin/simpla-admin.html" async>
 ```
 
-### Structuring data
-Simpla structures data on the fly. This means with you can create powerful dynamic content, without a CMS. Build blogs, localize content, personalize user journeys, all with just HTML and Javascript.
+**[See full documentation & API references](https://www.simpla.io/docs)**
 
-Use `<simpla-block>` to create namespaces for content
+## Questions
 
-```html
-<simpla-block sid="block">
+For questions and support get in touch with the team or join the community on Slack:
 
-  <!-- This 'text' is scoped to 'block' -->
-  <simpla-text sid="text"></simpla-text>
+- [#simpla](https://slack.simpla.io) Slack group
+- [@simplaio](https://twitter.com/simplaio) Twitter
+- [Simpla.io](https://www.simpla.io) website
 
-</simpla-block>
-```
+## Contributing
 
-Dynamically set the `sid` of elements to fetch different content. For example, build a simple fontend blog
+There are lots of ways you can help push the Simpla project forward:
 
-```html
-<simpla-block gid="blog">
+- **Feedback.** Try Simpla and let us know what works and what could be better - new features, API feebdack, new use-cases, breaking bugs, everything helps.
 
-  <!-- Post ID set by js -->
-  <simpla-block id="post" sid="">
-    <simpla-text sid="content"></simpla-text>
-  </simpla-block>
+- **Reporting bugs.** If you find a bug please report it! Open an issue against this repository for problems with the core library and platform. For problems with elements, open an issue against the element's repository.
 
-</simpla-block>
+- **Submitting Pull Requests.** We happily accept PRs against both this repository and any of the elements. Your PR should address an existing issue or have been discussed previously to ensure it gets merged.
 
-<script>
-  // Get post slug from URL
-  var slug = window.location.pathname.split('blog/').pop();
+- **Build your own elements!** Simpla is an open ecosystem, build your own content elements and [publish them to the catalogue](https://github.com/simplaio/simpla-elements/#publishing-your-element).
 
-  // Set post ID to slug
-  document.querySelector('#post').sid = slug;
-</script>
-```
+## Following development
 
-<br/>
+Simpla's development happens in the open:
 
-<p align="center"><a href="https://www.simpla.io/docs"><strong>Read more about using Simpla</strong></a></p>
+- Track [releases](https://github.com/simplaio/simpla/releases) and [issues](https://github.com/simplaio/simpla/issues) here and on [element repositories](https://github.com/SimplaElements)
+- Follow the public [development roadmap](https://trello.com/b/tZEZa1rN/simpla-public-roadmap)
+- Follow us on Twitter [@simplaio](https://twitter.com/simplaio)
+- Monitor platform status at [status.simpla.io](https://status.simpla.io)
 
-<br/>
+***
 
-## Editing content
-
-<p align="center"><img src="https://storage.googleapis.com/simpla-assets/img/hero-img.png" width="600" /></p>
-
-Simpla doesn’t have any admin areas or forms. Content editors can work inline without breaking things, and there's a JSON API for developers.
-
-Just add `#edit` to the end of your URL (eg: `https://mysite.com#edit`) and login to start editing your content. When you’ve finished press save to publish your changes. Remove `#edit` from the URL to exit edit mode.
-
-<br/>
-
-<p align="center"><a href="https://www.simpla.io"><strong>Try the demo on simpla.io</strong></a></p>
-
-<br/>
-
---
-
-MIT © 2016 Simpla International
+MIT © 2017 [Simpla](https://www.simpla.io)

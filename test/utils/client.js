@@ -1,20 +1,38 @@
 import client from '../../src/utils/client';
 import fetchMock from 'fetch-mock';
 
-const URL = 'some-server';
-
-fetchMock
-  .mock(URL, 'GET', {});
+const SERVER = 'some-server';
+const UID = 'some.uid.to.something';
+const RESPONSE = { foo: 'bar' };
+const EMPTY_UID = 'some.uid.to.nowhere';
+const EMPTY_RESPONSE = {
+  status: 204,
+  sendAsJson: false
+};
 
 describe('client', () => {
-  describe('get', () => {
-    it('shouldnt make a request with Content-Type set', () => {
-      return client.get(URL)
-        .then(() => {
-          let { headers } = fetchMock.lastOptions(URL);
+  beforeEach(() => {
+    fetchMock
+      .mock(`${SERVER}/${UID}`, 'GET', RESPONSE)
+      .mock(`${SERVER}/${EMPTY_UID}`, 'GET', EMPTY_RESPONSE);
+  });
 
-          expect(headers['Content-Type']).to.be.undefined;
-        });
-    });
+  afterEach(() => {
+    fetchMock.restore();
+  });
+
+  it('should not request w/ content-type on GETs', () => {
+    client.get(`${SERVER}/${UID}`);
+
+    let { headers } = fetchMock.lastOptions(`${SERVER}/${UID}`);
+
+    expect(headers['Content-Type']).to.be.undefined;
+  });
+
+  it('should return null for 204 responses', () => {
+    return client.get(`${SERVER}/${EMPTY_UID}`)
+      .then(response => {
+        expect(response).to.be.null;
+      });
   });
 });

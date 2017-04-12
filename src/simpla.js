@@ -1,129 +1,173 @@
-import 'core-js/fn/object/assign';
-import 'core-js/fn/promise';
-import { createStore, applyMiddleware } from 'redux';
+import 'es6-promise/auto';
+import { createStore, applyMiddleware, compose } from 'redux';
 import { setOption } from './actions/options';
-import { importElement } from './actions/imports';
-import { editActive, editInactive } from './actions/editing';
+import { editActive, editInactive } from './actions/editable';
 import { login, logout } from './actions/authentication';
-import { get, set, remove } from './actions/data';
-import { AUTH_SERVER, BASE_PATH, ELEMENTS } from './constants/options';
+import { get, set, remove, find } from './actions/data';
+import { observeQuery } from './actions/queries';
+import save from './actions/save';
+import { AUTH_SERVER } from './constants/options';
+import { DATA_PREFIX, QUERIES_PREFIX } from './constants/state';
 import * as types from './constants/actionTypes';
-import { hideDefaultContent, readyWebComponents, configurePolymer } from './utils/prepare';
-import { storeToObserver, ensureActionMatches, dispatchThunkAndExpect } from './utils/helpers';
-import { supportDeprecatedConfig, supportDeprecatedInitializer } from './plugins/deprecation';
-import hashTracking from './plugins/hashTracking';
-import usageMonitoring from './plugins/usageMonitoring';
+import { configurePolymer } from './utils/prepare';
+import {
+  storeToObserver,
+  dispatchThunkAndExpect,
+  selectPropByPath,
+  pathToUid,
+  itemUidToPath,
+  queryResultsToPath,
+  validatePath,
+  toQueryParams,
+  uidsToResponse
+} from './utils/helpers';
+import ping from './plugins/ping';
+import persistToken from './plugins/persistToken';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
-
-const DEPRECATION_WARNING = 'You are using a deprecated version of Simpla. See https://www.simpla.io/docs/guides/migrating-from-v1 for more details.'
-
-// Issue deprecation warning to all v1 users
-console.warn(DEPRECATION_WARNING);
-
-// Create core store
-const store = createStore(rootReducer, applyMiddleware(thunk));
-
-// Hide Default Content
-hideDefaultContent();
-
-// Conditionally load in web components
-readyWebComponents();
 
 // Setup Polymer configuration
 configurePolymer();
 
-const Simpla = function Simpla(options) {
-  Simpla._store = Simpla._store || store;
-
-  let project,
-      base = '',
-      elements = [];
-
-  // Initialize data endpoint
-  if (typeof options === 'string') {
-    project = options;
-  } else {
-    project = options.project;
+const Simpla = new class Simpla {
+  constructor() {
+    const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+    this._store = createStore(rootReducer, composeEnhancers(applyMiddleware(thunk)));
   }
 
-  Simpla._store.dispatch(setOption('project', project));
+  init(project) {
+    this._store.dispatch(setOption('project', project));
 
-  // Initialize endpoints
-  Simpla._store.dispatch(setOption('authEndpoint', AUTH_SERVER));
-  Simpla._store.dispatch(setOption('dataEndpoint', `${AUTH_SERVER}/projects/${project}/items`));
-
-  if (typeof options._useHashTracking !== 'undefined') {
-    Simpla._store.dispatch(setOption('_useHashTracking', options._useHashTracking));
-  } else {
-    Simpla._store.dispatch(setOption('_useHashTracking', true));
+    // Initialize endpoints
+    this._store.dispatch(setOption('authEndpoint', AUTH_SERVER));
+    this._store.dispatch(setOption('dataEndpoint', `${AUTH_SERVER}/projects/${project}/content`));
   }
 
-  // Initialize elements
-  if (typeof options.elements === 'undefined') { // Doesn't exist, use defaults
-    elements = ELEMENTS;
-    base = BASE_PATH;
-  } else if (options.elements instanceof Array) { // Exists and is an array of paths
-    elements = options.elements;
-  } else if (options.elements) { // Exists, and not falsey
-    // Use given, or fallback to defaults
-    elements = options.elements.paths || ELEMENTS;
-    base = options.elements.base || BASE_PATH;
-  }
-
-  elements.forEach(element => Simpla._store.dispatch(importElement(`${base}${element}`)));
-
-  return Simpla;
-};
-
-// Add mixins
-Object.assign(Simpla, {
   // Authentication
   login(...args) {
-    return dispatchThunkAndExpect(store, login(...args), types.LOGIN_SUCCESSFUL);
-  },
+    return dispatchThunkAndExpect(this._store, login(...args), types.LOGIN_SUCCESSFUL);
+  }
 
   logout(...args) {
-    return dispatchThunkAndExpect(store, logout(...args), types.LOGOUT_SUCCESSFUL);
-  },
+    return dispatchThunkAndExpect(this._store, logout(...args), types.LOGOUT_SUCCESSFUL);
+  }
 
   // Data
-  get(...args) {
-    return dispatchThunkAndExpect(store, get(...args), types.GET_DATA_SUCCESSFUL);
-  },
+  find(options = {}) {
+    let parentPath = options.parent;
+    options.parent = pathToUid(parentPath);
+    return Promise.resolve()
+      .then(() => validatePath(parentPath))
+      .then(() => dispatchThunkAndExpect(
+        this._store,
+        find(options),
+        types.FIND_DATA_SUCCESSFUL
+      ))
+      .then(queryResultsToPath);
+  }
 
-  set(...args) {
-    return dispatchThunkAndExpect(store, set(...args), types.SET_DATA_SUCCESSFUL);
-  },
+  get(path, ...args) {
+    const uid = pathToUid(path);
+    return Promise.resolve()
+      .then(() => validatePath(path))
+      .then(() => dispatchThunkAndExpect(
+        this._store,
+        get(uid, ...args),
+        types.GET_DATA_SUCCESSFUL
+      ))
+      .then(itemUidToPath);
+  }
 
-  remove(...args) {
-    return dispatchThunkAndExpect(store, remove(...args), types.REMOVE_DATA_SUCCESSFUL);
-  },
+  set(path, ...args) {
+    const uid = pathToUid(path);
+    return Promise.resolve()
+      .then(() => validatePath(path))
+      .then(() => dispatchThunkAndExpect(
+        this._store,
+        set(uid, ...args),
+        types.SET_DATA_SUCCESSFUL
+      ))
+      .then(itemUidToPath);
+  }
 
-  // Editing
-  toggleEditing(on) {
-    (this._store || store).dispatch(on ? editActive() : editInactive());
-  },
+  remove(path, ...args) {
+    const uid = pathToUid(path);
+    return Promise.resolve()
+      .then(() => validatePath(path))
+      .then(() => dispatchThunkAndExpect(
+        this._store,
+        remove(uid, ...args),
+        types.REMOVE_DATA_SUCCESSFUL
+      ))
+      .then(itemUidToPath);
+  }
+
+  observe(path, ...args) {
+    let callback = args.pop(),
+        uid = pathToUid(path),
+        pathInState,
+        wrappedCallback;
+
+    if (!uid) {
+      throw new Error('Observe must be given a valid path');
+    }
+
+    validatePath(path);
+
+    pathInState = [ DATA_PREFIX, 'content', uid ];
+    wrappedCallback = () => this.get(path).then(callback);
+
+    return storeToObserver(this._store).observe(pathInState, wrappedCallback);
+  }
+
+  observeQuery(query, callback) {
+    let queryString,
+        pathInStore,
+        wrappedCallback;
+
+    query.parent = pathToUid(query.parent);
+    queryString = toQueryParams(query);
+    pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
+
+    this._store.dispatch(observeQuery(query));
+
+    wrappedCallback = (uids) => {
+      return callback(
+        queryResultsToPath(
+          uidsToResponse(uids, this.getState())
+        )
+      );
+    }
+
+    return storeToObserver(this._store).observe(pathInStore, wrappedCallback);
+  }
+
+  save(...args) {
+    return dispatchThunkAndExpect(this._store, save(...args), types.SAVE_SUCCESSFUL);
+  }
+
+  // Editable
+  editable(on) {
+    this._store.dispatch(on ? editActive() : editInactive());
+  }
 
   // State
-  getState() {
-    return (this._store || store).getState();
-  },
+  getState(path) {
+    let state = this._store.getState();
+    return path ? selectPropByPath(path, state) : state;
+  }
 
-  observe(...args) {
-    return storeToObserver(this._store || store).observe(...args);
-  },
-
-  // Backwards compatibility for previous SDK
-  client: Simpla
-});
+  observeState(...args) {
+    return storeToObserver(this._store).observe(...args);
+  }
+}
 
 // Init plugins
-[
-  hashTracking,
-  supportDeprecatedInitializer,
-  supportDeprecatedConfig,
-  usageMonitoring
-].forEach(plugin => plugin(Simpla));
+const plugins = [
+  ping,
+  persistToken
+];
+
+plugins.forEach(plugin => plugin(Simpla));
 
 export default Simpla;

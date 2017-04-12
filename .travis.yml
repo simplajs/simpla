@@ -2,14 +2,15 @@ sudo: required
 dist: trusty
 language: node_js
 node_js:
-- '5'
+- '6'
 before_script:
-- npm install bower
-- bower install
-script: gulp build:tests && wct --plugin sauce
+  - yarn global add web-component-tester
+  - gulp build
+  - gulp build:tests
+script: gulp lint & xvfb-run wct
 cache:
   directories:
-  - node_modules
+    - node_modules
 addons:
   firefox: latest
   apt:

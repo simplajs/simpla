@@ -15,7 +15,16 @@ export const LOGOUT = 'logout';
 export const LOGOUT_SUCCESSFUL = 'logout-successful';
 export const LOGOUT_FAILED = 'logout-failed';
 
+// Saving
+export const SAVE = 'save';
+export const SAVE_SUCCESSFUL = 'save-successful';
+export const SAVE_FAILED = 'save-failed';
+
 // Data
+export const FIND_DATA = 'find-data';
+export const FIND_DATA_SUCCESSFUL = 'find-data-successful';
+export const FIND_DATA_FAILED = 'find-data-failed';
+
 export const GET_DATA = 'get-data';
 export const GET_DATA_SUCCESSFUL = 'get-data-successful';
 export const GET_DATA_FAILED = 'get-data-failed';
@@ -28,6 +37,26 @@ export const REMOVE_DATA = 'remove-data';
 export const REMOVE_DATA_SUCCESSFUL = 'remove-data-successful';
 export const REMOVE_DATA_FAILED = 'remove-data-failed';
 
-// Editing
+// Data + API
+export const FIND_DATA_FROM_API = 'find-data-from-api';
+export const FIND_DATA_FROM_API_SUCCESSFUL = 'find-data-from-api-successful';
+export const FIND_DATA_FROM_API_FAILED = 'find-data-from-api-failed';
+
+export const GET_DATA_FROM_API = 'get-data-from-api';
+export const GET_DATA_FROM_API_SUCCESSFUL = 'get-data-from-api-successful';
+export const GET_DATA_FROM_API_FAILED = 'get-data-from-api-failed';
+
+export const SET_DATA_TO_API = 'set-data-to-api';
+export const SET_DATA_TO_API_SUCCESSFUL = 'set-data-to-api-successful';
+export const SET_DATA_TO_API_FAILED = 'set-data-to-api-failed';
+
+export const REMOVE_DATA_FROM_API = 'remove-data-from-api';
+export const REMOVE_DATA_FROM_API_SUCCESSFUL = 'remove-data-from-api-successful';
+export const REMOVE_DATA_FROM_API_FAILED = 'remove-data-from-api-failed';
+
+// Editable
 export const EDIT_ACTIVE = 'edit-active';
 export const EDIT_INACTIVE = 'edit-inactive';
+
+// Querying
+export const OBSERVE_QUERY = 'observe-query';
