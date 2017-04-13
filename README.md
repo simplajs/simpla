@@ -56,12 +56,12 @@ Simpla.init('project-id');
 Install and add elements to your page with Bower (Yarn support coming soon) and HTML imports. You can find elements in the [elements catalogue](https://www.simpla.io/elements). 
 
 ```sh
-$ bower install simpla-text simpla-img simpla-admin --save
+$ bower install simpla-text simpla-img simpla-paths simpla-admin --save
 ```
 
 ```html
-<link rel="import" href="/bower_components/simpla-text/simpla-text.html" async>
-<link rel="import" href="/bower_components/simpla-img/simpla-img.html" async>
+<link rel="import" href="/bower_components/simpla-text/simpla-text.html">
+<link rel="import" href="/bower_components/simpla-img/simpla-img.html">
 <link rel="import" href="/bower_components/simpla-admin/simpla-admin.html" async>
 ```
 
