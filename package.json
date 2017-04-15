@@ -30,6 +30,10 @@
   "bugs": {
     "url": "https://github.com/simplaio/simpla/issues"
   },
+  "browserslist": [
+    "last 2 versions",
+    "IE 11"
+  ],
   "dependencies": {
     "es6-promise": "^4.1.0",
     "redux": "^3.5.2",
