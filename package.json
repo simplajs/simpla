@@ -32,7 +32,8 @@
   },
   "browserslist": [
     "last 2 versions",
-    "IE 11"
+    "not Explorer < 11",
+    "not ExplorerMobile < 11"
   ],
   "dependencies": {
     "es6-promise": "^4.1.0",
