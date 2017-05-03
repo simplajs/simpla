@@ -2,6 +2,7 @@ import Simpla from '../src/simpla';
 import thunk from 'redux-thunk';
 import configureMockStore from './__utils__/redux-mock-store';
 import { AUTH_SERVER } from '../src/constants/options';
+import { PUBLIC_STATES } from '../src/constants/state';
 import { setOption } from '../src/actions/options';
 import * as types from '../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
@@ -103,10 +104,10 @@ describe('Simpla', () => {
 
   describe('state methods', () => {
     const ROOT = {
-      foo: {
+      config: {
         bar: 'baz',
       },
-      bar: {
+      _data: {
         qux: 'baz'
       }
     };
@@ -117,15 +118,26 @@ describe('Simpla', () => {
 
     describe('getState', () => {
       it('should return root state if no argument given', () => {
-        expect(Simpla.getState()).to.equal(ROOT);
+        let response = Simpla.getState();
+
+        Object.keys(response)
+          .forEach(key => {
+            expect(response[key]).to.deep.equal(ROOT[key]);
+          });
       });
 
       it('should return a substate if given a path', () => {
-        expect(Simpla.getState('foo')).to.equal(ROOT.foo);
+        expect(Simpla.getState('config')).to.equal(ROOT.config);
       });
 
-      it('should return undefined if path leads to undefined', () => {
-        expect(Simpla.getState('foo.bing')).to.be.undefined;
+      it('should return undefined if state is not whitelisted', () => {
+        let privateSubState = '_data';
+        expect(Simpla.getState(privateSubState)).to.be.undefined;
+      });
+
+      it('should only return public substates', () => {
+        let response = Simpla.getState();
+        expect(PUBLIC_STATES).to.include.members(Object.keys(response))
       });
     });
 

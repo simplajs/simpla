@@ -7,13 +7,12 @@ import { get, set, remove, find } from './actions/data';
 import { observeQuery } from './actions/queries';
 import save from './actions/save';
 import { AUTH_SERVER } from './constants/options';
-import { DATA_PREFIX, QUERIES_PREFIX } from './constants/state';
+import { DATA_PREFIX, QUERIES_PREFIX, PUBLIC_STATES } from './constants/state';
 import * as types from './constants/actionTypes';
 import { configurePolymer } from './utils/prepare';
 import {
   storeToObserver,
   dispatchThunkAndExpect,
-  selectPropByPath,
   pathToUid,
   itemUidToPath,
   queryResultsToPath,
@@ -134,7 +133,7 @@ const Simpla = new class Simpla {
     wrappedCallback = (uids) => {
       return callback(
         queryResultsToPath(
-          uidsToResponse(uids, this.getState())
+          uidsToResponse(uids, this._store.getState())
         )
       );
     }
@@ -154,7 +153,15 @@ const Simpla = new class Simpla {
   // State
   getState(path) {
     let state = this._store.getState();
-    return path ? selectPropByPath(path, state) : state;
+
+    if (path) {
+      return PUBLIC_STATES.indexOf(path) === -1 ? undefined : state[path];
+    }
+    
+    return PUBLIC_STATES.reduce((publicState, property) => {
+      publicState[property] = state[property];
+      return publicState;
+    }, {});
   }
 
   observeState(...args) {
