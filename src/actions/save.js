@@ -38,8 +38,8 @@ export default function save() {
 
     dispatch(startSave());
 
-    const saveState = getState().save,
-          entries = Object.keys(saveState).map(uid => [ uid, saveState[uid] ]);
+    const buffer = getState().buffer.verbose,
+          entries = Object.keys(buffer).map(uid => [ uid, buffer[uid] ]);
 
     shouldRemove = ([, { local, changed }]) => local === null && changed;
     shouldSet = ([, { local, changed }]) => local !== null && changed;
