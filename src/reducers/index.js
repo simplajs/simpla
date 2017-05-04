@@ -6,7 +6,7 @@ import queries from './queries';
 import editable from './editable';
 import data from './data';
 import token from './token';
-import save from './save';
+import buffer from './buffer';
 
 const reducer = combineReducers({
   [ DATA_PREFIX ]: data,
@@ -15,7 +15,7 @@ const reducer = combineReducers({
   config: options,
   editable,
   token,
-  save
+  buffer
 });
 
 export default reducer;

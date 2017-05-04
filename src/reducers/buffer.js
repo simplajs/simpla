@@ -51,7 +51,7 @@ function reducePart(state = {}, data, isRemote) {
  * @param  {Object} action       Action to apply to state
  * @return {Object}              New state
  */
-export default function save(state = {}, action) {
+export function verboseReducer(state = {}, action) {
   let updatePart,
       updateLocal,
       updateRemote;
@@ -93,4 +93,14 @@ export default function save(state = {}, action) {
   default:
     return state;
   }
+}
+
+export default function buffer(state = { verbose: {} }, action) {
+  let verbose = verboseReducer(state.verbose, action);
+
+  if (verbose !== state.verbose) {
+    return { verbose };
+  }
+
+  return state;
 }

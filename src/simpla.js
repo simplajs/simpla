@@ -157,7 +157,7 @@ const Simpla = new class Simpla {
     if (path) {
       return PUBLIC_STATES.indexOf(path) === -1 ? undefined : state[path];
     }
-    
+
     return PUBLIC_STATES.reduce((publicState, property) => {
       publicState[property] = state[property];
       return publicState;

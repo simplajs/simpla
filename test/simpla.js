@@ -362,5 +362,34 @@ describe('Simpla', () => {
         });
       });
     });
+
+    describe('buffer', () => {
+      it('should default to an array', () => {
+        let buffer = Simpla.getState('buffer');
+
+        expect(buffer).to.equal([]);
+      });
+
+      it('should contain the items stored in Simplas buffer', () => {
+        let pathA = '/foo',
+            pathB = '/foo/baz';
+
+        return Promise.resolve()
+          .then(() => Simpla.get(pathA))
+          .then(() => Simpla.get(pathB))
+          .then(() => Simpla.set(pathB, { data: {} }))
+          .then(() => {
+            let buffer = Simpla.getState('buffer'),
+                itemAtPathA = buffer.find(item => item.path === pathA),
+                itemAtPathB = buffer.find(item => item.path === pathB);
+
+            expect(itemAtPathA, `${pathA} is in the buffer`).to.not.be.null;
+            expect(itemAtPathB, `${pathB} is in the buffer`).to.not.be.null;
+
+            expect(itemAtPathA.modified, `${pathA} hasn't been changed`).to.be.false;
+            expect(itemAtPathB.modified, `${pathB} hasn't been changed`).to.be.true;
+          });
+      });
+    });
   });
 });
