@@ -4,5 +4,6 @@ export const PUBLIC_STATE_MAP = {
   'authenticated': 'authenticated',
   'config': 'config',
   'buffer': 'buffer.simple',
-  'editable': 'editable'
+  'editable': 'editable',
+  'token': 'token'
 };
