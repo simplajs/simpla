@@ -7,7 +7,18 @@ import {
   SET_DATA_SUCCESSFUL,
   REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
-import { clone } from '../utils/helpers';
+import { clone, uidToPath } from '../utils/helpers';
+
+const INITIAL_STATE = { verbose: {}, simple: {} };
+
+function verboseToSimple(verbose) {
+  return Object.keys(verbose)
+    .reduce((simple, uid) => {
+      let { changed: modified } = verbose[uid];
+
+      return Object.assign(simple, { [ uidToPath(uid) ]: { modified } });
+    }, {});
+}
 
 /**
  * Check if two object are different. Uses JSON stringify to check
@@ -95,11 +106,15 @@ export function verboseReducer(state = {}, action) {
   }
 }
 
-export default function buffer(state = { verbose: {} }, action) {
-  let verbose = verboseReducer(state.verbose, action);
+export default function buffer(state = INITIAL_STATE, action) {
+  let verbose,
+      simple;
+
+  verbose = verboseReducer(state.verbose, action);
 
   if (verbose !== state.verbose) {
-    return { verbose };
+    simple = verboseToSimple(verbose);
+    return { verbose, simple };
   }
 
   return state;

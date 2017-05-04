@@ -2,12 +2,13 @@ import Simpla from '../src/simpla';
 import thunk from 'redux-thunk';
 import configureMockStore from './__utils__/redux-mock-store';
 import { AUTH_SERVER } from '../src/constants/options';
-import { PUBLIC_STATES } from '../src/constants/state';
+import { PUBLIC_STATE_MAP } from '../src/constants/state';
 import { setOption } from '../src/actions/options';
 import * as types from '../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
 import { makeItemWith, itemUidToPath, pathToUid } from '../src/utils/helpers';
 
+const PUBLIC_STATES = Object.keys(PUBLIC_STATE_MAP);
 const mockStore = configureMockStore([ thunk ]);
 
 const MOCK_DATA = {
@@ -364,15 +365,9 @@ describe('Simpla', () => {
     });
 
     describe('buffer', () => {
-      it('should default to an array', () => {
-        let buffer = Simpla.getState('buffer');
-
-        expect(buffer).to.equal([]);
-      });
-
       it('should contain the items stored in Simplas buffer', () => {
-        let pathA = '/foo',
-            pathB = '/foo/baz';
+        let pathA = '/somepath',
+            pathB = '/another/path';
 
         return Promise.resolve()
           .then(() => Simpla.get(pathA))
@@ -380,14 +375,14 @@ describe('Simpla', () => {
           .then(() => Simpla.set(pathB, { data: {} }))
           .then(() => {
             let buffer = Simpla.getState('buffer'),
-                itemAtPathA = buffer.find(item => item.path === pathA),
-                itemAtPathB = buffer.find(item => item.path === pathB);
+                itemAtPathA = buffer[pathA],
+                itemAtPathB = buffer[pathB];
 
             expect(itemAtPathA, `${pathA} is in the buffer`).to.not.be.null;
             expect(itemAtPathB, `${pathB} is in the buffer`).to.not.be.null;
 
             expect(itemAtPathA.modified, `${pathA} hasn't been changed`).to.be.false;
-            expect(itemAtPathB.modified, `${pathB} hasn't been changed`).to.be.true;
+            expect(itemAtPathB.modified, `${pathB} has been changed`).to.be.true;
           });
       });
     });
