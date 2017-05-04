@@ -15,6 +15,7 @@ const STORED_AT_UID = { id: UID_FOR_STORED, data: { foo: 'baz' } };
 const BAD_DATA = { foo: 'bar' };
 const SERVER = 'some-server';
 const UID_FOR_NOT_STORED = 'some.uid.to.something';
+const UID_FOR_EMPTY_NOT_STORED = 'some.uid.to.nothing';
 const RESPONSE = { id: UID_FOR_NOT_STORED, data: { foo: 'bar' } };
 
 // Find Data
@@ -40,7 +41,8 @@ describe('data actions', () => {
       .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'PUT', RESPONSE)
       .mock(`${SERVER}/${PARENT_QUERY_STRING}`, 'GET', { items: PARENT_QUERY_ITEMS })
       .mock(`${SERVER}/`, 'GET', { items: BLANK_QUERY_ITEMS })
-      .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'DELETE', {});
+      .mock(`${SERVER}/${UID_FOR_NOT_STORED}`, 'DELETE', {})
+      .mock(`${SERVER}/${UID_FOR_EMPTY_NOT_STORED}`, 'GET', { status: 204 });
   });
 
   afterEach(() => {
@@ -208,6 +210,25 @@ describe('data actions', () => {
             dataActions.setDataSuccessful(UID_FOR_NOT_STORED, RESPONSE),
             dataActions.getDataSuccessful(UID_FOR_NOT_STORED, RESPONSE)
           ]);
+        });
+    });
+
+    it('should set null to the state if null on server', () => {
+      let store = mockStore({
+        config: { dataEndpoint: SERVER },
+        data
+      });
+
+      return store.dispatch(dataActions.get(UID_FOR_EMPTY_NOT_STORED))
+        .then(() => {
+          expect(store.getActions()).to.deep.include.members([
+            dataActions.getData(UID_FOR_EMPTY_NOT_STORED),
+            apiActions.getData(UID_FOR_EMPTY_NOT_STORED),
+            apiActions.getDataSuccessful(UID_FOR_EMPTY_NOT_STORED, null),
+            dataActions.setData(UID_FOR_EMPTY_NOT_STORED, null),
+            dataActions.setDataSuccessful(UID_FOR_EMPTY_NOT_STORED, null),
+            dataActions.getDataSuccessful(UID_FOR_EMPTY_NOT_STORED, null)
+          ])
         });
     });
 

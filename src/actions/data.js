@@ -132,7 +132,9 @@ export function set(uid, data, options = {}) {
     } else {
       let currentData = selectDataFromState(uid, getState());
 
-      data = Object.assign({}, currentData, data);
+      if (typeof currentData !== 'undefined') {
+        data = Object.assign({}, currentData, data);
+      }
 
       action = setDataSuccessful(uid, data, { persist });
     }
