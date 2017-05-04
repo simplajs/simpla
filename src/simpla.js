@@ -169,8 +169,13 @@ const Simpla = new class Simpla {
     }, {});
   }
 
-  observeState(...args) {
-    return storeToObserver(this._store).observe(...args);
+  observeState(substate, callback) {
+    if (!substate) {
+      throw new Error('No state given. Must include a state to observe e.g. Simpla.observeState(\'authenticated\', showAdmin)');
+    }
+
+    let realSubstate = PUBLIC_STATE_MAP[substate];
+    return storeToObserver(this._store).observe(realSubstate, callback);
   }
 }
 

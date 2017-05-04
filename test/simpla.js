@@ -57,7 +57,14 @@ describe('Simpla', () => {
     Object.keys(MOCK_DATA).forEach(path => {
       fetchMock
         .mock(`${dataEndpoint}/${pathToUid(path)}`, 'GET', resultsForGet(path))
-        .mock(`${dataEndpoint}/?parent=${pathToUid(path)}`, 'GET', resultsForFind(path));
+        .mock(`${dataEndpoint}/?parent=${pathToUid(path)}`, 'GET', resultsForFind(path))
+        .mock((url) => url.indexOf(dataEndpoint) === 0, 'GET', (url) => {
+          if (url === `${dataEndpoint}` || url === `${dataEndpoint}/` || url.indexOf('?') !== -1) {
+            return { items: [] };
+          }
+
+          return { status: 204 };
+        });
     });
   });
 
@@ -156,12 +163,6 @@ describe('Simpla', () => {
 
       afterEach(() => {
         unobserve && unobserve();
-      });
-
-      it('should be able to observe root tree', () => {
-        ({ unobserve } = Simpla.observeState(spy));
-        Simpla.editable(true);
-        expect(spy.called).to.be.true;
       });
 
       it('should observe changes to substate if given a path', () => {
@@ -383,6 +384,17 @@ describe('Simpla', () => {
 
             expect(itemAtPathA.modified, `${pathA} hasn't been changed`).to.be.false;
             expect(itemAtPathB.modified, `${pathB} has been changed`).to.be.true;
+          });
+      });
+
+      it('should be able to observe the buffer', () => {
+        let callback = sinon.spy();
+        Simpla.observeState('buffer', callback);
+
+        return Simpla.set('/some/path', { data: {} })
+          .then(() => {
+            expect(callback.called).to.be.true;
+            expect(callback.lastCall.args[0]['/some/path'].modified).to.be.true;
           });
       });
     });
