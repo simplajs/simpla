@@ -7,14 +7,14 @@ import { get, set, remove, find } from './actions/data';
 import { observeQuery } from './actions/queries';
 import save from './actions/save';
 import { AUTH_SERVER } from './constants/options';
-import { DATA_PREFIX, QUERIES_PREFIX } from './constants/state';
+import { DATA_PREFIX, QUERIES_PREFIX, PUBLIC_STATE_MAP } from './constants/state';
 import * as types from './constants/actionTypes';
 import { configurePolymer } from './utils/prepare';
 import {
   storeToObserver,
   dispatchThunkAndExpect,
-  selectPropByPath,
   pathToUid,
+  selectPropByPath,
   itemUidToPath,
   queryResultsToPath,
   validatePath,
@@ -134,7 +134,7 @@ const Simpla = new class Simpla {
     wrappedCallback = (uids) => {
       return callback(
         queryResultsToPath(
-          uidsToResponse(uids, this.getState())
+          uidsToResponse(uids, this._store.getState())
         )
       );
     }
@@ -152,13 +152,30 @@ const Simpla = new class Simpla {
   }
 
   // State
-  getState(path) {
+  getState(substate) {
     let state = this._store.getState();
-    return path ? selectPropByPath(path, state) : state;
+
+    if (substate) {
+      let path = PUBLIC_STATE_MAP[substate];
+      return path ? selectPropByPath(path, state) : undefined;
+    }
+
+    return Object.keys(PUBLIC_STATE_MAP).reduce((publicState, property) => {
+      let path = PUBLIC_STATE_MAP[property];
+      return Object.assign(
+        publicState,
+        { [ property ]: selectPropByPath(path, state) }
+      );
+    }, {});
   }
 
-  observeState(...args) {
-    return storeToObserver(this._store).observe(...args);
+  observeState(substate, callback) {
+    if (!substate) {
+      throw new Error('No state given. Must include a state to observe e.g. Simpla.observeState(\'authenticated\', showAdmin)');
+    }
+
+    let realSubstate = PUBLIC_STATE_MAP[substate];
+    return storeToObserver(this._store).observe(realSubstate, callback);
   }
 }
 

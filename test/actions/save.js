@@ -53,7 +53,9 @@ describe('save actions', () => {
         dataEndpoint: SERVER
       },
       token: TOKEN,
-      save: Object.assign({}, TO_SET, TO_REMOVE, TO_REMAIN)
+      buffer: {
+        verbose: Object.assign({}, TO_SET, TO_REMOVE, TO_REMAIN)
+      }
     });
 
     Object.keys(TO_SET)

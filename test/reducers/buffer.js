@@ -1,4 +1,4 @@
-import saveReducer from '../../src/reducers/save';
+import { verboseReducer } from '../../src/reducers/buffer';
 import * as apiActions from '../../src/actions/api';
 import * as dataActions from '../../src/actions/data';
 
@@ -7,10 +7,10 @@ const RESPONSE = { id: UID, data: { foo: 'bar' } };
 const CHANGED = { id: UID, data: { foo: 'bar', baz: 'qux' } };
 const FIND_RESPONSE = { items: [ RESPONSE ] };
 
-describe('state of save', () => {
+describe('state of buffer', () => {
   it('should populate remote data from a `find` call', () => {
     let findSuccessful = apiActions.findDataSuccessful({}, FIND_RESPONSE);
-    expect(saveReducer({}, findSuccessful)[UID].remote).to.deep.equal(RESPONSE);
+    expect(verboseReducer({}, findSuccessful)[UID].remote).to.deep.equal(RESPONSE);
   });
 
   it('should handle updates to the Remote API', () => {
@@ -21,7 +21,7 @@ describe('state of save', () => {
     ];
 
     actions.forEach(([ action, remoteState ]) => {
-      expect(saveReducer({}, action)[UID].remote).to.deep.equal(remoteState);
+      expect(verboseReducer({}, action)[UID].remote).to.deep.equal(remoteState);
     });
   });
 
@@ -32,7 +32,7 @@ describe('state of save', () => {
     ];
 
     actions.forEach(([ action, localState ]) => {
-      expect(saveReducer({}, action)[UID].local).to.deep.equal(localState);
+      expect(verboseReducer({}, action)[UID].local).to.deep.equal(localState);
     });
   });
 
@@ -44,12 +44,12 @@ describe('state of save', () => {
         ];
 
     actions.forEach((action) => {
-      expect(saveReducer({}, action)[UID]).to.not.exist;
+      expect(verboseReducer({}, action)[UID]).to.not.exist;
     });
   });
 
   it('should remove items with persist: false already in save state if item flagged for deletion', () => {
-    let state = saveReducer({ [ UID ]: {} }, dataActions.removeDataSuccessful(UID, { persist: false }));
+    let state = verboseReducer({ [ UID ]: {} }, dataActions.removeDataSuccessful(UID, { persist: false }));
 
     expect(state[UID]).to.not.exist;
   });
@@ -62,8 +62,8 @@ describe('state of save', () => {
             changed: false
           }
         },
-        changed = saveReducer(initial, dataActions.setDataSuccessful(UID, CHANGED)),
-        original = saveReducer(initial, dataActions.setDataSuccessful(UID, RESPONSE));
+        changed = verboseReducer(initial, dataActions.setDataSuccessful(UID, CHANGED)),
+        original = verboseReducer(initial, dataActions.setDataSuccessful(UID, RESPONSE));
 
     expect(changed[UID].changed).to.be.true;
     expect(original[UID].changed).to.be.false;
@@ -71,7 +71,7 @@ describe('state of save', () => {
 
   it('shouldn\'t pass object references in', () => {
     let data = { foo: 'bar' },
-        state = saveReducer({}, dataActions.setDataSuccessful(UID, data));
+        state = verboseReducer({}, dataActions.setDataSuccessful(UID, data));
 
     data.foo = 'baz';
     expect(state[UID].local.foo).to.equal('bar');

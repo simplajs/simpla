@@ -7,7 +7,18 @@ import {
   SET_DATA_SUCCESSFUL,
   REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
-import { clone } from '../utils/helpers';
+import { clone, uidToPath } from '../utils/helpers';
+
+const INITIAL_STATE = { verbose: {}, simple: {} };
+
+function verboseToSimple(verbose) {
+  return Object.keys(verbose)
+    .reduce((simple, uid) => {
+      let { changed: modified } = verbose[uid];
+
+      return Object.assign(simple, { [ uidToPath(uid) ]: { modified } });
+    }, {});
+}
 
 /**
  * Check if two object are different. Uses JSON stringify to check
@@ -51,7 +62,7 @@ function reducePart(state = {}, data, isRemote) {
  * @param  {Object} action       Action to apply to state
  * @return {Object}              New state
  */
-export default function save(state = {}, action) {
+export function verboseReducer(state = {}, action) {
   let updatePart,
       updateLocal,
       updateRemote;
@@ -93,4 +104,18 @@ export default function save(state = {}, action) {
   default:
     return state;
   }
+}
+
+export default function buffer(state = INITIAL_STATE, action) {
+  let verbose,
+      simple;
+
+  verbose = verboseReducer(state.verbose, action);
+
+  if (verbose !== state.verbose) {
+    simple = verboseToSimple(verbose);
+    return { verbose, simple };
+  }
+
+  return state;
 }

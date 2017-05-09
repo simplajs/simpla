@@ -2,11 +2,13 @@ import Simpla from '../src/simpla';
 import thunk from 'redux-thunk';
 import configureMockStore from './__utils__/redux-mock-store';
 import { AUTH_SERVER } from '../src/constants/options';
+import { PUBLIC_STATE_MAP } from '../src/constants/state';
 import { setOption } from '../src/actions/options';
 import * as types from '../src/constants/actionTypes';
 import fetchMock from 'fetch-mock';
 import { makeItemWith, itemUidToPath, pathToUid } from '../src/utils/helpers';
 
+const PUBLIC_STATES = Object.keys(PUBLIC_STATE_MAP);
 const mockStore = configureMockStore([ thunk ]);
 
 const MOCK_DATA = {
@@ -55,7 +57,14 @@ describe('Simpla', () => {
     Object.keys(MOCK_DATA).forEach(path => {
       fetchMock
         .mock(`${dataEndpoint}/${pathToUid(path)}`, 'GET', resultsForGet(path))
-        .mock(`${dataEndpoint}/?parent=${pathToUid(path)}`, 'GET', resultsForFind(path));
+        .mock(`${dataEndpoint}/?parent=${pathToUid(path)}`, 'GET', resultsForFind(path))
+        .mock((url) => url.indexOf(dataEndpoint) === 0, 'GET', (url) => {
+          if (url === `${dataEndpoint}` || url === `${dataEndpoint}/` || url.indexOf('?') !== -1) {
+            return { items: [] };
+          }
+
+          return { status: 204 };
+        });
     });
   });
 
@@ -103,10 +112,10 @@ describe('Simpla', () => {
 
   describe('state methods', () => {
     const ROOT = {
-      foo: {
+      config: {
         bar: 'baz',
       },
-      bar: {
+      _data: {
         qux: 'baz'
       }
     };
@@ -117,15 +126,26 @@ describe('Simpla', () => {
 
     describe('getState', () => {
       it('should return root state if no argument given', () => {
-        expect(Simpla.getState()).to.equal(ROOT);
+        let response = Simpla.getState();
+
+        Object.keys(response)
+          .forEach(key => {
+            expect(response[key]).to.deep.equal(ROOT[key]);
+          });
       });
 
       it('should return a substate if given a path', () => {
-        expect(Simpla.getState('foo')).to.equal(ROOT.foo);
+        expect(Simpla.getState('config')).to.equal(ROOT.config);
       });
 
-      it('should return undefined if path leads to undefined', () => {
-        expect(Simpla.getState('foo.bing')).to.be.undefined;
+      it('should return undefined if state is not whitelisted', () => {
+        let privateSubState = '_data';
+        expect(Simpla.getState(privateSubState)).to.be.undefined;
+      });
+
+      it('should only return public substates', () => {
+        let response = Simpla.getState();
+        expect(PUBLIC_STATES).to.include.members(Object.keys(response))
       });
     });
 
@@ -143,12 +163,6 @@ describe('Simpla', () => {
 
       afterEach(() => {
         unobserve && unobserve();
-      });
-
-      it('should be able to observe root tree', () => {
-        ({ unobserve } = Simpla.observeState(spy));
-        Simpla.editable(true);
-        expect(spy.called).to.be.true;
       });
 
       it('should observe changes to substate if given a path', () => {
@@ -348,6 +362,40 @@ describe('Simpla', () => {
               () => {}
             );
         });
+      });
+    });
+
+    describe('buffer', () => {
+      it('should contain the items stored in Simplas buffer', () => {
+        let pathA = '/somepath',
+            pathB = '/another/path';
+
+        return Promise.resolve()
+          .then(() => Simpla.get(pathA))
+          .then(() => Simpla.get(pathB))
+          .then(() => Simpla.set(pathB, { data: {} }))
+          .then(() => {
+            let buffer = Simpla.getState('buffer'),
+                itemAtPathA = buffer[pathA],
+                itemAtPathB = buffer[pathB];
+
+            expect(itemAtPathA, `${pathA} is in the buffer`).to.not.be.null;
+            expect(itemAtPathB, `${pathB} is in the buffer`).to.not.be.null;
+
+            expect(itemAtPathA.modified, `${pathA} hasn't been changed`).to.be.false;
+            expect(itemAtPathB.modified, `${pathB} has been changed`).to.be.true;
+          });
+      });
+
+      it('should be able to observe the buffer', () => {
+        let callback = sinon.spy();
+        Simpla.observeState('buffer', callback);
+
+        return Simpla.set('/some/path', { data: {} })
+          .then(() => {
+            expect(callback.called).to.be.true;
+            expect(callback.lastCall.args[0]['/some/path'].modified).to.be.true;
+          });
       });
     });
   });
