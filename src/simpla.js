@@ -125,6 +125,9 @@ const Simpla = new class Simpla {
         pathInStore,
         wrappedCallback;
 
+    // Clone so as to not affect given param
+    query = Object.assign({}, query);
+
     query.parent = pathToUid(query.parent);
     queryString = toQueryParams(query);
     pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
