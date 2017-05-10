@@ -48,6 +48,16 @@ function makeAndPathItem(uid, data) {
   return itemUidToPath(makeItemWith(uid, data));
 }
 
+function randomData() {
+  return {
+    foo: 'bar' + Math.random().toString(36).substr(5)
+  };
+}
+
+function findItemWithPath(path) {
+  return ({ items }) => items.find(item => item.path === path);
+}
+
 describe('Simpla', () => {
   const project = 'project-id',
         dataEndpoint = `${AUTH_SERVER}/projects/${project}/content`;
@@ -191,6 +201,20 @@ describe('Simpla', () => {
             expect(data).to.deep.equal(makeAndPathItem('foo.bar', MOCK_DATA['/foo/bar']));
           });
       });
+
+      it('should return new data for get', () => {
+        let original;
+        return Simpla.set('/foo', { data: randomData() })
+          .then(() => Simpla.get('/foo'))
+          .then(item => {
+            original = _.cloneDeep(item.data);
+            item.data.bar = 'baz'
+          })
+          .then(() => Simpla.get('/foo'))
+          .then(item => {
+            expect(item.data).to.deep.equal(original);
+          });
+      });
     });
 
     describe('remove', () => {
@@ -219,21 +243,74 @@ describe('Simpla', () => {
             expect(response).to.deep.equal(Object.assign({ path: '/foo' }, firstSet, secondSet));
           });
       });
+
+      it('shoud store data as a clone', () => {
+        let data = randomData(),
+            original = _.cloneDeep(data);
+
+        return Simpla.set('/foo', { data })
+          .then(() => {
+            data.bar = 'baz';
+          })
+          .then(() => Simpla.get('/foo'))
+          .then(item => {
+            expect(item.data).to.deep.equal(original);
+          });
+      });
+
+      it('should not return a reference', () => {
+        let data = randomData(),
+            original = _.cloneDeep(data);
+
+        return Simpla.set('/foo', { data })
+          .then(item => {
+            item.data.baz = 'bar';
+          })
+          .then(() => Simpla.get('/foo'))
+          .then((item) => {
+            expect(item.data).to.deep.equal(original);
+          })
+      });
+    });
+
+    describe('find', () => {
+      it('should return new data after a find', () => {
+        let path = '/foo/bar',
+            data = randomData(),
+            original = _.cloneDeep(data),
+            findItem = findItemWithPath(path);
+
+        return Simpla.set(path, { data })
+          .then(() => Simpla.find({ parent: '/foo' }))
+          .then(findItem)
+          .then((item) => item.data.foo = 'bar')
+          .then(() => {
+            return Promise.all([
+              Simpla.find({ parent: '/foo' }).then(findItem),
+              Simpla.get(path)
+            ])
+          })
+          .then(([ fromFind, fromGet ]) => {
+            expect(fromFind.data, 'affected find results').to.deep.equal(original);
+            expect(fromGet.data, 'affected get results').to.deep.equal(original);
+          });
+      });
     });
 
     describe('observing', () => {
       let spy,
-          unobserve;
+          observers = [];
 
       beforeEach(() => {
         spy = sinon.spy();
         Simpla.constructor.call(Simpla);
         Simpla.init(project);
-        ({ unobserve } = Simpla.observe('/foo/bar', spy));
+        observers.push(Simpla.observe('/foo/bar', spy));
       });
 
       afterEach(() => {
-        unobserve && unobserve();
+        observers.forEach(observer => observer.unobserve());
+        observers = [];
       });
 
       it('should be able to observe data', () => {
@@ -262,19 +339,43 @@ describe('Simpla', () => {
           });
       });
 
+      it('should not return references to state', () => {
+        let data = randomData(),
+            original = _.cloneDeep(data),
+            waitForObserver;
+
+        waitForObserver = new Promise(resolve => {
+          let observer = Simpla.observe('/foo', (item) => {
+            item.data.foo = 'baz';
+            resolve();
+          });
+
+          // For cleanup
+          observers.push(observer);
+        });
+
+        return Simpla.set('/foo', { data })
+          .then(waitForObserver)
+          .then(() => Simpla.get('/foo'))
+          .then(item => {
+            expect(item.data).to.deep.equal(original);
+          });
+      });
+
       describe('observing queries', () => {
         let spy,
-            unobserve;
+            observers = [];
 
         beforeEach(() => {
           spy = sinon.spy();
           Simpla.constructor.call(Simpla);
           Simpla.init(project);
-          ({ unobserve } = Simpla.observeQuery({ parent: '/foo' }, spy));
+          observers.push(Simpla.observeQuery({ parent: '/foo' }, spy));
         });
 
         afterEach(() => {
-          unobserve && unobserve();
+          observers.forEach(observer => observer.unobserve());
+          observers = [];
           return Simpla.remove('/foo');
         });
 
@@ -305,6 +406,32 @@ describe('Simpla', () => {
               expect(spy.getCall(0).args[0]).to.deep.equal({
                 items: [ makeAndPathItem('foo.bar', MOCK_DATA['/foo/bar']) ]
               })
+            });
+        });
+
+        it('should not return a reference to the state', () => {
+          let path = '/foo/bar',
+              query = { parent: '/foo' },
+              data = randomData(),
+              original = _.cloneDeep(data),
+              waitForObserver,
+              findItem = findItemWithPath(path);
+
+          waitForObserver = new Promise(resolve => {
+            let observer = Simpla.observeQuery(query, (results) => {
+              findItem(results).data.foo = 'bar';
+              resolve();
+            });
+
+            observers.push(observer);
+          });
+
+          return Simpla.set(path, { data })
+            .then(waitForObserver)
+            .then(() => Simpla.find(query))
+            .then(findItem)
+            .then(item => {
+              expect(item.data).to.deep.equal(original);
             });
         });
       });

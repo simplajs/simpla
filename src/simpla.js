@@ -19,7 +19,8 @@ import {
   queryResultsToPath,
   validatePath,
   toQueryParams,
-  uidsToResponse
+  uidsToResponse,
+  clone
 } from './utils/helpers';
 import ping from './plugins/ping';
 import persistToken from './plugins/persistToken';
@@ -63,7 +64,8 @@ const Simpla = new class Simpla {
         find(options),
         types.FIND_DATA_SUCCESSFUL
       ))
-      .then(queryResultsToPath);
+      .then(queryResultsToPath)
+      .then(clone);
   }
 
   get(path, ...args) {
@@ -75,7 +77,8 @@ const Simpla = new class Simpla {
         get(uid, ...args),
         types.GET_DATA_SUCCESSFUL
       ))
-      .then(itemUidToPath);
+      .then(itemUidToPath)
+      .then(clone);
   }
 
   set(path, ...args) {
@@ -125,6 +128,9 @@ const Simpla = new class Simpla {
         pathInStore,
         wrappedCallback;
 
+    // Clone so as to not affect given param
+    query = Object.assign({}, query);
+
     query.parent = pathToUid(query.parent);
     queryString = toQueryParams(query);
     pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
@@ -134,7 +140,7 @@ const Simpla = new class Simpla {
     wrappedCallback = (uids) => {
       return callback(
         queryResultsToPath(
-          uidsToResponse(uids, this._store.getState())
+          clone(uidsToResponse(uids, this._store.getState()))
         )
       );
     }

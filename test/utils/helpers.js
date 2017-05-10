@@ -11,7 +11,8 @@ import {
   uidToPath,
   itemUidToPath,
   validatePath,
-  matchesQuery
+  matchesQuery,
+  clone
 } from '../../src/utils/helpers';
 import {
   DATA_PREFIX
@@ -418,6 +419,34 @@ describe('helpers', () => {
         .forEach(path => {
           expect(validatePath.bind(null, path), path).not.to.throw();
         });
+    });
+  });
+
+  describe('clone', () => {
+    it('should behave the same as JSON.stringify -> parse', () => {
+      [
+        false,
+        true,
+        [],
+        {},
+        null,
+        1,
+        {
+          foo: [
+            'bar',
+            {
+              bar: [1, '', { bar: 'baz' }]
+            }
+          ]
+        },
+        [{ foo: 'bar' }, null ]
+      ].forEach(testCase => {
+        expect(clone(testCase)).to.deep.equal(JSON.parse(JSON.stringify(testCase)));
+      });
+    });
+
+    it('should also be able to handle undefined', () => {
+      expect(clone(undefined)).to.equal(undefined);
     });
   });
 });

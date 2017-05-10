@@ -140,12 +140,30 @@ export function dispatchThunkAndExpect(store, ...args) {
 }
 
 /**
- * Clone's the given object using JSON.parse(JSON.stringify(...));
+ * Deep clone's the given object recursively. Doesn't touch object's prototype,
+ *  and only clones obejct, arrays and primitives.
  * @param  {Object} object Object should be JSON compatible
  * @return {Object}        Clone of given object
  */
-export function clone(object) {
-  return JSON.parse(JSON.stringify(object));
+export function clone(subject) {
+  var cloned;
+
+  if (typeof subject !== 'object' || !subject) {
+    return subject;
+  }
+
+  if ('[object Array]' === Object.prototype.toString.apply(subject)) {
+    return subject.map(clone);
+  }
+
+  cloned = {};
+  for (let key in subject) {
+    if (subject.hasOwnProperty(key)) {
+      cloned[key] = clone(subject[key]);
+    }
+  }
+
+  return cloned;
 }
 
 export function dataIsValid(data) {
