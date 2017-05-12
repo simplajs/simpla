@@ -12,7 +12,8 @@ import {
   itemUidToPath,
   validatePath,
   matchesQuery,
-  clone
+  clone,
+  jsonIsEqual
 } from '../../src/utils/helpers';
 import {
   DATA_PREFIX
@@ -447,6 +448,73 @@ describe('helpers', () => {
 
     it('should also be able to handle undefined', () => {
       expect(clone(undefined)).to.equal(undefined);
+    });
+  });
+
+  describe('jsonIsEqual', () => {
+    it('should check both JSON-like objects are deeply equal', () => {
+      let complex,
+          shuffledComplex;
+
+      complex = {
+        a: 'b',
+        b: 1,
+        c: null,
+        bar: 0.9,
+        foo: [ 'a', null, { foo: 'bar' } ],
+      };
+
+      shuffledComplex = {
+        c: null,
+        a: 'b',
+        b: 1,
+        foo: [ 'a', null, { foo: 'bar' } ],
+        bar: 0.9,
+      };
+
+      expect(jsonIsEqual(complex, shuffledComplex), 'said same objects were unequal').to.be.true;
+      expect(jsonIsEqual(complex, null), 'said object and null were equal').to.be.false;
+      expect(jsonIsEqual(complex, { foo: 'bar', baz: [ 0, 'b' ] }), 'said different objects were equal').to.be.false;
+    });
+
+    it('should handle arrays', () => {
+      expect(jsonIsEqual([], []), 'said two empty arrays are unequal').to.be.true;
+      expect(jsonIsEqual(['a'], ['a']), 'said two string arrays are unequal').to.be.true;
+
+      expect(
+        jsonIsEqual(
+          [ { a: 'b' }, 'b', 1.4 ],
+          [ { a: 'b' }, 'b', 1.4 ]
+        ),
+        'said two arrays with complex are unequal'
+      ).to.be.true;
+
+      expect(
+        jsonIsEqual(
+          [ { a: 'b' }, 'b', 1.4 ],
+          [ { a: 'b' }, 1.4, 'b' ]
+        ),
+        'said two arrays with different order are equal'
+      ).to.be.false;
+    });
+
+    it('should handle primitives', () => {
+      expect(jsonIsEqual(null, 'a')).to.be.false;
+      expect(jsonIsEqual(null, null)).to.be.true;
+
+      expect(jsonIsEqual(0, 0)).to.be.true;
+      expect(jsonIsEqual(true, true)).to.be.true;
+      expect(jsonIsEqual(true, 1)).to.be.false;
+      expect(jsonIsEqual(1.5, 2.5)).to.be.false;
+
+      expect(jsonIsEqual('foo', 'bar')).to.be.false;
+      expect(jsonIsEqual('', false)).to.be.false;
+      expect(jsonIsEqual('foo', 'foo')).to.be.true;
+    });
+
+    it('should accept undefined values as extra bonus', () => {
+      expect(jsonIsEqual(undefined, undefined)).to.be.true;
+      expect(jsonIsEqual(undefined, null)).to.be.false;
     });
   });
 });

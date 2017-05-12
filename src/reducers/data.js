@@ -1,10 +1,6 @@
 import { SET_DATA_SUCCESSFUL, REMOVE_DATA_SUCCESSFUL } from '../constants/actionTypes';
-import { clone } from '../utils/helpers';
+import { clone, jsonIsEqual } from '../utils/helpers';
 import { combineReducers } from 'redux';
-
-function equal(subjectA, subjectB) {
-  return JSON.stringify(subjectA) === JSON.stringify(subjectB);
-}
 
 function markAt(state, path) {
   let key = path[0],
@@ -46,7 +42,7 @@ export function content(state = {}, action) {
     let currentContent = state[action.uid],
         newContent = clone(action.response);
 
-    if (equal(currentContent, newContent)) {
+    if (jsonIsEqual(currentContent, newContent)) {
       return state;
     }
 

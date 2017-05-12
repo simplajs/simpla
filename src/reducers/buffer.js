@@ -7,7 +7,7 @@ import {
   SET_DATA_SUCCESSFUL,
   REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
-import { clone, uidToPath } from '../utils/helpers';
+import { clone, uidToPath, jsonIsEqual } from '../utils/helpers';
 
 const INITIAL_STATE = { verbose: {}, simple: {} };
 
@@ -18,21 +18,6 @@ function verboseToSimple(verbose) {
 
       return Object.assign(simple, { [ uidToPath(uid) ]: { modified } });
     }, {});
-}
-
-/**
- * Check if two object are different. Uses JSON stringify to check
- *  whether they've changed.
- * NOTE: May be a perf issue thanks to JSON.stringify, worth investigating
- * @param  {Object}  remote Object on remote state
- * @param  {Object}  local  Object on local state
- * @return {Boolean}        True if they are different, false otherwise
- */
-function isDifferent(remote, local) {
-  let remoteAsString = JSON.stringify(remote),
-      localAsString = JSON.stringify(local);
-
-  return remoteAsString !== localAsString;
 }
 
 /**
@@ -51,7 +36,7 @@ function reducePart(state = {}, data, isRemote) {
     local = clone(data || null);
   }
 
-  changed = isDifferent(remote, local);
+  changed = !jsonIsEqual(remote, local);
 
   return Object.assign({}, state, { local, remote, changed });
 }

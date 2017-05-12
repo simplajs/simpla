@@ -277,3 +277,36 @@ export function validatePath(path) {
     throw new Error(`Invalid path '${path}'. Paths must not have more than one '/' in a row.`);
   }
 }
+
+export function jsonIsEqual(a, b) {
+  let objectName = window.toString.call(a),
+      isSameAsIn = other => (item, i) => jsonIsEqual(item, other[i]),
+      hasSameIn = (a, b) => (key) => key in a && key in b && jsonIsEqual(a[key], b[key]),
+      keysOfA;
+
+  if (objectName !== toString.call(b)) {
+    return false;
+  }
+
+  switch (objectName) {
+  case '[object String]':
+  case '[object Number]':
+  case '[object Boolean]':
+  case '[object Null]':
+  case '[object Undefined]':
+    return a === b;
+  }
+
+  if (Array.isArray(a)) {
+    return a.length === b.length  && a.every(isSameAsIn(b));
+  }
+
+  // At this point we assume it's an object
+  keysOfA = Object.keys(a);
+
+  if (keysOfA.length !== Object.keys(b).length) {
+    return false;
+  }
+
+  return keysOfA.every(hasSameIn(a, b));
+}
