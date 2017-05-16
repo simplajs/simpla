@@ -22,7 +22,7 @@ Simpla is a modern content system for frontend developers. It's an open ecosyste
 <!-- An editable image -->
 <img is="simpla-img" path="/img">
 
-<!-- Dynamic collections -->
+<!-- Dynamic collection -->
 <simpla-collection path="/gallery" as="photo">
   <template>
     <img is="simpla-img" path="/gallery/[photo]/img">
