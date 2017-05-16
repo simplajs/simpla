@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome"> 
 </p>
  
-Simpla is a modern content system for frontend developers. It's an open ecosystem of elements built on top of [Web Components](https://webcomponents.org), powered by a JSON API. Use them to assemble your own modular CMS.
+Simpla is a modular, open content framework for frontend developers. It's built on top of [Web Components](https://webcomponents.org), and powered by a JSON API. Use the new components to assemble your own modern CMS.
 
 ```html
 <!-- Block of editable richtext -->
