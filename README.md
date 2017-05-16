@@ -13,17 +13,22 @@
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome"> 
 </p>
  
-Simpla is a modern replacement for your Content Management System. It's an open ecosystem of tools built on top of [Web Components](https://webcomponents.org), powered by a JSON API. Use them to assemble your own modular CMS.
+Simpla is a modern content system for frontend developers. It's an open ecosystem of elements built on top of [Web Components](https://webcomponents.org), powered by a JSON API. Use them to assemble your own modular CMS.
 
 ```html
 <!-- Block of editable richtext -->
-<simpla-text path="/my-text"></simpla-text>
+<simpla-text path="/text"></simpla-text>
 
 <!-- An editable image -->
-<img is="simpla-img" path="/my-img">
+<img is="simpla-img" path="/img">
 
-<!-- A markdown article -->
-<simpla-markdown path="/my-article"></simpla-markdown>
+<!-- Dynamic collections -->
+<simpla-collection path="/gallery" as="photo">
+  <template>
+    <img is="simpla-img" path="/gallery/[photo]/img">
+    <simpla-text path="/gallery/[photo]/caption"></simpla-text>
+  </template>
+</simpla-collection>
 ```
 
 <p align="center">
@@ -36,7 +41,7 @@ Simpla is available on NPM and the Unpkg CDN as `simpla`. Setup a project on [si
 
 ```html
 <!-- Include Simpla and cross-browser polyfill, then init project -->
-<script src="https://unpkg.com/webcomponents.js@^0.7.24/webcomponents-lite.min.js"></script>
+<script src="https://unpkg.com/webcomponents.js@^0.7.24/webcomponents-lite.min.js" async></script>
 <script src="https://unpkg.com/simpla@^2.0.0"></script>
 <script>
   // TODO: Replace 'project-id' with your Project ID
