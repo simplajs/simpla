@@ -55,10 +55,27 @@ const Simpla = new class Simpla {
 
   // Data
   find(options = {}) {
-    let parentPath = options.parent;
-    options.parent = pathToUid(parentPath);
+    let parentPath = options.parent,
+        ancestorPath = options.ancestor;
+
+    if (parentPath) {
+      options.parent = pathToUid(parentPath);
+    }
+
+    if (ancestorPath) {
+      options.ancestor = pathToUid(ancestorPath);
+    }
+
     return Promise.resolve()
-      .then(() => validatePath(parentPath))
+      .then(() => {
+        if (parentPath) {
+          validatePath(parentPath);
+        }
+
+        if (ancestorPath) {
+          validatePath(ancestorPath);
+        }
+      })
       .then(() => dispatchThunkAndExpect(
         this._store,
         find(options),
@@ -146,6 +163,10 @@ const Simpla = new class Simpla {
     }
 
     return storeToObserver(this._store).observe(pathInStore, wrappedCallback);
+  }
+
+  prefetch(path) {
+    return this.find({ ancestor: path });
   }
 
   save(...args) {
