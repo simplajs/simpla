@@ -166,7 +166,7 @@ const Simpla = new class Simpla {
   }
 
   prefetch(path) {
-    return this.find({ ancestor: path });
+    return this.find({ ancestor: path }).then(() => {});
   }
 
   save(...args) {
