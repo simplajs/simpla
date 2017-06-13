@@ -141,7 +141,8 @@ const Simpla = new class Simpla {
   }
 
   observeQuery(query, callback) {
-    let queryString,
+    let content,
+        queryString,
         pathInStore,
         wrappedCallback;
 
@@ -158,8 +159,9 @@ const Simpla = new class Simpla {
 
     queryString = toQueryParams(query);
     pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
+    content = this._store.getState()[DATA_PREFIX].content;
 
-    this._store.dispatch(observeQuery(query));
+    this._store.dispatch(observeQuery({ query, content }));
 
     wrappedCallback = (uids) => {
       return callback(

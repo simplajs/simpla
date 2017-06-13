@@ -451,6 +451,23 @@ describe('Simpla', () => {
             });
         });
 
+        it('should include data set before query applied', () => {
+          let ancestor = '/blog',
+              callback = sinon.spy();
+
+
+          return Simpla.set('/blog/post-1', { data: {} })
+            .then(() => observers.push(Simpla.observeQuery({ ancestor }, callback)))
+            .then(() => Simpla.set('/blog/post-1/title', { data: {} }))
+            .then(() => Promise.all([
+              Simpla.get('/blog/post-1'),
+              Simpla.get('/blog/post-1/title')
+            ]))
+            .then(expected => {
+              expect(callback.getCall(0).args[0].items).to.deep.have.members(expected);
+            });
+        });
+
         it('should be able to observe combined queries', () => {
           let ancestor = '/foo',
               type = 'Image',
