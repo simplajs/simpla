@@ -70,15 +70,19 @@ export default function queries(state = {}, action) {
 
     return state;
   case OBSERVE_QUERY:
-    queryString = toQueryParams(action.query);
+    let { content, query } = action;
+    queryString = toQueryParams(query);
 
     if (!state[queryString]) {
+      let matches = Object.keys(content)
+        .filter(id => matchesQuery(query, content[id]));
+
       return updateStateWithQuery(state, queryString, {
-        query: action.query,
+        query,
         querying: false,
         queriedRemote: false,
         cache: [],
-        matches: []
+        matches
       });
     }
 
