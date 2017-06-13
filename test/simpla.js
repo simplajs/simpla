@@ -300,7 +300,7 @@ describe('Simpla', () => {
 
       it('should be able to filter by ancestor', () => {
         let ancestor = '/foo/',
-            descendants = [ '/foo/bar/baz', '/foo/bar', '/foo/baz/' ];
+            descendants = [ '/foo/bar/baz', '/foo/bar', '/foo/image', '/foo/bar/image', '/foo/baz/' ];
 
         return Promise.all([
             Simpla.find({ ancestor }),
@@ -330,7 +330,7 @@ describe('Simpla', () => {
             matches = [ '/foo/image' ];
 
         return Promise.all([
-            Simpla.find({ type }),
+            Simpla.find({ type, parent }),
             ...matches.map(path => Simpla.get(path))
           ])
           .then(([ results, ...expected ]) => {

@@ -274,45 +274,48 @@ describe('helpers', () => {
     describe('general find', () => {
       it('should return all items', () => {
         let query = {};
-        expect(findDataInState(query, state)).to.deep.equal({
-          items: Object.values(content)
-        });
+        expect(findDataInState(query, state).items).to.deep.have.members(Object.values(content));
       });
     });
 
     describe('parent scoped find', () => {
       it('should return only those directly below the parent uid', () => {
         let query = { parent: 'foo' };
-        expect(findDataInState(query, state)).to.deep.equal({
-          items: [ content['foo.bar'], content['foo.image'] ]
-        });
+        expect(findDataInState(query, state).items).to.deep.have.members([
+          content['foo.bar'],
+          content['foo.image']
+        ]);
       });
     });
 
     describe('ancestor scoped find', () => {
       it('should return only those below parent uid', () => {
         let query = { ancestor: 'foo' };
-        expect(findDataInState(query, state)).to.deep.equal({
-          items: [ content['foo.image'], content['foo.bar'], content['foo.bar.image'], content['foo.bar.baz'] ]
-        });
+        expect(findDataInState(query, state).items).to.deep.have.members([
+          content['foo.image'],
+          content['foo.bar'],
+          content['foo.bar.image'],
+          content['foo.bar.baz']
+        ]);
       });
     });
 
     describe('type scoped find', () => {
       it('should return only with given type', () => {
         let query = { type: 'Image' };
-        expect(findDataInState(query, state)).to.deep.equal({
-          items: [ content['foo.image'], content['foo.bar.image'] ]
-        });
+        expect(findDataInState(query, state).items).to.deep.have.members([
+          content['foo.image'],
+          content['foo.bar.image']
+        ]);
       });
     });
 
     describe('combined scoped find', () => {
       it('should return only those below parent uid', () => {
-        let query = { parent: 'foo' };
-        expect(findDataInState(query, state)).to.deep.equal({
-          items: [ content['foo.image'] ]
-        });
+        let query = { parent: 'foo', type: 'Image' };
+        expect(findDataInState(query, state).items).to.deep.have.members([
+          content['foo.image']
+        ]);
       });
     });
 
