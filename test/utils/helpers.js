@@ -296,6 +296,33 @@ describe('helpers', () => {
       expect(matchesQuery(query, notChildContent)).to.be.false;
     });
 
+    it('should match ancestor queries', () => {
+      let descendant = { id: 'foo.bar.baz' },
+          notDescendant = { id: 'bar' },
+          query = { ancestor: 'foo' };
+
+      expect(matchesQuery(query, descendant)).to.be.true;
+      expect(matchesQuery(query, notDescendant)).to.be.false;
+    });
+
+    it('should match type queries', () => {
+      let image = { type: 'Image' },
+          notImage = { type: 'Text' },
+          query = { type: 'Image' };
+
+      expect(matchesQuery(query, image)).to.be.true;
+      expect(matchesQuery(query, notImage)).to.be.false;
+    });
+
+    it('should match combined queries', () => {
+      let imageAndDescendant = { id: 'foo.bar.baz', type: 'Image' },
+          justImage = { id: 'foo', type: 'Image' },
+          query = { type: 'Image', ancestor: 'foo' };
+
+      expect(matchesQuery(query, imageAndDescendant)).to.be.true;
+      expect(matchesQuery(query, justImage)).to.be.false;
+    });
+
     it('should match everything for empty query', () => {
       [{ id: 'foo' }, { id: 'foo.bar' }, { id: 'bar' }]
         .forEach(content => {
