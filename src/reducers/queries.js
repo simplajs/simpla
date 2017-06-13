@@ -97,8 +97,10 @@ export default function queries(state = {}, action) {
 
         if (!matchesQuery(query, response)) {
           updated = current.filter(isNot(uid));
-        } else {
+        } else if (current.indexOf(uid) === -1) {
           updated = [ ...current, uid ];
+        } else {
+          return state;
         }
 
         if (updated.length !== current.length) {
