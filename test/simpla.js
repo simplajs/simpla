@@ -451,6 +451,22 @@ describe('Simpla', () => {
             });
         });
 
+        it('should be able to observe combined queries', () => {
+          let ancestor = '/foo',
+              type = 'Image',
+              callback = sinon.spy();
+
+          observers.push(Simpla.observeQuery({ ancestor, type }, callback));
+
+          return Promise.resolve()
+            .then(() => Simpla.set('/foo', MOCK_DATA['/foo']))
+            .then(() => Simpla.set('/foo/image', MOCK_DATA['/foo/image']))
+            .then(() => Simpla.set('/foo/bar/image', MOCK_DATA['/foo/bar/image']))
+            .then(() => {
+              expect(callback.callCount).to.equal(2);
+            });
+        });
+
         it('should not return a reference to the state', () => {
           let path = '/foo/bar',
               query = { parent: '/foo' },

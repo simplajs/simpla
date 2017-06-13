@@ -148,7 +148,14 @@ const Simpla = new class Simpla {
     // Clone so as to not affect given param
     query = Object.assign({}, query);
 
-    query.parent = pathToUid(query.parent);
+    if (query.parent) {
+      query.parent = pathToUid(query.parent);
+    }
+
+    if (query.ancestor) {
+      query.ancestor = pathToUid(query.ancestor);
+    }
+
     queryString = toQueryParams(query);
     pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
 
