@@ -1,5 +1,25 @@
 import { DATA_PREFIX, QUERIES_PREFIX } from '../constants/state';
 
+const filters = {
+  parent: parent => item => {
+    return (
+      item &&
+      filters.ancestor(parent)(item) &&
+      item.id.replace(parent, '').split('.').length === 2
+    );
+  },
+
+  ancestor: ancestor => item => {
+    return ( 
+      item &&
+      item.id.indexOf(ancestor) === 0 &&
+      item.id.replace(ancestor, '').indexOf('.') === 0
+    );
+  },
+
+  type: expectedType => item => item && item.type === expectedType
+}
+
 export function selectPropByPath(path, obj) {
   let selector,
       numberSelector;
@@ -48,26 +68,20 @@ export function uidsToResponse(uids, state) {
 export function findDataInState(query, state) {
   let dataState = state[DATA_PREFIX],
       uids = [],
-      content,
-      hierarchy;
+      content;
 
   if (!dataState) {
     return { items: [] };
   }
 
-  ({ content, hierarchy } = dataState);
+  content = dataState.content || {};
 
-  // Parent filter
-  if (query.parent) {
-    let childObject = selectPropByPath(query.parent, hierarchy);
-
-    if (childObject) {
-      uids = Object.keys(childObject)
-        .map(id => `${query.parent}.${id}`);
-    }
-  } else {
-    uids = Object.keys(content);
-  }
+  uids = Object.keys(query)
+    .map(filterBy => filters[filterBy](query[filterBy]))
+    .reduce(
+      (uids, filter) => uids.filter(uid => filter(content[uid])),
+      Object.keys(dataState.content)
+    );
 
   return uidsToResponse(uids, state);
 }
@@ -107,15 +121,9 @@ export function matchesQuery(query = {}, content) {
     return false;
   }
 
-  if (query.parent) {
-    return content.id !== query.parent && content.id.indexOf(query.parent) === 0;
-  }
-
-  if (Object.keys(query).length === 0) {
-    return true;
-  }
-
-  return false;
+  return Object.keys(query)
+    .map(filterBy => filters[filterBy](query[filterBy]))
+    .every(filter => filter(content));
 }
 
 export function ensureActionMatches(expectedType) {

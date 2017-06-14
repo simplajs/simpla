@@ -111,12 +111,20 @@ describe('queriesReducer', () => {
   });
 
   describe(`behaviour for ${OBSERVE_QUERY} action`, () => {
-    it('should add a blank query state if not already there', () => {
-      let query = { foo: 'bar' };
-      expect(queriesReducer({}, {
-        type: OBSERVE_QUERY,
-        query
-      })).to.deep.equal(getInitStateFor(query));
+    it('should add filtered content as initial query state', () => {
+      let query = { ancestor: 'foo' },
+          matches = [ 'foo.bar', 'foo.baz', 'foo.bar.baz' ],
+          content = [
+            'foo.bar',
+            'foo.bar.baz',
+            'foo.baz',
+            'bar',
+            'foo'
+          ].reduce((state, id) => Object.assign(state, { [ id ]: { id } }), {}),
+          result = queriesReducer({}, { type: OBSERVE_QUERY, query, content }),
+          expected = getInitStateFor(query, { matches });
+
+      expect(result['?ancestor=foo'].matches).to.deep.have.members(expected['?ancestor=foo'].matches);
     });
 
     it('should not do anything if query already in state', () => {
@@ -175,6 +183,18 @@ describe('queriesReducer', () => {
 
       expect(reduced[queryString].matches).to.be.empty;
       expect(reduced[queryString].cache).to.deep.equal([ content.id ]);
+    });
+
+    it('should not add duplicates', () => {
+      let query = { parent: 'foo' },
+          queryString = toQueryParams(query),
+          content = { id: 'foo.bar' },
+          initial = getInitStateFor(query, { matches: [ content.id ] }),
+          reduced;
+
+      reduced = queriesReducer(initial, setDataSuccessful(content.id, content));
+
+      expect(reduced[queryString].matches).to.equal(initial[queryString].matches);
     });
   });
 

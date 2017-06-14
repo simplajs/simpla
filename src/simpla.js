@@ -55,10 +55,27 @@ const Simpla = new class Simpla {
 
   // Data
   find(options = {}) {
-    let parentPath = options.parent;
-    options.parent = pathToUid(parentPath);
+    let parentPath = options.parent,
+        ancestorPath = options.ancestor;
+
+    if (parentPath) {
+      options.parent = pathToUid(parentPath);
+    }
+
+    if (ancestorPath) {
+      options.ancestor = pathToUid(ancestorPath);
+    }
+
     return Promise.resolve()
-      .then(() => validatePath(parentPath))
+      .then(() => {
+        if (parentPath) {
+          validatePath(parentPath);
+        }
+
+        if (ancestorPath) {
+          validatePath(ancestorPath);
+        }
+      })
       .then(() => dispatchThunkAndExpect(
         this._store,
         find(options),
@@ -124,18 +141,27 @@ const Simpla = new class Simpla {
   }
 
   observeQuery(query, callback) {
-    let queryString,
+    let content,
+        queryString,
         pathInStore,
         wrappedCallback;
 
     // Clone so as to not affect given param
     query = Object.assign({}, query);
 
-    query.parent = pathToUid(query.parent);
+    if (query.parent) {
+      query.parent = pathToUid(query.parent);
+    }
+
+    if (query.ancestor) {
+      query.ancestor = pathToUid(query.ancestor);
+    }
+
     queryString = toQueryParams(query);
     pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
+    content = this._store.getState()[DATA_PREFIX].content;
 
-    this._store.dispatch(observeQuery(query));
+    this._store.dispatch(observeQuery({ query, content }));
 
     wrappedCallback = (uids) => {
       return callback(
@@ -146,6 +172,10 @@ const Simpla = new class Simpla {
     }
 
     return storeToObserver(this._store).observe(pathInStore, wrappedCallback);
+  }
+
+  prefetch(path) {
+    return this.find({ ancestor: path }).then(() => {});
   }
 
   save(...args) {

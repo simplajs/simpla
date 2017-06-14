@@ -12,21 +12,12 @@ const PUBLIC_STATES = Object.keys(PUBLIC_STATE_MAP);
 const mockStore = configureMockStore([ thunk ]);
 
 const MOCK_DATA = {
-  [ '/foo' ]: {
-    data: 'foo'
-  },
-  [ '/foo/bar' ]: {
-    data: {
-      foo:'bar'
-    }
-  },
-  [ '/foo/bar/baz' ]: {
-    data: {
-      foo: {
-        bar: 'baz'
-      }
-    }
-  }
+  [ '/foo' ]: { data: randomData() },
+  [ '/foo/bar' ]: { data: randomData() },
+  [ '/foo/bar/baz' ]: { data: randomData() },
+  [ '/foo/baz' ]: { data: randomData() },
+  [ '/foo/image' ]: { type: 'Image', data: randomData() },
+  [ '/foo/bar/image' ]: { type: 'Image', data: randomData() }
 }
 
 // TODO: This should be moved to a proper mock of Simpla's server
@@ -186,12 +177,10 @@ describe('Simpla', () => {
 
   describe('content methods', () => {
     beforeEach(() => {
-      return Simpla.remove('/foo')
-        .then(() => Promise.all([
-          Simpla.set('/foo', MOCK_DATA['/foo']),
-          Simpla.set('/foo/bar', MOCK_DATA['/foo/bar']),
-          Simpla.set('/foo/baz', MOCK_DATA['/foo/bar/baz'])
-        ]));
+      return Object.keys(MOCK_DATA).reduce(
+        (ops, path) => ops.then(() => Simpla.set(path, MOCK_DATA[path])),
+        Simpla.remove('/foo')
+      );
     });
 
     describe('get', () => {
@@ -293,6 +282,59 @@ describe('Simpla', () => {
           .then(([ fromFind, fromGet ]) => {
             expect(fromFind.data, 'affected find results').to.deep.equal(original);
             expect(fromGet.data, 'affected get results').to.deep.equal(original);
+          });
+      });
+
+      it('should be able to filter by parent', () => {
+        let children = [ '/foo/bar', '/foo/baz', '/foo/image' ],
+            parent = '/foo';
+
+        return Promise.all([
+            Simpla.find({ parent }),
+            ...children.map(path => Simpla.get(path))
+          ])
+          .then(([ results, ...expected ]) => {
+            expect(results.items).to.deep.have.members(expected);
+          });
+      });
+
+      it('should be able to filter by ancestor', () => {
+        let ancestor = '/foo/',
+            descendants = [ '/foo/bar/baz', '/foo/bar', '/foo/image', '/foo/bar/image', '/foo/baz/' ];
+
+        return Promise.all([
+            Simpla.find({ ancestor }),
+            ...descendants.map(path => Simpla.get(path))
+          ])
+          .then(([ results, ...expected ]) => {
+            expect(results.items).to.deep.have.members(expected);
+          });
+      });
+
+      it('should be able to filter by type', () => {
+        let type = 'Image',
+            matches = [ '/foo/image', '/foo/bar/image' ];
+
+        return Promise.all([
+            Simpla.find({ type }),
+            ...matches.map(path => Simpla.get(path))
+          ])
+          .then(([ results, ...expected ]) => {
+            expect(results.items).to.deep.have.members(expected);
+          });
+      });
+
+      it('should be able to combine filters', () => {
+        let type = 'Image',
+            parent = '/foo',
+            matches = [ '/foo/image' ];
+
+        return Promise.all([
+            Simpla.find({ type, parent }),
+            ...matches.map(path => Simpla.get(path))
+          ])
+          .then(([ results, ...expected ]) => {
+            expect(results.items).to.deep.have.members(expected);
           });
       });
     });
@@ -406,6 +448,39 @@ describe('Simpla', () => {
               expect(spy.getCall(0).args[0]).to.deep.equal({
                 items: [ makeAndPathItem('foo.bar', MOCK_DATA['/foo/bar']) ]
               })
+            });
+        });
+
+        it('should include data set before query applied', () => {
+          let ancestor = '/blog',
+              callback = sinon.spy();
+
+
+          return Simpla.set('/blog/post-1', { data: {} })
+            .then(() => observers.push(Simpla.observeQuery({ ancestor }, callback)))
+            .then(() => Simpla.set('/blog/post-1/title', { data: {} }))
+            .then(() => Promise.all([
+              Simpla.get('/blog/post-1'),
+              Simpla.get('/blog/post-1/title')
+            ]))
+            .then(expected => {
+              expect(callback.getCall(0).args[0].items).to.deep.have.members(expected);
+            });
+        });
+
+        it('should be able to observe combined queries', () => {
+          let ancestor = '/foo',
+              type = 'Image',
+              callback = sinon.spy();
+
+          observers.push(Simpla.observeQuery({ ancestor, type }, callback));
+
+          return Promise.resolve()
+            .then(() => Simpla.set('/foo', MOCK_DATA['/foo']))
+            .then(() => Simpla.set('/foo/image', MOCK_DATA['/foo/image']))
+            .then(() => Simpla.set('/foo/bar/image', MOCK_DATA['/foo/bar/image']))
+            .then(() => {
+              expect(callback.callCount).to.equal(2);
             });
         });
 
