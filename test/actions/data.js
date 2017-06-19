@@ -58,10 +58,7 @@ describe('data actions', () => {
         config: {
           dataEndpoint: SERVER
         },
-        [DATA_PREFIX]: {
-          content: {},
-          hierarchy: {}
-        }
+        [DATA_PREFIX]: {}
       };
       store = mockStore(initialState);
     });
@@ -114,12 +111,7 @@ describe('data actions', () => {
       // Partially fill buffer
       let [ firstItem, secondItem ] = BLANK_QUERY_ITEMS;
       initialState[DATA_PREFIX] = {
-        content: {
-          [ firstItem.id ]: firstItem
-        },
-        hierarchy: {
-          [ firstItem.id ]: {}
-        }
+        [ firstItem.id ]: firstItem
       };
 
       store = mockStore(initialState);
@@ -175,9 +167,7 @@ describe('data actions', () => {
 
   describe('get', () => {
     const data = {
-      content: {
-        [ UID_FOR_STORED ]: STORED_AT_UID
-      }
+      [ UID_FOR_STORED ]: STORED_AT_UID
     };
 
     it('should get value in the state', () => {
@@ -275,9 +265,7 @@ describe('data actions', () => {
 
       initialState = {
         [ DATA_PREFIX ]: {
-          content: {
-            [ knownAncestor ]: makeBlankItem()
-          }
+          [ knownAncestor ]: makeBlankItem()
         }
       };
 
@@ -360,18 +348,11 @@ describe('data actions', () => {
     it('should fire remove actions for children', () => {
       let store = mockStore({
         [ DATA_PREFIX ]: {
-          hierarchy: {
-            foo: {
-              bar: {}
-            }
+          'foo': {
+            id: 'foo'
           },
-          content: {
-            'foo': {
-              id: 'foo'
-            },
-            'foo.bar': {
-              id: 'foo.bar'
-            }
+          'foo.bar': {
+            id: 'foo.bar'
           }
         }
       });

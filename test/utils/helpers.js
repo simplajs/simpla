@@ -259,17 +259,7 @@ describe('helpers', () => {
             data: {}
           }
         },
-        hierarchy = {
-          foo: {
-            bar: {
-              image: {},
-              baz: {}
-            },
-            image: {}
-          }
-        },
-        state = { [ DATA_PREFIX ]: { content, hierarchy  }
-    };
+        state = { [ DATA_PREFIX ]: content };
 
     describe('general find', () => {
       it('should return all items', () => {

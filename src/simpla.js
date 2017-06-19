@@ -134,7 +134,7 @@ const Simpla = new class Simpla {
 
     validatePath(path);
 
-    pathInState = [ DATA_PREFIX, 'content', uid ];
+    pathInState = [ DATA_PREFIX, uid ];
     wrappedCallback = () => this.get(path).then(callback);
 
     return storeToObserver(this._store).observe(pathInState, wrappedCallback);
@@ -159,7 +159,7 @@ const Simpla = new class Simpla {
 
     queryString = toQueryParams(query);
     pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
-    content = this._store.getState()[DATA_PREFIX].content;
+    content = this._store.getState()[DATA_PREFIX];
 
     this._store.dispatch(observeQuery({ query, content }));
 

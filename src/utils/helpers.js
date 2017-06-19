@@ -47,18 +47,18 @@ export function selectPropByPath(path, obj) {
 }
 
 export function selectDataFromState(uid, state) {
-  let dataState = state[DATA_PREFIX],
+  let content = state[DATA_PREFIX],
       data;
 
-  if (dataState) {
-    data = dataState.content[uid];
+  if (content) {
+    data = content[uid];
   }
 
   return data;
 }
 
 export function uidsToResponse(uids, state) {
-  let { content } = state[DATA_PREFIX];
+  let content = state[DATA_PREFIX];
 
   return {
     items: uids.map(uid => content[uid])
@@ -66,21 +66,18 @@ export function uidsToResponse(uids, state) {
 }
 
 export function findDataInState(query, state) {
-  let dataState = state[DATA_PREFIX],
-      uids = [],
-      content;
+  let content = state[DATA_PREFIX],
+      uids = [];
 
-  if (!dataState) {
+  if (!content) {
     return { items: [] };
   }
-
-  content = dataState.content || {};
 
   uids = Object.keys(query)
     .map(filterBy => filters[filterBy](query[filterBy]))
     .reduce(
       (uids, filter) => uids.filter(uid => filter(content[uid])),
-      Object.keys(dataState.content)
+      Object.keys(content)
     );
 
   return uidsToResponse(uids, state);
