@@ -1,5 +1,5 @@
 import 'es6-promise/auto';
-import { createStore, applyMiddleware, compose } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
 import { setOption } from './actions/options';
 import { editActive, editInactive } from './actions/editable';
 import { login, logout } from './actions/authentication';
@@ -32,8 +32,7 @@ configurePolymer();
 
 const Simpla = new class Simpla {
   constructor() {
-    const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-    this._store = createStore(rootReducer, composeEnhancers(applyMiddleware(thunk)));
+    this._store = createStore(rootReducer, applyMiddleware(thunk));
   }
 
   init(project) {
