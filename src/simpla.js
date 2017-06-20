@@ -14,7 +14,7 @@ import {
   storeToObserver,
   dispatchThunkAndExpect,
   pathToUid,
-  selectPropByPath,
+  get as getByPath,
   itemUidToPath,
   queryResultsToPath,
   validatePath,
@@ -191,15 +191,13 @@ const Simpla = new class Simpla {
     let state = this._store.getState();
 
     if (substate) {
-      let path = PUBLIC_STATE_MAP[substate];
-      return path ? selectPropByPath(path, state) : undefined;
+      return PUBLIC_STATE_MAP[substate] && getByPath(state, PUBLIC_STATE_MAP[substate]);
     }
 
     return Object.keys(PUBLIC_STATE_MAP).reduce((publicState, property) => {
-      let path = PUBLIC_STATE_MAP[property];
       return Object.assign(
         publicState,
-        { [ property ]: selectPropByPath(path, state) }
+        { [ property ]: getByPath(state, PUBLIC_STATE_MAP[property]) }
       );
     }, {});
   }

@@ -1,6 +1,6 @@
 import {
   storeToObserver,
-  selectPropByPath,
+  get,
   dispatchThunkAndExpect,
   runDispatchAndExpect,
   dataIsValid,
@@ -21,21 +21,21 @@ import {
 import { createStore } from 'redux';
 
 describe('helpers', () => {
-  describe('selectPropByPath', () => {
+  describe('get', () => {
     it('should be able to select deep properties', () => {
-      expect(selectPropByPath('foo.bar.1.baz', {
+      expect(get({
         foo: {
-          bar: [{}, {
+          bar: {
             baz: 'qux'
-          }]
+          }
         }
-      })).to.equal('qux');
+      }, 'foo.bar.baz')).to.equal('qux');
     });
 
     it('should return undefined if selecting deep unknown', () => {
-      expect(selectPropByPath('foo.bar.baz', {
+      expect(get({
         foo: {}
-      })).to.be.undefined;
+      }, 'foo.bar.baz')).to.be.undefined;
     });
   });
 

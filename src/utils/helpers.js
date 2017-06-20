@@ -20,30 +20,9 @@ const filters = {
   type: expectedType => item => item && item.type === expectedType
 }
 
-export function selectPropByPath(path, obj) {
-  let selector,
-      numberSelector;
-
-  if (typeof obj === 'undefined') {
-    return obj;
-  }
-
-  if (typeof path === 'string') {
-    return selectPropByPath(path.split('.'), obj);
-  }
-
-  selector = path[0];
-  numberSelector = parseInt(selector);
-
-  if (!isNaN(numberSelector)) {
-    selector = numberSelector;
-  }
-
-  if (path.length === 0) {
-    return obj;
-  }
-
-  return selectPropByPath(path.slice(1), obj[selector]);
+export function get(obj, path) {
+  path = typeof path === 'string' ? path.split('.') : path;
+  return path.length === 0 || typeof obj === 'undefined' ? obj : get(obj[path[0]], path.slice(1));
 }
 
 export function selectDataFromState(uid, state) {
@@ -93,7 +72,7 @@ export function storeToObserver(store) {
           handleChange;
 
       getState = () => {
-        return selector ? selectPropByPath(selector, store.getState()) : store.getState();
+        return get(store.getState(), selector || []);
       }
 
       lastState = getState();
