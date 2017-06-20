@@ -38,79 +38,75 @@ export function findDataSuccessful(query, response) {
   };
 }
 
-export function getData(uid) {
+export function getData(path) {
   return {
     type: GET_DATA,
-    uid
+    path
   };
 }
 
-export function getDataSuccessful(uid, response) {
+export function getDataSuccessful(path, response) {
   return {
     type: GET_DATA_SUCCESSFUL,
     response,
-    uid
+    path
   }
 }
 
-export function setData(uid, data) {
+export function setData(path, data) {
   return {
     type: SET_DATA,
-    uid,
+    path,
     data
   };
 }
 
-export function setDataSuccessful(uid, response, options = {}) {
-  options = Object.assign({ persist: true }, options);
-  let { persist } = options;
+export function setDataSuccessful(path, response, options = {}) {
+  let { persist } = Object.assign({ persist: true }, options);
 
   return {
     type: SET_DATA_SUCCESSFUL,
-    response: makeItemWith(uid, response),
-    uid,
+    response: makeItemWith(path, response),
+    path,
     persist
   };
 }
 
-export function setDataFailed(uid, error) {
+export function setDataFailed(path, error) {
   return {
     type: SET_DATA_FAILED,
     response: error,
-    uid
+    path
   };
 }
 
-export function removeData(uid) {
+export function removeData(path) {
   return {
     type: REMOVE_DATA,
-    uid
+    path
   };
 }
 
-export function removeDataSuccessful(uid, options = {}) {
-  options = Object.assign({ persist: true }, options);
-  let { persist } = options;
+export function removeDataSuccessful(path, options = {}) {
+  let { persist } = Object.assign({ persist: true }, options);
 
   return {
     type: REMOVE_DATA_SUCCESSFUL,
-    uid,
+    path,
     persist
   };
 }
 
-export function set(uid, data, options = {}) {
-  options = Object.assign({
+export function set(path, data, options = {}) {
+  let { validate, createAncestry, persist } = Object.assign({
     validate: true,
     createAncestry: true,
     persist: true
   }, options);
 
-  let { validate, createAncestry, persist } = options;
-
   return (dispatch, getState) => {
     function ensureParentExists(child) {
-      let parent = child.split('.').slice(0, -1).join('.');
+      let parent = child.split('/').slice(0, -1).join('/');
 
       if (!parent || selectDataFromState(parent, getState())) {
         return Promise.resolve();
@@ -125,40 +121,40 @@ export function set(uid, data, options = {}) {
 
     let action;
 
-    dispatch(setData(uid, data));
+    dispatch(setData(path, data));
 
     if (validate && !dataIsValid(data)) {
-      action = setDataFailed(uid, new Error(INVALID_DATA));
+      action = setDataFailed(path, new Error(INVALID_DATA));
     } else {
-      let currentData = selectDataFromState(uid, getState());
+      let currentData = selectDataFromState(path, getState());
 
       if (typeof currentData !== 'undefined') {
         data = Object.assign({}, currentData, data);
       }
 
-      action = setDataSuccessful(uid, data, { persist });
+      action = setDataSuccessful(path, data, { persist });
     }
 
-    return (createAncestry ? ensureParentExists(uid) : Promise.resolve())
+    return (createAncestry ? ensureParentExists(path) : Promise.resolve())
       .then(() => dispatch(action));
   };
 }
 
-export function remove(uid, options = {}) {
+export function remove(path, options = {}) {
   options = Object.assign({ persist: true }, options);
   let { persist } = options;
 
   return (dispatch, getState) => {
-    function removeChildren(uid) {
-      if (!uid) {
+    function removeChildren(path) {
+      if (!path) {
         return Promise.resolve();
       }
 
-      let { items } = findDataInState({ parent: uid }, getState()),
+      let { items } = findDataInState({ parent: path }, getState()),
           removeItem = item => {
             return runDispatchAndExpect(
               dispatch,
-              remove(item.id, { persist: false }),
+              remove(item.path, { persist: false }),
               REMOVE_DATA_SUCCESSFUL
             );
           };
@@ -166,33 +162,33 @@ export function remove(uid, options = {}) {
       return Promise.all(items.map(removeItem));
     }
 
-    dispatch(removeData(uid));
+    dispatch(removeData(path));
 
-    return removeChildren(uid)
-      .then(() => dispatch(removeDataSuccessful(uid, { persist })));
+    return removeChildren(path)
+      .then(() => dispatch(removeDataSuccessful(path, { persist })));
   };
 }
 
-export function get(uid) {
+export function get(path) {
   return (dispatch, getState) => {
     let state,
         stored,
-        fetchData;
+        fetchData; 
 
-    dispatch(getData(uid));
+    dispatch(getData(path));
 
     state = getState();
-    stored = selectDataFromState(uid, state);
+    stored = selectDataFromState(path, state);
 
     if (typeof stored === 'undefined') {
       fetchData = runDispatchAndExpect(
           dispatch,
-          getFromApi(uid),
+          getFromApi(path),
           GET_DATA_FROM_API_SUCCESSFUL
         ).then((response) => {
           return runDispatchAndExpect(
             dispatch,
-            set(uid, response, { validate: false, createAncestry: false }),
+            set(path, response, { validate: false, createAncestry: false }),
             SET_DATA_SUCCESSFUL
           )
         });
@@ -201,7 +197,7 @@ export function get(uid) {
     }
 
     return fetchData
-      .then((response) => dispatch(getDataSuccessful(uid, response)));
+      .then((response) => dispatch(getDataSuccessful(path, response)));
   };
 }
 
@@ -216,14 +212,14 @@ export function find(query = {}) {
     storeItemInState = (item) => {
       return runDispatchAndExpect(
         dispatch,
-        set(item.id, item, { validate: false }),
+        set(item.path, item, { validate: false }),
         SET_DATA_SUCCESSFUL
       );
     };
 
     storeResponse = (response) => {
       let state = getState(),
-          itemNotInState = ({ id }) => typeof selectDataFromState(id, state) === 'undefined';
+          itemNotInState = ({ path }) => typeof selectDataFromState(path, state) === 'undefined';
 
       return Promise.all(
         response.items

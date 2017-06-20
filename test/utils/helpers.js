@@ -232,30 +232,30 @@ describe('helpers', () => {
 
   describe('findDataInState', () => {
     let content = {
-          [ 'foo' ]: {
-            id: 'foo',
+          [ '/foo' ]: {
+            path: '/foo',
             data: {}
           },
 
-          [ 'foo.image' ]: {
-            id: 'foo.image',
+          [ '/foo/image' ]: {
+            path: '/foo/image',
             type: 'Image',
             data: {}
           },
 
-          [ 'foo.bar' ]: {
-            id: 'foo.bar',
+          [ '/foo/bar' ]: {
+            path: '/foo/bar',
             data: {}
           },
 
-          [ 'foo.bar.image' ]: {
-            id: 'foo.bar.image',
+          [ '/foo/bar/image' ]: {
+            path: '/foo/bar/image',
             type: 'Image',
             data: {}
           },
 
-          [ 'foo.bar.baz' ]: {
-            id: 'foo.bar.baz',
+          [ '/foo/bar/baz' ]: {
+            path: '/foo/bar/baz',
             data: {}
           }
         },
@@ -270,22 +270,22 @@ describe('helpers', () => {
 
     describe('parent scoped find', () => {
       it('should return only those directly below the parent uid', () => {
-        let query = { parent: 'foo' };
+        let query = { parent: '/foo' };
         expect(findDataInState(query, state).items).to.deep.have.members([
-          content['foo.bar'],
-          content['foo.image']
+          content['/foo/bar'],
+          content['/foo/image']
         ]);
       });
     });
 
     describe('ancestor scoped find', () => {
       it('should return only those below parent uid', () => {
-        let query = { ancestor: 'foo' };
+        let query = { ancestor: '/foo' };
         expect(findDataInState(query, state).items).to.deep.have.members([
-          content['foo.image'],
-          content['foo.bar'],
-          content['foo.bar.image'],
-          content['foo.bar.baz']
+          content['/foo/image'],
+          content['/foo/bar'],
+          content['/foo/bar/image'],
+          content['/foo/bar/baz']
         ]);
       });
     });
@@ -294,17 +294,17 @@ describe('helpers', () => {
       it('should return only with given type', () => {
         let query = { type: 'Image' };
         expect(findDataInState(query, state).items).to.deep.have.members([
-          content['foo.image'],
-          content['foo.bar.image']
+          content['/foo/image'],
+          content['/foo/bar/image']
         ]);
       });
     });
 
     describe('combined scoped find', () => {
       it('should return only those below parent uid', () => {
-        let query = { parent: 'foo', type: 'Image' };
+        let query = { parent: '/foo', type: 'Image' };
         expect(findDataInState(query, state).items).to.deep.have.members([
-          content['foo.image']
+          content['/foo/image']
         ]);
       });
     });
@@ -318,18 +318,18 @@ describe('helpers', () => {
 
   describe('matchesQuery', () => {
     it('should match parent queries', () => {
-      let childContent = { id: 'foo.bar' },
-          notChildContent = { id: 'bar.baz' },
-          query = { parent: 'foo' };
+      let childContent = { path: '/foo/bar' },
+          notChildContent = { path: '/bar/baz' },
+          query = { parent: '/foo' };
 
       expect(matchesQuery(query, childContent)).to.be.true;
       expect(matchesQuery(query, notChildContent)).to.be.false;
     });
 
     it('should match ancestor queries', () => {
-      let descendant = { id: 'foo.bar.baz' },
-          notDescendant = { id: 'bar' },
-          query = { ancestor: 'foo' };
+      let descendant = { path: '/foo/bar/baz' },
+          notDescendant = { path: '/bar' },
+          query = { ancestor: '/foo' };
 
       expect(matchesQuery(query, descendant)).to.be.true;
       expect(matchesQuery(query, notDescendant)).to.be.false;
@@ -345,16 +345,16 @@ describe('helpers', () => {
     });
 
     it('should match combined queries', () => {
-      let imageAndDescendant = { id: 'foo.bar.baz', type: 'Image' },
-          justImage = { id: 'foo', type: 'Image' },
-          query = { type: 'Image', ancestor: 'foo' };
+      let imageAndDescendant = { path: '/foo/bar/baz', type: 'Image' },
+          justImage = { path: '/foo', type: 'Image' },
+          query = { type: 'Image', ancestor: '/foo' };
 
       expect(matchesQuery(query, imageAndDescendant)).to.be.true;
       expect(matchesQuery(query, justImage)).to.be.false;
     });
 
     it('should match everything for empty query', () => {
-      [{ id: 'foo' }, { id: 'foo.bar' }, { id: 'bar' }]
+      [{ path: 'foo' }, { path: '/foo/bar' }, { path: '/bar' }]
         .forEach(content => {
           expect(matchesQuery({}, content)).to.be.true;
         });
@@ -392,8 +392,8 @@ describe('helpers', () => {
 
   describe('makeItemWith', () => {
     it('should combine id and data', () => {
-      expect(makeItemWith('foo', { foo: 'bar' })).to.deep.equal({
-        id: 'foo',
+      expect(makeItemWith('/foo', { foo: 'bar' })).to.deep.equal({
+        path: '/foo',
         foo: 'bar'
       });
     });

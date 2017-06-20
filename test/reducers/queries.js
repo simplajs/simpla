@@ -50,20 +50,20 @@ describe('queriesReducer', () => {
   });
 
   describe(`behaviour for ${FIND_DATA_SUCCESSFUL} action`, () => {
-    const query = { parent: 'foo' },
+    const query = { parent: '/foo' },
           action = { type: FIND_DATA_SUCCESSFUL, query };
 
     it('should move the cached values into matches', () => {
       let initial = getInitStateFor(query, {
             querying: true,
-            matches: [ 'foo.bar', 'foo.baz' ],
-            cache: [ 'foo.bar', 'foo.qux' ]
+            matches: [ '/foo/bar', '/foo/baz' ],
+            cache: [ '/foo/bar', '/foo/qux' ]
           }),
           reducedQueryState;
 
       reducedQueryState = queriesReducer(initial, action)[toQueryParams(query)];
 
-      expect(reducedQueryState.matches, 'Added from cache').to.include('foo.qux');
+      expect(reducedQueryState.matches, 'Added from cache').to.include('/foo/qux');
       expect(reducedQueryState.matches, 'Didn\'t add duplicates').to.have.lengthOf(3);
       expect(reducedQueryState.cache, 'Cleared cache').to.be.empty;
     });
@@ -78,11 +78,11 @@ describe('queriesReducer', () => {
     });
 
     it('should leave matches the same if moving from cache has no effect', () => {
-      let matches = [ 'foo.bar', 'foo.baz' ],
+      let matches = [ '/foo/bar', '/foo/baz' ],
           initial = getInitStateFor(query, {
             querying: true,
             matches,
-            cache: [ 'foo.bar' ]
+            cache: [ '/foo/bar' ]
           }),
           reducedQueryState;
 
@@ -96,7 +96,7 @@ describe('queriesReducer', () => {
     it('should update the queriedRemote flag if query state already there', () => {
       let query = { foo: 'bar' },
           queryParams = toQueryParams(query),
-          initial = getInitStateFor(query, { matches: [ 'foo.bar' ] }),
+          initial = getInitStateFor(query, { matches: [ '/foo/bar' ] }),
           initialQueryState = initial[queryParams],
           reduced = queriesReducer(initial, {
             type: FIND_DATA_FROM_API_SUCCESSFUL,
@@ -112,19 +112,20 @@ describe('queriesReducer', () => {
 
   describe(`behaviour for ${OBSERVE_QUERY} action`, () => {
     it('should add filtered content as initial query state', () => {
-      let query = { ancestor: 'foo' },
-          matches = [ 'foo.bar', 'foo.baz', 'foo.bar.baz' ],
+      let query = { ancestor: '/foo' },
+          queryAsString = toQueryParams(query),
+          matches = [ '/foo/bar', '/foo/baz', '/foo/bar/baz' ],
           content = [
-            'foo.bar',
-            'foo.bar.baz',
-            'foo.baz',
-            'bar',
-            'foo'
-          ].reduce((state, id) => Object.assign(state, { [ id ]: { id } }), {}),
+            '/foo/bar',
+            '/foo/bar/baz',
+            '/foo/baz',
+            '/bar',
+            '/foo'
+          ].reduce((state, path) => Object.assign(state, { [ path ]: { path } }), {}),
           result = queriesReducer({}, { type: OBSERVE_QUERY, query, content }),
           expected = getInitStateFor(query, { matches });
 
-      expect(result['?ancestor=foo'].matches).to.deep.have.members(expected['?ancestor=foo'].matches);
+      expect(result[queryAsString].matches).to.deep.have.members(expected[queryAsString].matches);
     });
 
     it('should not do anything if query already in state', () => {
@@ -140,19 +141,19 @@ describe('queriesReducer', () => {
 
   describe(`behaviour for ${SET_DATA_SUCCESSFUL} action`, () => {
     it('should store content iff it matches the given query', () => {
-      let matchingQuery = { parent: 'foo' },
-          notMatchingQuery = { parent: 'bar' },
-          content = { id: 'foo.bar' },
+      let matchingQuery = { parent: '/foo' },
+          notMatchingQuery = { parent: '/bar' },
+          content = { path: '/foo/bar' },
           initial,
           reduced;
 
       initial = Object.assign({}, getInitStateFor(matchingQuery), getInitStateFor(notMatchingQuery));
-      reduced = queriesReducer(initial, setDataSuccessful(content.id, content));
+      reduced = queriesReducer(initial, setDataSuccessful(content.path, content));
 
       expect(
         reduced[toQueryParams(matchingQuery)].matches,
         'stored content of matching query'
-      ).to.deep.equal([ content.id ]);
+      ).to.deep.equal([ content.path ]);
 
       expect(
         reduced[toQueryParams(notMatchingQuery)].matches,
@@ -161,38 +162,38 @@ describe('queriesReducer', () => {
     });
 
     it('should remove it from matches if in and no longer matches', () => {
-      let query = { parent: 'foo' },
+      let query = { parent: '/foo' },
           queryString = toQueryParams(query),
-          content = { id: 'bar.foo' },
-          initial = getInitStateFor(query, { matches: [ content.id ] }),
+          content = { path: '/bar/foo' },
+          initial = getInitStateFor(query, { matches: [ content.path ] }),
           reduced;
 
-      reduced = queriesReducer(initial, setDataSuccessful(content.id, content));
+      reduced = queriesReducer(initial, setDataSuccessful(content.path, content));
 
-      expect(reduced[queryString].matches).to.not.include(content.id);
+      expect(reduced[queryString].matches).to.not.include(content.path);
     });
 
     it('should add matched result to cache if currently querying', () => {
-      let query = { parent: 'foo' },
+      let query = { parent: '/foo' },
           queryString = toQueryParams(query),
-          content = { id: 'foo.bar' },
+          content = { path: '/foo/bar' },
           initial = getInitStateFor(query, { querying: true }),
           reduced;
 
-      reduced = queriesReducer(initial, setDataSuccessful(content.id, content));
+      reduced = queriesReducer(initial, setDataSuccessful(content.path, content));
 
       expect(reduced[queryString].matches).to.be.empty;
-      expect(reduced[queryString].cache).to.deep.equal([ content.id ]);
+      expect(reduced[queryString].cache).to.deep.equal([ content.path ]);
     });
 
     it('should not add duplicates', () => {
-      let query = { parent: 'foo' },
+      let query = { parent: '/foo' },
           queryString = toQueryParams(query),
-          content = { id: 'foo.bar' },
-          initial = getInitStateFor(query, { matches: [ content.id ] }),
+          content = { path: '/foo/bar' },
+          initial = getInitStateFor(query, { matches: [ content.path ] }),
           reduced;
 
-      reduced = queriesReducer(initial, setDataSuccessful(content.id, content));
+      reduced = queriesReducer(initial, setDataSuccessful(content.path, content));
 
       expect(reduced[queryString].matches).to.equal(initial[queryString].matches);
     });
@@ -200,15 +201,15 @@ describe('queriesReducer', () => {
 
   describe(`behaviour for ${REMOVE_DATA_SUCCESSFUL} action`, () => {
     it('should remove the item from matches if was in there', () => {
-      let query = { parent: 'foo' },
+      let query = { parent: '/foo' },
           queryString = toQueryParams(query),
-          content = { id: 'foo.bar' },
-          initial = getInitStateFor(query, { matches: [ content.id ] }),
+          content = { id: '/foo/bar' },
+          initial = getInitStateFor(query, { matches: [ content.path ] }),
           reduced;
 
-      reduced = queriesReducer(initial, removeDataSuccessful(content.id));
+      reduced = queriesReducer(initial, removeDataSuccessful(content.path));
 
-      expect(reduced[queryString].matches).to.not.include(content.id);
+      expect(reduced[queryString].matches).to.not.include(content.path);
     });
   });
 });

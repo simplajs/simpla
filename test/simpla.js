@@ -35,10 +35,6 @@ function resultsForFind(parent) {
   };
 }
 
-function makeAndPathItem(uid, data) {
-  return itemUidToPath(makeItemWith(uid, data));
-}
-
 function randomData() {
   return {
     foo: 'bar' + Math.random().toString(36).substr(5)
@@ -187,7 +183,7 @@ describe('Simpla', () => {
       it('should be able to get leaf node', () => {
         return Simpla.get('/foo/bar')
           .then(data => {
-            expect(data).to.deep.equal(makeAndPathItem('foo.bar', MOCK_DATA['/foo/bar']));
+            expect(data).to.deep.equal(makeItemWith('/foo/bar', MOCK_DATA['/foo/bar']));
           });
       });
 
@@ -299,8 +295,8 @@ describe('Simpla', () => {
       });
 
       it('should be able to filter by ancestor', () => {
-        let ancestor = '/foo/',
-            descendants = [ '/foo/bar/baz', '/foo/bar', '/foo/image', '/foo/bar/image', '/foo/baz/' ];
+        let ancestor = '/foo',
+            descendants = [ '/foo/bar/baz', '/foo/bar', '/foo/image', '/foo/bar/image', '/foo/baz' ];
 
         return Promise.all([
             Simpla.find({ ancestor }),
@@ -446,7 +442,7 @@ describe('Simpla', () => {
           return Simpla.set('/foo/bar', MOCK_DATA['/foo/bar'])
             .then(() => {
               expect(spy.getCall(0).args[0]).to.deep.equal({
-                items: [ makeAndPathItem('foo.bar', MOCK_DATA['/foo/bar']) ]
+                items: [ makeItemWith('/foo/bar', MOCK_DATA['/foo/bar']) ]
               })
             });
         });

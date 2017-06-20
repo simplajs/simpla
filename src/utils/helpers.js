@@ -5,15 +5,15 @@ const filters = {
     return (
       item &&
       filters.ancestor(parent)(item) &&
-      item.id.replace(parent, '').split('.').length === 2
+      item.path.replace(parent, '').split('/').length === 2
     );
   },
 
   ancestor: ancestor => item => {
     return ( 
       item &&
-      item.id.indexOf(ancestor) === 0 &&
-      item.id.replace(ancestor, '').indexOf('.') === 0
+      item.path.indexOf(ancestor) === 0 &&
+      item.path.replace(ancestor, '').indexOf('/') === 0
     );
   },
 
@@ -25,41 +25,41 @@ export function get(obj, path) {
   return path.length === 0 || typeof obj === 'undefined' ? obj : get(obj[path[0]], path.slice(1));
 }
 
-export function selectDataFromState(uid, state) {
+export function selectDataFromState(path, state) {
   let content = state[DATA_PREFIX],
       data;
 
   if (content) {
-    data = content[uid];
+    data = content[path];
   }
 
   return data;
 }
 
-export function uidsToResponse(uids, state) {
+export function pathsToResponse(paths, state) {
   let content = state[DATA_PREFIX];
 
   return {
-    items: uids.map(uid => content[uid])
+    items: paths.map(path => content[path])
   };
 }
 
 export function findDataInState(query, state) {
   let content = state[DATA_PREFIX],
-      uids = [];
+      paths = [];
 
   if (!content) {
     return { items: [] };
   }
 
-  uids = Object.keys(query)
+  paths = Object.keys(query)
     .map(filterBy => filters[filterBy](query[filterBy]))
     .reduce(
-      (uids, filter) => uids.filter(uid => filter(content[uid])),
+      (paths, filter) => paths.filter(path => filter(content[path])),
       Object.keys(content)
     );
 
-  return uidsToResponse(uids, state);
+  return pathsToResponse(paths, state);
 }
 
 export function storeToObserver(store) {
@@ -181,6 +181,19 @@ export function toQueryParams(query = {}) {
     }, '');
 }
 
+export function toUidQuery(query) {
+  let newQuery = Object.assign({}, query),
+      paths = [ 'ancestor', 'parent' ];
+
+  paths.forEach(prop => {
+    if (prop in newQuery) {
+      newQuery[prop] = pathToUid(newQuery[prop]);
+    }
+  });
+
+  return newQuery;
+}
+
 export function hasRunQuery(query, state) {
   const queryState = state[QUERIES_PREFIX],
         queryParams = toQueryParams(query);
@@ -194,12 +207,12 @@ export function makeBlankItem() {
   };
 }
 
-export function makeItemWith(uid, item) {
+export function makeItemWith(path, item) {
   if (item === null) {
     return null
   };
 
-  return Object.assign(clone(item), { id: uid });
+  return Object.assign(clone(item), { path });
 }
 
 export function pathToUid(path) {
@@ -229,7 +242,7 @@ export function itemUidToPath(item) {
   let path,
       transformed;
 
-  if (!item) {
+  if (!item || !item.id) {
     return item;
   }
 
@@ -240,25 +253,24 @@ export function itemUidToPath(item) {
   return transformed;
 }
 
-export function queryResultsToPath(results) {
-  let items;
 
-  if (!results) {
-    return results;
-  }
-
-  items = results.items.map(itemUidToPath);
-
-  return Object.assign({}, results, { items });
-}
-
-export function validatePath(path) {
+export function pathIsInvalid(path) {
   if (path.charAt(0) !== '/') {
-    throw new Error(`Invalid path ${path}. Path must be a string starting with '/'`);
+    return new Error(`Invalid path ${path}. Path must be a string starting with '/'`);
   }
 
   if (path.indexOf('//') !== -1) {
-    throw new Error(`Invalid path '${path}'. Paths must not have more than one '/' in a row.`);
+    return new Error(`Invalid path '${path}'. Paths must not have more than one '/' in a row.`);
+  }
+
+  return false;
+}
+
+export function validatePath(path) {
+  let invalid = pathIsInvalid(path);
+
+  if (invalid) {
+    throw invalid;
   }
 }
 

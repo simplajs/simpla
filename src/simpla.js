@@ -13,13 +13,10 @@ import { configurePolymer } from './utils/prepare';
 import {
   storeToObserver,
   dispatchThunkAndExpect,
-  pathToUid,
   get as getByPath,
-  itemUidToPath,
-  queryResultsToPath,
   validatePath,
   toQueryParams,
-  uidsToResponse,
+  pathsToResponse,
   clone
 } from './utils/helpers';
 import ping from './plugins/ping';
@@ -53,87 +50,63 @@ const Simpla = new class Simpla {
   }
 
   // Data
-  find(options = {}) {
-    let parentPath = options.parent,
-        ancestorPath = options.ancestor;
-
-    if (parentPath) {
-      options.parent = pathToUid(parentPath);
-    }
-
-    if (ancestorPath) {
-      options.ancestor = pathToUid(ancestorPath);
-    }
+  find(query = {}) {
+    const { ancestor, parent } = query;
 
     return Promise.resolve()
-      .then(() => {
-        if (parentPath) {
-          validatePath(parentPath);
-        }
-
-        if (ancestorPath) {
-          validatePath(ancestorPath);
-        }
-      })
+      .then(() => ancestor && validatePath(ancestor))
+      .then(() => parent && validatePath(parent))
       .then(() => dispatchThunkAndExpect(
         this._store,
-        find(options),
+        find(query),
         types.FIND_DATA_SUCCESSFUL
       ))
-      .then(queryResultsToPath)
       .then(clone);
   }
 
   get(path, ...args) {
-    const uid = pathToUid(path);
     return Promise.resolve()
       .then(() => validatePath(path))
       .then(() => dispatchThunkAndExpect(
         this._store,
-        get(uid, ...args),
+        get(path, ...args),
         types.GET_DATA_SUCCESSFUL
       ))
-      .then(itemUidToPath)
       .then(clone);
   }
 
   set(path, ...args) {
-    const uid = pathToUid(path);
     return Promise.resolve()
       .then(() => validatePath(path))
       .then(() => dispatchThunkAndExpect(
         this._store,
-        set(uid, ...args),
+        set(path, ...args),
         types.SET_DATA_SUCCESSFUL
-      ))
-      .then(itemUidToPath);
+      ));
   }
 
   remove(path, ...args) {
-    const uid = pathToUid(path);
     return Promise.resolve()
       .then(() => validatePath(path))
       .then(() => dispatchThunkAndExpect(
         this._store,
-        remove(uid, ...args),
+        remove(path, ...args),
         types.REMOVE_DATA_SUCCESSFUL
-      ))
-      .then(itemUidToPath);
+      ));
   }
 
   observe(path, ...args) {
     let callback = args.pop(),
-        uid = pathToUid(path),
         pathInState,
         wrappedCallback;
 
-    if (!uid) {
+    if (!path) {
       throw new Error('Observe must be given a valid path');
     }
 
     validatePath(path);
 
-    pathInState = [ DATA_PREFIX, uid ];
+    pathInState = [ DATA_PREFIX, path ];
     wrappedCallback = () => this.get(path).then(callback);
 
     return storeToObserver(this._store).observe(pathInState, wrappedCallback);
@@ -148,25 +121,24 @@ const Simpla = new class Simpla {
     // Clone so as to not affect given param
     query = Object.assign({}, query);
 
-    if (query.parent) {
-      query.parent = pathToUid(query.parent);
-    }
-
-    if (query.ancestor) {
-      query.ancestor = pathToUid(query.ancestor);
-    }
-
     queryString = toQueryParams(query);
+
     pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
     content = this._store.getState()[DATA_PREFIX];
 
+    if (query.parent) {
+      validatePath(query.parent);
+    }
+
+    if (query.ancestor) {
+      validatePath(query.ancestor);
+    }
+
     this._store.dispatch(observeQuery({ query, content }));
 
-    wrappedCallback = (uids) => {
+    wrappedCallback = (paths) => {
       return callback(
-        queryResultsToPath(
-          clone(uidsToResponse(uids, this._store.getState()))
-        )
+        clone(pathsToResponse(paths, this._store.getState()))
       );
     }
 

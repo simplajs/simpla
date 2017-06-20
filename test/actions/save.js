@@ -1,5 +1,5 @@
 import save, { startSave, saveSuccessful, saveFailed } from '../../src/actions/save';
-import { makeItemWith } from '../../src/utils/helpers';
+import { makeItemWith, pathToUid } from '../../src/utils/helpers';
 import * as apiActions from '../../src/actions/api';
 import * as dataActions from '../../src/actions/data';
 import thunk from 'redux-thunk';
@@ -11,25 +11,25 @@ const TOKEN = 'some-token';
 const SERVER = 'some-server';
 
 const TO_SET = {
-  [ 'foo.bar' ]: {
+  [ '/foo/bar' ]: {
     remote: null,
-    local: { foo: 'bar' },
+    local: { path: '/foo/bar', foo: 'bar' },
     changed: true
   },
-  [ 'foo.qux' ]: {
+  [ '/foo/qux' ]: {
     remote: null,
-    local: { foo: 'qux' },
+    local: { path: '/foo/qux', foo: 'qux' },
     changed: true
   }
 };
 
 const TO_SET_RESPONSES = Object.keys(TO_SET)
-  .reduce((responses, uid) => {
-    return Object.assign(responses, { [ uid ]: makeItemWith(uid, TO_SET[uid].local) });
+  .reduce((responses, path) => {
+    return Object.assign(responses, { [ path ]: makeItemWith(path, TO_SET[path].local) });
   }, {});
 
 const TO_REMOVE = {
-  ['bar.qux'] : {
+  ['/bar/qux'] : {
     remote: '',
     local: null,
     changed: true
@@ -37,7 +37,7 @@ const TO_REMOVE = {
 };
 
 const TO_REMAIN = {
-  [ 'foo.baz']: {
+  [ '/foo/baz']: {
     remote: '',
     local: '',
     changed: false
@@ -59,10 +59,10 @@ describe('save actions', () => {
     });
 
     Object.keys(TO_SET)
-      .forEach(uid => fetchMock.mock(`${SERVER}/${uid}`, 'PUT', TO_SET_RESPONSES[uid]));
+      .forEach(path => fetchMock.mock(`${SERVER}/${pathToUid(path)}`, 'PUT', TO_SET_RESPONSES[path]));
 
     Object.keys(TO_REMOVE)
-      .forEach(uid => fetchMock.mock(`${SERVER}/${uid}`, 'DELETE', {}));
+      .forEach(path => fetchMock.mock(`${SERVER}/${pathToUid(path)}`, 'DELETE', {}));
   });
 
   afterEach(() => {
@@ -80,7 +80,7 @@ describe('save actions', () => {
   });
 
   it('should fire setDataApi actions on all data that changed with a value', () => {
-    let toSetData = uid => apiActions.setData(uid, TO_SET[uid].local),
+    let toSetData = path => apiActions.setData(path, TO_SET[path].local),
         actions = Object.keys(TO_SET).map(toSetData);
 
     return store.dispatch(save())
@@ -90,7 +90,7 @@ describe('save actions', () => {
   });
 
   it('should fire local setData after successfully setting data to API', () => {
-    let toSetLocal = uid => dataActions.setData(uid, TO_SET_RESPONSES[uid]),
+    let toSetLocal = path => dataActions.setData(path, TO_SET_RESPONSES[path]),
         actions = Object.keys(TO_SET).map(toSetLocal);
 
     return store.dispatch(save())
@@ -100,7 +100,7 @@ describe('save actions', () => {
   });
 
   it('should fire removeDataApi actions on all data that changed to null', () => {
-    let toRemoveData = uid => apiActions.removeData(uid),
+    let toRemoveData = path => apiActions.removeData(path),
         actions = Object.keys(TO_REMOVE).map(toRemoveData);
 
     return store.dispatch(save())

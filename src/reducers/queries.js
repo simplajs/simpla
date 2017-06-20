@@ -91,14 +91,14 @@ export default function queries(state = {}, action) {
     return Object.keys(state)
       .reduce((state, queryString) => {
         let { query, matches, cache, querying } = state[queryString],
-            { response, uid } = action,
+            { response, path } = action,
             current = querying ? cache : matches,
             updated;
 
         if (!matchesQuery(query, response)) {
-          updated = current.filter(isNot(uid));
-        } else if (current.indexOf(uid) === -1) {
-          updated = [ ...current, uid ];
+          updated = current.filter(isNot(path));
+        } else if (current.indexOf(path) === -1) {
+          updated = [ ...current, path ];
         } else {
           return state;
         }
@@ -115,10 +115,10 @@ export default function queries(state = {}, action) {
     return Object.keys(state)
       .reduce((state, queryString) => {
         let { matches } = state[queryString],
-            { uid } = action,
+            { path } = action,
             updatedMatches;
 
-        updatedMatches = matches.filter(isNot(uid));
+        updatedMatches = matches.filter(isNot(path));
 
         if (updatedMatches !== matches.length) {
           return updateStateWithQuery(state, queryString, {

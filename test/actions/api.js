@@ -9,6 +9,7 @@ import {
   removeData,
   removeDataSuccessful
 } from '../../src/actions/api';
+import { pathToUid } from '../../src/utils/helpers';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
 import configureMockStore from '../__utils__/redux-mock-store';
@@ -16,17 +17,19 @@ import configureMockStore from '../__utils__/redux-mock-store';
 const mockStore = configureMockStore([ thunk ]);
 const TOKEN = 'some-token';
 const SERVER = 'some-server';
-const UID = 'some.uid.to.something';
-const RESPONSE = { foo: 'bar' };
-const HASH_UID = 'some#place.something';
-const URI_SAFE_HASH_UID = 'some%23place.something';
+const PATH = '/some/uid/to/something';
+const UID = pathToUid(PATH);
+const RAW_RESPONSE = { id: UID, foo: 'bar' };
+const RESPONSE = { path: PATH, foo: 'bar' };
+const HASH_PATH = '/some#place/something';
+const URI_SAFE_HASH_UID = pathToUid(HASH_PATH).replace('#', '%23');
 
 describe('data crud', () => {
   beforeEach(() => {
     fetchMock
-      .mock(`${SERVER}/${UID}`, 'GET', RESPONSE)
-      .mock(`${SERVER}/${URI_SAFE_HASH_UID}`, 'GET', RESPONSE)
-      .mock(`${SERVER}/${UID}`, 'PUT', RESPONSE)
+      .mock(`${SERVER}/${UID}`, 'GET', RAW_RESPONSE)
+      .mock(`${SERVER}/${URI_SAFE_HASH_UID}`, 'GET', RAW_RESPONSE)
+      .mock(`${SERVER}/${UID}`, 'PUT', RAW_RESPONSE)
       .mock(`${SERVER}/${UID}`, 'DELETE', {});
   });
 
@@ -42,11 +45,11 @@ describe('data crud', () => {
             }
           }),
           expectedActions = [
-            getData(UID),
-            getDataSuccessful(UID, RESPONSE)
+            getData(PATH),
+            getDataSuccessful(PATH, RESPONSE)
           ];
 
-      return store.dispatch(get(UID))
+      return store.dispatch(get(PATH))
         .then(() => {
           expect(store.getActions()).to.deep.include.members(expectedActions)
         });
@@ -59,9 +62,9 @@ describe('data crud', () => {
         }
       });
 
-      return store.dispatch(get(HASH_UID))
+      return store.dispatch(get(HASH_PATH))
         .then(() => {
-          expect(store.getActions()).to.deep.include(getDataSuccessful(HASH_UID, RESPONSE));
+          expect(store.getActions()).to.deep.include(getDataSuccessful(HASH_PATH, RESPONSE));
         });
     });
   });
@@ -77,11 +80,11 @@ describe('data crud', () => {
             token: TOKEN
           }),
           expectedActions = [
-            setData(UID, DATA),
-            setDataSuccessful(UID, DATA, RESPONSE)
+            setData(PATH, DATA),
+            setDataSuccessful(PATH, DATA, RESPONSE)
           ];
 
-      return store.dispatch(set(UID, DATA))
+      return store.dispatch(set(PATH, DATA))
         .then(() => {
           let lastOptions = fetchMock.lastOptions(`${SERVER}/${UID}`),
               body = JSON.parse(lastOptions.body),
@@ -104,11 +107,11 @@ describe('data crud', () => {
             token: TOKEN
           }),
           expectedActions = [
-            removeData(UID),
-            removeDataSuccessful(UID, {})
+            removeData(PATH),
+            removeDataSuccessful(PATH, {})
           ];
 
-      return store.dispatch(remove(UID))
+      return store.dispatch(remove(PATH))
         .then(() => {
           let { method, headers } = fetchMock.lastOptions(`${SERVER}/${UID}`);
 
