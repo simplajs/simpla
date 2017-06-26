@@ -2,6 +2,9 @@ import { DATA_PREFIX, QUERIES_PREFIX } from '../constants/state';
 
 const filters = {
   parent: parent => item => {
+    // Normalize path, mostly for '/' case
+    parent = parent.slice(-1) === '/' ? parent.slice(0, -1) : parent;
+
     return (
       item &&
       filters.ancestor(parent)(item) &&
@@ -10,6 +13,9 @@ const filters = {
   },
 
   ancestor: ancestor => item => {
+    // Normalize path, mostly for '/' case
+    ancestor = ancestor.slice(-1) === '/' ? ancestor.slice(0, -1) : ancestor;
+    
     return ( 
       item &&
       item.path.indexOf(ancestor) === 0 &&

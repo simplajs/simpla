@@ -276,6 +276,14 @@ describe('helpers', () => {
           content['/foo/image']
         ]);
       });
+
+      it('should accept / as parent of /*', () => {
+        let query = { parent: '/' };
+
+        expect(findDataInState(query, state).items).to.deep.have.members([
+          content['/foo']
+        ]);
+      });
     });
 
     describe('ancestor scoped find', () => {
@@ -287,6 +295,14 @@ describe('helpers', () => {
           content['/foo/bar/image'],
           content['/foo/bar/baz']
         ]);
+      });
+
+      it('should accept / as ancestor of /*', () => {
+        let query = { ancestor: '/' };
+
+        expect(findDataInState(query, state).items).to.deep.have.members(
+          Object.values(content)
+        );
       });
     });
 
