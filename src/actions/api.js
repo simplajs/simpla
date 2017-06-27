@@ -29,6 +29,10 @@ function formatAndRun({ path = '', shouldValidate = true, query, endpoint, token
     }
   }
 
+  if (body) {
+    delete body.path;
+  }
+
   return client[method](uri, {
     body,
     token

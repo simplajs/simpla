@@ -96,6 +96,28 @@ describe('data crud', () => {
           expect(headers['Authorization'].split(' ')[1]).to.equal(TOKEN);
         });
     });
+
+    it('should remove path if given', () => {
+      let pathData = Object.assign({}, DATA, { path: '/foo' }),
+          store = mockStore({
+            config: {
+              dataEndpoint: SERVER
+            },
+            token: TOKEN
+          }),
+          expectedActions = [
+            setData(PATH, pathData),
+            setDataSuccessful(PATH, pathData, RESPONSE)
+          ];
+
+      return store.dispatch(set(PATH, pathData))
+        .then(() => {
+          let lastOptions = fetchMock.lastOptions(`${SERVER}/${UID}`),
+              body = JSON.parse(lastOptions.body);
+
+          expect(body).to.deep.equal(DATA);
+        });
+    });
   });
 
   describe('remove', () => {
