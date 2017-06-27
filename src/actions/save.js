@@ -39,7 +39,7 @@ export default function save() {
     dispatch(startSave());
 
     const buffer = getState().buffer.verbose,
-          entries = Object.keys(buffer).map(uid => [ uid, buffer[uid] ]);
+          entries = Object.keys(buffer).map(path => [ path, buffer[path] ]);
 
     shouldRemove = ([, { local, changed }]) => local === null && changed;
     shouldSet = ([, { local, changed }]) => local !== null && changed;
@@ -47,14 +47,14 @@ export default function save() {
     saveResultLocally = (result) => {
       return runDispatchAndExpect(
         dispatch,
-        setLocally(result.id, result, { validate: false }),
+        setLocally(result.path, result, { validate: false }),
         SET_DATA_SUCCESSFUL
       );
     };
 
     setPromises = entries
       .filter(shouldSet)
-      .map(([ uid, { local } ]) => set(uid, local))
+      .map(([ path, { local } ]) => set(path, local))
       .map(action => {
         return runDispatchAndExpect(dispatch, action, SET_DATA_TO_API_SUCCESSFUL)
           .then(saveResultLocally);
@@ -62,7 +62,7 @@ export default function save() {
 
     removePromises = entries
       .filter(shouldRemove)
-      .map(([ uid ]) => remove(uid))
+      .map(([ path ]) => remove(path))
       .map(action => runDispatchAndExpect(dispatch, action, REMOVE_DATA_FROM_API_SUCCESSFUL));
 
     return Promise.all([ ...setPromises, ...removePromises ])

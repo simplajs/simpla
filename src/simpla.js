@@ -1,5 +1,5 @@
 import 'es6-promise/auto';
-import { createStore, applyMiddleware, compose } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
 import { setOption } from './actions/options';
 import { editActive, editInactive } from './actions/editable';
 import { login, logout } from './actions/authentication';
@@ -13,13 +13,10 @@ import { configurePolymer } from './utils/prepare';
 import {
   storeToObserver,
   dispatchThunkAndExpect,
-  pathToUid,
-  selectPropByPath,
-  itemUidToPath,
-  queryResultsToPath,
+  get as getByPath,
   validatePath,
   toQueryParams,
-  uidsToResponse,
+  pathsToResponse,
   clone
 } from './utils/helpers';
 import ping from './plugins/ping';
@@ -32,8 +29,7 @@ configurePolymer();
 
 const Simpla = new class Simpla {
   constructor() {
-    const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-    this._store = createStore(rootReducer, composeEnhancers(applyMiddleware(thunk)));
+    this._store = createStore(rootReducer, applyMiddleware(thunk));
   }
 
   init(project) {
@@ -54,87 +50,63 @@ const Simpla = new class Simpla {
   }
 
   // Data
-  find(options = {}) {
-    let parentPath = options.parent,
-        ancestorPath = options.ancestor;
-
-    if (parentPath) {
-      options.parent = pathToUid(parentPath);
-    }
-
-    if (ancestorPath) {
-      options.ancestor = pathToUid(ancestorPath);
-    }
+  find(query = {}) {
+    const { ancestor, parent } = query;
 
     return Promise.resolve()
-      .then(() => {
-        if (parentPath) {
-          validatePath(parentPath);
-        }
-
-        if (ancestorPath) {
-          validatePath(ancestorPath);
-        }
-      })
+      .then(() => ancestor && validatePath(ancestor))
+      .then(() => parent && validatePath(parent))
       .then(() => dispatchThunkAndExpect(
         this._store,
-        find(options),
+        find(query),
         types.FIND_DATA_SUCCESSFUL
       ))
-      .then(queryResultsToPath)
       .then(clone);
   }
 
   get(path, ...args) {
-    const uid = pathToUid(path);
     return Promise.resolve()
       .then(() => validatePath(path))
       .then(() => dispatchThunkAndExpect(
         this._store,
-        get(uid, ...args),
+        get(path, ...args),
         types.GET_DATA_SUCCESSFUL
       ))
-      .then(itemUidToPath)
       .then(clone);
   }
 
   set(path, ...args) {
-    const uid = pathToUid(path);
     return Promise.resolve()
       .then(() => validatePath(path))
       .then(() => dispatchThunkAndExpect(
         this._store,
-        set(uid, ...args),
+        set(path, ...args),
         types.SET_DATA_SUCCESSFUL
-      ))
-      .then(itemUidToPath);
+      ));
   }
 
   remove(path, ...args) {
-    const uid = pathToUid(path);
     return Promise.resolve()
       .then(() => validatePath(path))
       .then(() => dispatchThunkAndExpect(
         this._store,
-        remove(uid, ...args),
+        remove(path, ...args),
         types.REMOVE_DATA_SUCCESSFUL
-      ))
-      .then(itemUidToPath);
+      ));
   }
 
   observe(path, ...args) {
     let callback = args.pop(),
-        uid = pathToUid(path),
         pathInState,
         wrappedCallback;
 
-    if (!uid) {
+    if (!path) {
       throw new Error('Observe must be given a valid path');
     }
 
     validatePath(path);
 
-    pathInState = [ DATA_PREFIX, 'content', uid ];
+    pathInState = [ DATA_PREFIX, path ];
     wrappedCallback = () => this.get(path).then(callback);
 
     return storeToObserver(this._store).observe(pathInState, wrappedCallback);
@@ -149,25 +121,24 @@ const Simpla = new class Simpla {
     // Clone so as to not affect given param
     query = Object.assign({}, query);
 
+    queryString = toQueryParams(query);
+
+    pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
+    content = this._store.getState()[DATA_PREFIX];
+
     if (query.parent) {
-      query.parent = pathToUid(query.parent);
+      validatePath(query.parent);
     }
 
     if (query.ancestor) {
-      query.ancestor = pathToUid(query.ancestor);
+      validatePath(query.ancestor);
     }
-
-    queryString = toQueryParams(query);
-    pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
-    content = this._store.getState()[DATA_PREFIX].content;
 
     this._store.dispatch(observeQuery({ query, content }));
 
-    wrappedCallback = (uids) => {
+    wrappedCallback = (paths) => {
       return callback(
-        queryResultsToPath(
-          clone(uidsToResponse(uids, this._store.getState()))
-        )
+        clone(pathsToResponse(paths, this._store.getState()))
       );
     }
 
@@ -192,15 +163,13 @@ const Simpla = new class Simpla {
     let state = this._store.getState();
 
     if (substate) {
-      let path = PUBLIC_STATE_MAP[substate];
-      return path ? selectPropByPath(path, state) : undefined;
+      return PUBLIC_STATE_MAP[substate] && getByPath(state, PUBLIC_STATE_MAP[substate]);
     }
 
     return Object.keys(PUBLIC_STATE_MAP).reduce((publicState, property) => {
-      let path = PUBLIC_STATE_MAP[property];
       return Object.assign(
         publicState,
-        { [ property ]: selectPropByPath(path, state) }
+        { [ property ]: getByPath(state, PUBLIC_STATE_MAP[property]) }
       );
     }, {});
   }

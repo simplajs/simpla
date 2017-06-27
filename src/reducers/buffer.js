@@ -7,23 +7,23 @@ import {
   SET_DATA_SUCCESSFUL,
   REMOVE_DATA_SUCCESSFUL
 } from '../constants/actionTypes';
-import { clone, uidToPath, jsonIsEqual } from '../utils/helpers';
+import { clone, jsonIsEqual } from '../utils/helpers';
 
 const INITIAL_STATE = { verbose: {}, simple: {} };
 
 function verboseToSimple(verbose) {
   return Object.keys(verbose)
-    .reduce((simple, uid) => {
-      let { changed: modified } = verbose[uid];
+    .reduce((simple, path) => {
+      let { changed: modified } = verbose[path];
 
-      return Object.assign(simple, { [ uidToPath(uid) ]: { modified } });
+      return Object.assign(simple, { [ path ]: { modified } });
     }, {});
 }
 
 /**
- * Reduce state of individual UID
- * @param  {Object}   [state={}] State of save info at UID
- * @param  {Object}   data       Incoming data for the item at UID
+ * Reduce state of individual path
+ * @param  {Object}   [state={}] State of save info at path
+ * @param  {Object}   data       Incoming data for the item at path
  * @param  {Boolean}  isRemote   Whether data is remote data or local if not
  * @return {Object}
  */
@@ -52,11 +52,11 @@ export function verboseReducer(state = {}, action) {
       updateLocal,
       updateRemote;
 
-  updatePart = (remote) => (whole, id, data) => {
-    let oldSubstate = whole[id],
-        newSubstate = reducePart(whole[id], data, remote);
+  updatePart = (remote) => (whole, path, data) => {
+    let oldSubstate = whole[path],
+        newSubstate = reducePart(whole[path], data, remote);
 
-    return oldSubstate === newSubstate ? state : Object.assign({}, whole, { [ id ]: newSubstate });
+    return oldSubstate === newSubstate ? state : Object.assign({}, whole, { [ path ]: newSubstate });
   };
 
   updateLocal = updatePart(false);
@@ -65,27 +65,27 @@ export function verboseReducer(state = {}, action) {
   switch (action.type) {
   case FIND_DATA_FROM_API_SUCCESSFUL:
     return action.response.items.reduce((whole, item) => {
-      return updateRemote(whole, item.id, item);
+      return updateRemote(whole, item.path, item);
     }, state);
   case GET_DATA_FROM_API_SUCCESSFUL:
   case SET_DATA_TO_API_SUCCESSFUL:
-    return updateRemote(state, action.uid, action.response);
+    return updateRemote(state, action.path, action.response);
   case REMOVE_DATA_FROM_API_SUCCESSFUL:
-    return updateRemote(state, action.uid, null);
+    return updateRemote(state, action.path, null);
   case SET_DATA_SUCCESSFUL:
     if (!action.persist) {
       return state;
     }
 
-    return updateLocal(state, action.uid, action.response);
+    return updateLocal(state, action.path, action.response);
   case REMOVE_DATA_SUCCESSFUL:
     if (!action.persist) {
       let purged = Object.assign({}, state);
-      delete purged[action.uid];
+      delete purged[action.path];
       return purged;
     }
 
-    return updateLocal(state, action.uid, action.response);
+    return updateLocal(state, action.path, action.response);
   default:
     return state;
   }
