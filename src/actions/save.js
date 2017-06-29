@@ -28,9 +28,12 @@ export function saveFailed() {
   };
 }
 
-export default function save() {
+export default function save(path) {
   return (dispatch, getState) => {
-    let saveResultLocally,
+    let toEntry,
+        buffer,
+        entries,
+        saveResultLocally,
         shouldRemove,
         shouldSet,
         setPromises,
@@ -38,8 +41,9 @@ export default function save() {
 
     dispatch(startSave());
 
-    const buffer = getState().buffer.verbose,
-          entries = Object.keys(buffer).map(path => [ path, buffer[path] ]);
+    toEntry = path => [ path, buffer[path] ];
+    buffer = getState().buffer.verbose;
+    entries = path ? [ toEntry(path) ] : Object.keys(buffer).map(toEntry);
 
     shouldRemove = ([, { local, changed }]) => local === null && changed;
     shouldSet = ([, { local, changed }]) => local !== null && changed;
