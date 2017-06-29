@@ -44,6 +44,11 @@ const TO_REMAIN = {
   }
 };
 
+const toSetData = path => apiActions.setData(path, TO_SET[path].local),
+      toSetLocal = path => dataActions.setData(path, TO_SET_RESPONSES[path]),
+      toRemoveData = path => apiActions.removeData(path);
+        
+
 describe('save actions', () => {
   let store;
 
@@ -80,8 +85,7 @@ describe('save actions', () => {
   });
 
   it('should fire setDataApi actions on all data that changed with a value', () => {
-    let toSetData = path => apiActions.setData(path, TO_SET[path].local),
-        actions = Object.keys(TO_SET).map(toSetData);
+    let actions = Object.keys(TO_SET).map(toSetData);
 
     return store.dispatch(save())
       .then(() => {
@@ -90,8 +94,7 @@ describe('save actions', () => {
   });
 
   it('should fire local setData after successfully setting data to API', () => {
-    let toSetLocal = path => dataActions.setData(path, TO_SET_RESPONSES[path]),
-        actions = Object.keys(TO_SET).map(toSetLocal);
+    let actions = Object.keys(TO_SET).map(toSetLocal);
 
     return store.dispatch(save())
       .then(() => {
@@ -100,8 +103,7 @@ describe('save actions', () => {
   });
 
   it('should fire removeDataApi actions on all data that changed to null', () => {
-    let toRemoveData = path => apiActions.removeData(path),
-        actions = Object.keys(TO_REMOVE).map(toRemoveData);
+    let actions = Object.keys(TO_REMOVE).map(toRemoveData);
 
     return store.dispatch(save())
       .then(() => {
@@ -116,5 +118,16 @@ describe('save actions', () => {
       .then(() => {
         expect(store.getActions()).to.deep.include(saveFailed())
       })
+  });
+
+  it('should accept a path and only try save that', () => {
+    const toActions = path => [ toSetLocal(path), toSetData(path) ];
+    let [ shouldSave, shouldNotSave ] = Object.keys(TO_SET);
+
+    return store.dispatch(save(shouldSave))
+      .then(() => {
+        expect(store.getActions()).to.deep.include.members(toActions(shouldSave));
+        expect(store.getActions()).not.to.deep.include.members(toActions(shouldNotSave));
+      });
   });
 });
