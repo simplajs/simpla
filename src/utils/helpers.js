@@ -7,6 +7,7 @@ const getRemaining = (prefix, item) => {
     item &&
     item.path !== prefix &&
     item.path.indexOf(normalized) === 0 &&
+    item.path.charAt(normalized.length) === '/' &&
     item.path.replace(normalized, '')
   );
 }

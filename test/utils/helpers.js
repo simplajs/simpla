@@ -629,6 +629,10 @@ describe('helpers', () => {
       base: '/foo',
       path: '/foobar',
       expected: false
+    }, {
+      base: '/test',
+      path: '/testing123/foo',
+      expected: false
     }];
 
     parentCases = commonCases.concat([{
