@@ -1,26 +1,25 @@
 import { DATA_PREFIX, QUERIES_PREFIX } from '../constants/state';
 
-const filters = {
-  parent: parent => item => {
-    // Normalize path, mostly for '/' case
-    parent = parent.slice(-1) === '/' ? parent.slice(0, -1) : parent;
+const getRemaining = (prefix, item) => {
+  let normalized = prefix.slice(-1) === '/' ? prefix.slice(0, -1) : prefix;
 
-    return (
-      item &&
-      filters.ancestor(parent)(item) &&
-      item.path.replace(parent, '').split('/').length === 2
-    );
+  return (
+    item &&
+    item.path !== prefix &&
+    item.path.indexOf(normalized) === 0 &&
+    item.path.replace(normalized, '')
+  );
+}
+
+export const filters = {
+  parent: parent => item => {
+    let leftovers = getRemaining(parent, item);
+    return leftovers && leftovers.split('/').length === 2;
   },
 
   ancestor: ancestor => item => {
-    // Normalize path, mostly for '/' case
-    ancestor = ancestor.slice(-1) === '/' ? ancestor.slice(0, -1) : ancestor;
-    
-    return ( 
-      item &&
-      item.path.indexOf(ancestor) === 0 &&
-      item.path.replace(ancestor, '').indexOf('/') === 0
-    );
+    let leftovers = getRemaining(ancestor, item);
+    return leftovers && leftovers.indexOf('/') !== -1;
   },
 
   type: expectedType => item => item && item.type === expectedType

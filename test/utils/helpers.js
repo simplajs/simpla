@@ -13,7 +13,8 @@ import {
   validatePath,
   matchesQuery,
   clone,
-  jsonIsEqual
+  jsonIsEqual,
+  filters
 } from '../../src/utils/helpers';
 import {
   DATA_PREFIX
@@ -588,6 +589,82 @@ describe('helpers', () => {
     it('should accept undefined values as extra bonus', () => {
       expect(jsonIsEqual(undefined, undefined)).to.be.true;
       expect(jsonIsEqual(undefined, null)).to.be.false;
+    });
+  });
+
+  describe('filters', () => {
+    let commonCases,
+        parentCases,
+        ancestorCases;
+
+    commonCases = [{
+      base: '/',
+      path: '/',
+      expected: false
+    }, {
+      base: '/',
+      path: '/foo',
+      expected: true
+    }, {
+      base: '/foo',
+      path: '/',
+      expected: false
+    }, {
+      base: '/foo',
+      path: '/foo',
+      expected: false
+    }, {
+      base: '/foo',
+      path: '/foo/bar',
+      expected: true
+    }, {
+      base: '/foo',
+      path: '/bar/foo',
+      expected: false
+    }, {
+      base: '/foo',
+      path: '/bar/foo',
+      expected: false
+    }, {
+      base: '/foo',
+      path: '/foobar',
+      expected: false
+    }];
+
+    parentCases = commonCases.concat([{
+      base: '/',
+      path: '/foo/bar',
+      expected: false
+    }, {
+      base: '/foo',
+      path: '/foo/bar/baz',
+      expected: false
+    }]);
+
+    ancestorCases = commonCases.concat([{
+      base: '/',
+      path: '/foo/bar',
+      expected: true
+    }, {
+      base: '/foo',
+      path: '/foo/bar/baz',
+      expected: true
+    }]);
+
+    describe('parent', () => {
+      parentCases.forEach(({ base, path, expected }) => {
+        it(`should ${expected ? '' : 'not '}match ${base} as a parent of ${path}`, () => {
+          expect(filters.parent(base)({ path })).to.equal(expected);
+        });
+      });
+    });
+
+    describe('ancestor', () => {
+      ancestorCases.forEach(({ base, path, expected }) => {
+        it(`should ${expected ? '' : 'not '}match ${base} as an ancestor of ${path}`, () => {
+          expect(filters.ancestor(base)({ path })).to.equal(expected);
+        });
+      });
     });
   });
 });
