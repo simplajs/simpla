@@ -280,13 +280,15 @@ export function validatePath(path) {
   }
 }
 
+const nameOf = (obj) => Object.prototype.toString.call(obj);
+
 export function jsonIsEqual(a, b) {
-  let objectName = window.toString.call(a),
+  let objectName = nameOf(a),
       isSameAsIn = other => (item, i) => jsonIsEqual(item, other[i]),
       hasSameIn = (a, b) => (key) => key in a && key in b && jsonIsEqual(a[key], b[key]),
       keysOfA;
 
-  if (objectName !== toString.call(b)) {
+  if (objectName !== nameOf(b)) {
     return false;
   }
 
