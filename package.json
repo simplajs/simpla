@@ -1,6 +1,6 @@
 {
   "name": "simpla-oss",
-  "version": "0.0.0",
+  "version": "2.3.2",
   "main": "simpla.min.js",
   "license": "MIT",
   "scripts": {
