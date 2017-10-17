@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`http-source getting and transforming data 1`] = `
+Object {
+  "text": "Hello world /uploads/picture.png",
+}
+`;

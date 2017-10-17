@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`utilities toContentAndUploads; 1`] = `
+Array [
+  Array [
+    Object {
+      "data": Object {
+        "src": "[upload 6cpj8.gif]",
+      },
+      "path": "/image",
+    },
+    Array [
+      Array [
+        "6cpj8.gif",
+        "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+      ],
+    ],
+  ],
+  Array [
+    Object {
+      "data": Object {
+        "html": "
+            <p>Hello World</p>
+            <img src=\\"[upload 6cpj8.gif]\\">
+            ",
+      },
+      "path": "/article",
+    },
+    Array [
+      Array [
+        "6cpj8.gif",
+        "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+      ],
+    ],
+  ],
+]
+`;

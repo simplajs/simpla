@@ -11,8 +11,10 @@
   <a href="https://slack.simpla.io"><img src="http://slack.simpla.io/badge.svg" alt="Slack"></a>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome"> 
 </p>
- 
-Simpla is a modular, open content framework for frontend developers. It's built on top of [Web Components](https://webcomponents.org), and powered by a JSON API. It integrates with any frontend stack. Use it to assemble your own modern CMS.
+
+Simpla is an open, modular, frontend content framework built on Web Components. 
+
+Create dynamic content with HTML and edit it inline. Ditch the server and use Github as your backend. Push everything to static a CDN. Integrate into any stack instantly. Assemble your own lightweight CMS.
 
 ```html
 <!-- Block of editable richtext -->
@@ -36,31 +38,50 @@ Simpla is a modular, open content framework for frontend developers. It's built 
 
 ## Installation
 
-Simpla is available on NPM and the Unpkg CDN as `simpla`. Setup a project on [simpla.io](https://www.simpla.io), then include the library and a polyfill for Web Components on your page. Initialize your project by calling `Simpla.init()`.
+Simpla is available on NPM and Unpkg as `simpla`. Create a Github repo, grab the core library and an OAuth adapter, then just call `Simpla.init`
 
 ```html
-<!-- Include Simpla and cross-browser polyfill, then init project -->
+<!-- Include Simpla core, Netlify auth adapter, and a cross-browser polyfill-->
+<script src="https://unpkg.com/simpla@^3.0.0"></script>
+<script src="https://unpkg.com/simpla@^3.0.0/adapters/netlify.js"></script>
 <script src="https://unpkg.com/webcomponents.js@^0.7.24/webcomponents-lite.min.js" async></script>
-<script src="https://unpkg.com/simpla@^2.0.0"></script>
+
+<!-- Init project -->
 <script>
-  // TODO: Replace 'project-id' with your Project ID
-  Simpla.init('project-id');
+  Simpla.init({
+    /**
+     * Github Repo
+     * Repository where content will be stored (in a '_content' folder)
+     */
+    repo: 'username/repo',
+
+    /**
+     * Auth adapter
+     * Used to authenticate users with Github from your site
+     */
+    auth: new SimplaNetlify({ site: 'mysite' }),
+
+    /**
+     * Public content source (optional)
+     * Public URL of your content, defaults to fetching directly from GitHub
+     * Push your content to a CDN like Netlify in production
+     */
+    source: window.location.origin,
+
+    /**
+     * Commit branch (optional)
+     * Git branch Simpla commits new content to, defaults to master
+     * Change this in development to make non-production changes
+     */
+    branch: 'master'
+  });
 </script>
 ```
 
-You can also import Simpla as a UMD module:
-
-```js
-import Simpla from 'simpla';
-
-window.Simpla = Simpla;
-Simpla.init('project-id');
-```
-
-Install and add elements to your page with Bower (Yarn support coming soon) and HTML imports. You can find elements in the [elements catalogue](https://www.simpla.io/elements). 
+Install and add elements to your page with Bower and HTML imports (NPM/ES module support coming soon). You can find elements in the [elements catalogue](https://www.simpla.io/elements). 
 
 ```sh
-$ bower install simpla-text simpla-img simpla-paths simpla-admin --save
+$ bower i simpla-text simpla-img simpla-admin --save
 ```
 
 ```html
@@ -73,33 +94,20 @@ $ bower install simpla-text simpla-img simpla-paths simpla-admin --save
 
 ## Questions
 
-For questions and support get in touch with the team or join the community on Slack:
-
-- [#simpla](https://slack.simpla.io) Slack group
-- [@simplaio](https://twitter.com/simplaio) Twitter
-- [Simpla.io](https://www.simpla.io) website
+To find out more about Simpla visit the project [website](https://www.simpla.io), and for questions join the community on [Slack](https://slack.simpla.io)
 
 ## Contributing
 
 There are lots of ways you can help push the Simpla project forward:
 
-- **Feedback.** Try Simpla and let us know what works and what could be better - new features, API feebdack, new use-cases, breaking bugs, everything helps.
-
-- **Reporting bugs.** If you find a bug please report it! Open an issue against this repository for problems with the core library and platform. For problems with elements, open an issue against the element's repository.
+- **Reporting bugs.** If you find a bug please report it! Open an issue against this repository for problems with the core library. For problems with elements, open an issue against the element's repository.
 
 - **Submitting Pull Requests.** We happily accept PRs against both this repository and any of the elements. Your PR should address an existing issue or have been discussed previously to ensure it gets merged.
 
 - **Build your own elements!** Simpla is an open ecosystem, build your own content elements and [publish them to the catalogue](https://github.com/simplaio/simpla-elements/#publishing-your-element).
 
-## Following development
-
-Simpla's development happens in the open:
-
-- Track [releases](https://github.com/simplaio/simpla/releases) and [issues](https://github.com/simplaio/simpla/issues) here and on [element repositories](https://github.com/SimplaElements)
-- Follow the public [development roadmap](https://trello.com/b/tZEZa1rN/simpla-public-roadmap)
-- Follow us on Twitter [@simplaio](https://twitter.com/simplaio)
-- Monitor platform status at [status.simpla.io](https://status.simpla.io)
+Read the [Contributing guidelines](/CONTRIBUTING.md) for more information.
 
 ***
 
-MIT © 2017 [Simpla](https://www.simpla.io)
+MIT © 2017 [Sean King](https://twitter.com/seaneking) & [Bede Overend](https://twitter.com/bedeoverend)

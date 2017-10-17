@@ -1,14 +1,11 @@
-# Dist
-simpla.js
-simpla.min.js
-
 # Deps
 node_modules
-bower_components
+
+# Built files
+# UNCOMMENT WHEN PUBLISHED TO NPM
+# adapters
+# simpla.min.js
 
 # Runtime
 .DS_Store
 *.log
-
-# Test Builds
-.test

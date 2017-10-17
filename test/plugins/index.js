@@ -1,2 +1,0 @@
-import './ping';
-import './persistToken';
