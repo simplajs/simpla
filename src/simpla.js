@@ -1,195 +1,319 @@
-import 'es6-promise/auto';
-import { createStore, applyMiddleware } from 'redux';
-import { setOption } from './actions/options';
-import { editActive, editInactive } from './actions/editable';
-import { login, logout } from './actions/authentication';
-import { get, set, remove, find } from './actions/data';
-import { observeQuery } from './actions/queries';
-import save from './actions/save';
-import { AUTH_SERVER } from './constants/options';
-import { DATA_PREFIX, QUERIES_PREFIX, PUBLIC_STATE_MAP } from './constants/state';
-import * as types from './constants/actionTypes';
-import { configurePolymer } from './utils/prepare';
+import HttpSource from './http-source.js';
+import GitHubStorage from './gh-storage.js';
 import {
-  storeToObserver,
-  dispatchThunkAndExpect,
-  get as getByPath,
+  equal,
+  clone,
   validatePath,
-  toQueryParams,
-  pathsToResponse,
-  clone
-} from './utils/helpers';
-import ping from './plugins/ping';
-import persistToken from './plugins/persistToken';
-import thunk from 'redux-thunk';
-import rootReducer from './reducers';
+  validateItem,
+  byModified
+} from './utils.js';
+import Store from './store.js';
 
-// Setup Polymer configuration
-configurePolymer();
+const LOCAL_STORAGE_KEY = 'sm.oss.token';
+const DATA_FOLDER = 'data';
+const UPLOADS_FOLDER = 'uploads';
+const BASE_FOLDER = '_content';
 
-const Simpla = new class Simpla {
+export default class Simpla {
   constructor() {
-    this._store = createStore(rootReducer, applyMiddleware(thunk));
+    this._content = new Store();
+    this._states = new Store();
+    this._cache = new Store();
+
+    this.version = VERSION;
   }
 
-  init(project) {
-    this._store.dispatch(setOption('project', project));
+  /**
+   * Initialize Simpla with given configuration
+   * @param {Object} Configuration options 
+   */
+  init(config = {}) {
+    let {
+      repo,
+      auth,
+      public: publicFolder = '',
+      branch = 'master',
+      source = `https://raw.githubusercontent.com/${repo}/${branch}/${publicFolder}`,
+      _indexes = []
+    } = config;
 
-    // Initialize endpoints
-    this._store.dispatch(setOption('authEndpoint', AUTH_SERVER));
-    this._store.dispatch(setOption('dataEndpoint', `${AUTH_SERVER}/projects/${project}/content`));
+    source =
+      source.charAt(source.length - 1) === '/' ? source.slice(0, -1) : source;
+
+    const data = `/${BASE_FOLDER}/${DATA_FOLDER}`;
+    const uploads = `/${BASE_FOLDER}/${UPLOADS_FOLDER}`;
+
+    // Setup adaptors
+    this._source = new HttpSource({
+      data: source + data,
+      uploads: source + uploads,
+      cacheBusting: /\/\/raw\.githubusercontent\.com/.test(source)
+    });
+
+    this._auth = auth;
+    this._storage = new GitHubStorage({
+      data: publicFolder ? `/${publicFolder}${data}` : data,
+      uploads: publicFolder ? `/${publicFolder}${uploads}` : uploads,
+      repo,
+      branch
+    });
+
+    // Setup states
+    const updateBuffer = (item, key) => {
+      let buffer = this._states.get('buffer'),
+        remote = this._cache.get(key),
+        modified = !equal(remote && remote.data, item && item.data);
+
+      buffer[key] = { modified };
+
+      this._states.set('buffer', buffer);
+    };
+
+    this._content.observe('*', updateBuffer);
+    this._cache.observe('*', updateBuffer);
+
+    this.observeState('token', token => {
+      if (token) {
+        window.localStorage.setItem(LOCAL_STORAGE_KEY, token);
+      } else {
+        window.localStorage.removeItem(LOCAL_STORAGE_KEY);
+      }
+
+      this._states.set('authenticated', !!token);
+      this._storage.credentials = { token };
+    });
+
+    this._states.set('config', { repo, branch, public: publicFolder, source });
+    this._states.set(
+      'token',
+      window.localStorage.getItem(LOCAL_STORAGE_KEY) || null
+    );
+    this._states.set('editable', false);
+    this._states.set('buffer', {});
+
+    // Setup indexes
+    _indexes.forEach(index => {
+      const byCreated = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
+      const { name, filter } = index;
+
+      this.get(`/_index/${name}`).then(index => {
+        const store = new Store();
+        let items = (index && index.data) || [];
+        items.forEach(item => store.set(item.path, item));
+
+        // For all items not in index
+        this._content.observe('*', (item, key) => {
+          if (filter(item)) {
+            store.set(key, item);
+          } else if (store.has(key)) {
+            store.set(key, null);
+          }
+        });
+
+        store.observe('*', () => {
+          let data = store
+            .entries()
+            .map(([, item]) => item)
+            .filter(item => !!item)
+            .sort(byCreated);
+          this._content.set(`/_index/${name}`, { data });
+        });
+      });
+    });
   }
 
-  // Authentication
-  login(...args) {
-    return dispatchThunkAndExpect(this._store, login(...args), types.LOGIN_SUCCESSFUL);
-  }
-
-  logout(...args) {
-    return dispatchThunkAndExpect(this._store, logout(...args), types.LOGOUT_SUCCESSFUL);
-  }
-
-  // Data
-  find(query = {}) {
-    const { ancestor, parent } = query;
-
-    return Promise.resolve()
-      .then(() => ancestor && validatePath(ancestor))
-      .then(() => parent && validatePath(parent))
-      .then(() => dispatchThunkAndExpect(
-        this._store,
-        find(query),
-        types.FIND_DATA_SUCCESSFUL
-      ))
-      .then(clone);
-  }
-
-  get(path, ...args) {
-    return Promise.resolve()
-      .then(() => validatePath(path))
-      .then(() => dispatchThunkAndExpect(
-        this._store,
-        get(path, ...args),
-        types.GET_DATA_SUCCESSFUL
-      ))
-      .then(clone);
-  }
-
-  set(path, ...args) {
-    return Promise.resolve()
-      .then(() => validatePath(path))
-      .then(() => dispatchThunkAndExpect(
-        this._store,
-        set(path, ...args),
-        types.SET_DATA_SUCCESSFUL
-      ));
-  }
-
-  remove(path, ...args) {
-    return Promise.resolve()
-      .then(() => validatePath(path))
-      .then(() => dispatchThunkAndExpect(
-        this._store,
-        remove(path, ...args),
-        types.REMOVE_DATA_SUCCESSFUL
-      ));
-  }
-
-  observe(path, ...args) {
-    let callback = args.pop(),
-        pathInState,
-        wrappedCallback;
-
-    if (!path) {
-      throw new Error('Observe must be given a valid path');
+  /**
+   * Fetch content from storage for given key
+   * @param {string} path Path to item
+   * @returns {Promise<Object>} Value of item in storage
+   */
+  _fetch(path) {
+    if (this._cache.has(path)) {
+      return Promise.resolve(this._cache.get(path));
     }
 
-    validatePath(path);
-
-    pathInState = [ DATA_PREFIX, path ];
-    wrappedCallback = () => this.get(path).then(callback);
-
-    return storeToObserver(this._store).observe(pathInState, wrappedCallback);
+    return this._source.get(path).then(body => {
+      this._cache.set(path, body);
+      return body;
+    });
   }
 
-  observeQuery(query, callback) {
-    let content,
-        queryString,
-        pathInStore,
-        wrappedCallback;
-
-    // Clone so as to not affect given param
-    query = Object.assign({}, query);
-
-    queryString = toQueryParams(query);
-
-    pathInStore = [ QUERIES_PREFIX, queryString, 'matches' ];
-    content = this._store.getState()[DATA_PREFIX];
-
-    if (query.parent) {
-      validatePath(query.parent);
-    }
-
-    if (query.ancestor) {
-      validatePath(query.ancestor);
-    }
-
-    this._store.dispatch(observeQuery({ query, content }));
-
-    wrappedCallback = (paths) => {
-      return callback(
-        clone(pathsToResponse(paths, this._store.getState()))
-      );
-    }
-
-    return storeToObserver(this._store).observe(pathInStore, wrappedCallback);
+  /**
+   * Get given stored state
+   * @param {string} state 
+   * @returns {*} Value of state
+   */
+  getState(state) {
+    return state ? this._states.get(state) : this._states.toObject();
   }
 
-  prefetch(path) {
-    return this.find({ ancestor: path }).then(() => {});
-  }
-
-  save(...args) {
-    return dispatchThunkAndExpect(this._store, save(...args), types.SAVE_SUCCESSFUL);
-  }
-
-  // Editable
+  /**
+   * Switch edit mode on or off
+   * @param {boolean} on 
+   * @returns {undefined}
+   */
   editable(on) {
-    this._store.dispatch(on ? editActive() : editInactive());
+    this._states.set('editable', on);
   }
 
-  // State
-  getState(substate) {
-    let state = this._store.getState();
-
-    if (substate) {
-      return PUBLIC_STATE_MAP[substate] && getByPath(state, PUBLIC_STATE_MAP[substate]);
-    }
-
-    return Object.keys(PUBLIC_STATE_MAP).reduce((publicState, property) => {
-      return Object.assign(
-        publicState,
-        { [ property ]: getByPath(state, PUBLIC_STATE_MAP[property]) }
-      );
-    }, {});
+  /**
+   * Observe given state
+   * @param {string} state State to observer 
+   * @param {Function} callback Function to call each time state changes 
+   * @returns {Object} Returns subscription object with unobserve function
+   */
+  observeState(state, callback) {
+    return this._states.observe(state, callback);
   }
 
-  observeState(substate, callback) {
-    if (!substate) {
-      throw new Error('No state given. Must include a state to observe e.g. Simpla.observeState(\'authenticated\', showAdmin)');
+  /**
+   * Get current value at given path
+   * @param {string} path Path of value to retrieve 
+   */
+  get(path) {
+    if (this._content.has(path)) {
+      return Promise.resolve(this._content.get(path));
     }
 
-    let realSubstate = PUBLIC_STATE_MAP[substate];
-    return storeToObserver(this._store).observe(realSubstate, callback);
+    return this._fetch(path).then(data => {
+      this._content.set(path, data);
+      return data;
+    });
+  }
+
+  /**
+   * Set data at given path
+   * @param {string} path 
+   * @param {Object} value 
+   * @returns {Promise<Object>} Promise which resolves to given value
+   */
+  set(path, value) {
+    return Promise.resolve()
+      .then(() => {
+        validatePath(path);
+        validateItem(value);
+        return this.get(path);
+      })
+      .then(current => {
+        const same = prop => value && current && equal(value[prop], current[prop]);
+
+        // Data and type are the only properties which might have changed,
+        //  if they're the same, there's no need to update the internal
+        //  content store and we can do a quick return
+        if (value === current || (same('data') && same('type'))) {
+          return current;
+        }
+
+        if (value === null) {
+          return Promise.resolve(this._content.set(path, value));
+        }
+
+        const working = Object.assign({ type: null }, current || {}, value, {
+          path
+        });
+
+        if (!current) {
+          working.createdAt = new Date().toISOString();
+        }
+
+        working.updatedAt = new Date().toISOString();
+
+        this._content.set(path, clone(working));
+
+        // Note: this could be costly, worth keeping an eye on
+        return working;
+      });
+  }
+
+  /**
+   * Remove data at given path
+   * @param {string} path 
+   * @returns {Promise<Object>} Promise which resolves to null 
+   */
+  remove(path) {
+    validatePath(path);
+    return this.set(path, null);
+  }
+
+  /**
+   * Observe value at given path
+   * @param {string} path 
+   * @param {Function} callback
+   * @returns {Object} Returns subscription object with unobserve function 
+   */
+  observe(path, callback) {
+    validatePath(path);
+    return this._content.observe(path, callback);
+  }
+
+  /**
+   * Login using current authentication module. Stores resulting token
+   * @returns {Promise<undefined>} Returns once successfully authenticated
+   */
+  login() {
+    return this._auth.authenticate().then(({ token }) => {
+      this._states.set('token', token);
+    });
+  }
+
+  /**
+   * Logs out, meaning it sets the current token to null
+   */
+  logout() {
+    this._states.set('token', null);
+  }
+
+  /**
+   * Save changes in local buffer to storage. If path is provided, will 
+   *   only save changes at that path
+   * @param {string?} path
+   * @returns {Promise<undefined>} Resolves once all changes saved
+   */
+  save(path) {
+    const buffer = this.getState('buffer');
+    const entries = path ? [[ path, this._content.get(path) ]] : this._content.entries();
+    const changedFiles = entries.filter(byModified(buffer));
+
+    const persistAll = transaction => {
+      changedFiles.forEach(([path, contents]) => {
+        if (contents === null) {
+          transaction.remove(path);
+        } else {
+          transaction.set(path, contents);
+        }
+      });
+
+      return transaction.commit();
+    };
+
+    const resetContent = () => {
+      // TODO: This doesn't account for any conversions made in the storage
+      changedFiles.forEach(([key, contents]) => {
+        this._content.set(key, contents);
+        this._cache.set(key, contents);
+      });
+    };
+
+    return Promise.resolve()
+      .then(() => {
+        if (path) {
+          validatePath(path);
+        }
+
+        return changedFiles.length ? this._storage.startTransaction() : Promise.resolve();
+      })
+      .then(persistAll)
+      .then(resetContent);
+  }
+
+  /**
+   * Load all items in remote database. Useful for refactoring database
+   *  or initialising indexes
+   * @returns {Promise<Array<Object>>} Resolves to an array of all remote items
+   */
+  _loadDB() {
+    return this._storage.all().then(paths => {
+      return Promise.all(paths.map(path => this.get(path)));
+    });
   }
 }
-
-// Init plugins
-const plugins = [
-  ping,
-  persistToken
-];
-
-plugins.forEach(plugin => plugin(Simpla));
-
-export default Simpla;

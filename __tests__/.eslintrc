@@ -1,0 +1,13 @@
+{
+  "plugins": ["jest"],
+  "extends": ["plugin:jest/recommended"],
+  "env": {
+    "jest/globals": true
+  },
+  "globals": {
+    "global": false
+  },
+  "parserOptions": {
+    "ecmaVersion": "2017"
+  }
+}

@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Simpla content set creating data 1`] = `
+Object {
+  "createdAt": "2017-08-08T00:00:00.000Z",
+  "data": Object {
+    "name": "Jamie",
+  },
+  "path": "/person/jamie",
+  "type": null,
+  "updatedAt": "2017-08-08T00:00:00.000Z",
+}
+`;
+
+exports[`Simpla state getState config 1`] = `
+Object {
+  "branch": "master",
+  "public": "",
+  "repo": "someone/something",
+  "source": "https://raw.githubusercontent.com/someone/something/master",
+}
+`;
