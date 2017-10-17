@@ -2,9 +2,8 @@
 node_modules
 
 # Built files
-# UNCOMMENT WHEN PUBLISHED TO NPM
-# adapters
-# simpla.min.js
+adapters
+simpla.min.js
 
 # Runtime
 .DS_Store
