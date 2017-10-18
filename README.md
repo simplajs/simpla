@@ -66,17 +66,12 @@ Simpla is available on NPM and Unpkg as `simpla`. Create a Github repo, grab the
      * Public URL of your content, defaults to fetching directly from GitHub
      * Push your content to a CDN like Netlify in production
      */
-    source: window.location.origin,
-
-    /**
-     * Commit branch (optional)
-     * Git branch Simpla commits new content to, defaults to master
-     * Change this in development to make non-production changes
-     */
-    branch: 'master'
+    source: window.location.origin
   });
 </script>
 ```
+
+Simpla uses [web components](https://www.webcomponents.org) to manage content, the library itself is just a tiny (~5kb) core to an expansive ecosystem.
 
 Install and add elements to your page with Bower and HTML imports (NPM/ES module support coming soon). You can find elements in the [elements catalogue](https://www.simpla.io/elements). 
 
