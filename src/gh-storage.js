@@ -127,7 +127,9 @@ export default class GitHub {
       });
     };
 
-    return getShaFor(this.branch).then(createBranch).then(() => transaction);
+    return getShaFor(this.branch)
+      .then(createBranch)
+      .then(() => transaction);
   }
 
   /**
@@ -138,34 +140,37 @@ export default class GitHub {
    */
   set(path, data) {
     const [content, uploads] = toShortcodeAndUploads(data);
-    const get = file => this._request(`contents${file}?ref=${this.branch}`);
-    const asFilePairs = uploads
-      .map(([file, content]) => [`${this.paths.uploads}/${file}`, content])
-      .concat([
-        [
-          `${this.paths.data}${path}.json`,
-          encodeBase64Unicode(JSON.stringify(content, null, 2))
-        ]
-      ]);
 
-    const updateFile = ([file, content]) => {
-      return this._enqueue(() => {
-        return get(file).then(({ sha }) => {
-          return this._request(`contents${file}`, {
-            method: 'PUT',
-            body: {
-              message: `Updating ${file}`,
-              branch: this.branch,
-              path: file.slice(1),
-              content,
-              sha
-            }
-          });
-        });
+    const get = file => this._request(`contents${file}?ref=${this.branch}`);
+    const toUploadEntry = ([file, content]) => [
+      `${this.paths.uploads}/${file}`,
+      content
+    ];
+
+    const itemPath = `${this.paths.data}${path}.json`;
+    const itemContent = encodeBase64Unicode(JSON.stringify(content, null, 2));
+    const itemEntry = [itemPath, itemContent];
+
+    const asFileEntries = uploads.map(toUploadEntry).concat([itemEntry]);
+
+    const updateEntry = (file, content) => ({ sha }) => {
+      return this._request(`contents${file}`, {
+        method: 'PUT',
+        body: {
+          message: `Updating ${file}`,
+          branch: this.branch,
+          path: file.slice(1),
+          content,
+          sha
+        }
       });
     };
 
-    return Promise.all(asFilePairs.map(updateFile)).then(() => data);
+    const updateFile = ([file, content]) => {
+      return this._enqueue(() => get(file).then(updateEntry(file, content)));
+    };
+
+    return Promise.all(asFileEntries.map(updateFile)).then(() => data);
   }
 
   /**
@@ -190,7 +195,9 @@ export default class GitHub {
     };
 
     return this._enqueue(() => {
-      return get(file).then(deleteContent).then(() => null);
+      return get(file)
+        .then(deleteContent)
+        .then(() => null);
     });
   }
 }
@@ -226,7 +233,9 @@ class Transaction extends GitHub {
     };
 
     return this._enqueue(() => {
-      return mergeIntoPreviousBranch().then(deleteOwnBranch).then(noop);
+      return mergeIntoPreviousBranch()
+        .then(deleteOwnBranch)
+        .then(noop);
     });
   }
 }
