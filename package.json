@@ -4,8 +4,8 @@
   "main": "simpla.min.js",
   "license": "MIT",
   "scripts": {
-    "build": "BABEL_ENV=production rollup -c",
-    "watch": "BABEL_ENV=production rollup -c -w",
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
     "prepublishOnly": "npm run build",
     "test": "BABEL_ENV=test jest",
     "posttest": "eslint ./src ./__tests__"
@@ -21,6 +21,7 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-object-assign": "^6.22.0",
     "babel-preset-env": "^1.6.0",
+    "core-js": "^2.5.1",
     "eslint": "^4.8.0",
     "eslint-plugin-jest": "^21.2.0",
     "jest": "^21.2.1",
