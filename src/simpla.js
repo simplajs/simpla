@@ -1,13 +1,14 @@
 import HttpSource from './http-source.js';
 import GitHubStorage from './gh-storage.js';
+import Store from './store.js';
 import {
+  assign,
   equal,
   clone,
   validatePath,
   validateItem,
   byModified
 } from './utils.js';
-import Store from './store.js';
 
 const LOCAL_STORAGE_KEY = 'sm.oss.token';
 const DATA_FOLDER = 'data';
@@ -208,7 +209,7 @@ export default class Simpla {
           return Promise.resolve(this._content.set(path, value));
         }
 
-        const working = Object.assign({ type: null }, current || {}, value, {
+        const working = assign({ type: null }, current || {}, value, {
           path
         });
 

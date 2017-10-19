@@ -1,4 +1,4 @@
-import { equal } from './utils.js';
+import { equal, assign } from './utils.js';
 
 export default class Store {
   constructor() {
@@ -56,6 +56,6 @@ export default class Store {
   }
 
   toObject() {
-    return Object.assign({}, this._data);
+    return assign({}, this._data);
   }
 }

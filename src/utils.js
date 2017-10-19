@@ -168,3 +168,24 @@ export function deepMapIn(item, transform) {
 }
 
 export function noop() {}
+
+export const assign = Object.assign ? Object.assign.bind(Object) : (target) => {
+  if (target == null) {
+    throw new TypeError('Cannot convert undefined or null to object');
+  }
+
+  let to = Object(target);
+
+  for (let index = 1; index < arguments.length; index++) {
+    let nextSource = arguments[index];
+
+    if (nextSource != null) {
+      for (let nextKey in nextSource) {
+        if (nextSource.hasOwnProperty(nextKey)) {
+          to[nextKey] = nextSource[nextKey];
+        }
+      }
+    }
+  }
+  return to;
+};
