@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`gh-storage remove should get and remove blobs from GitHub 1`] = `
+Object {
+  "auth": "token some-token",
+  "body": undefined,
+  "method": "GET",
+  "url": "https://api.github.com/repos/someone/something/contents/data/foo.json?ref=master",
+}
+`;
+
+exports[`gh-storage remove should get and remove blobs from GitHub 2`] = `
+Object {
+  "auth": "token some-token",
+  "body": Object {
+    "branch": "master",
+    "message": "Removing /foo",
+    "path": "data/foo.json",
+    "sha": "content-sha",
+  },
+  "method": "DELETE",
+  "url": "https://api.github.com/repos/someone/something/contents/data/foo.json",
+}
+`;
+
+exports[`gh-storage set should fetch and update files on GitHub 1`] = `
+Object {
+  "auth": "token some-token",
+  "body": undefined,
+  "method": "GET",
+  "url": "https://api.github.com/repos/someone/something/contents/data/foo.json?ref=master",
+}
+`;
+
+exports[`gh-storage set should fetch and update files on GitHub 2`] = `
+Object {
+  "auth": "token some-token",
+  "body": Object {
+    "branch": "master",
+    "content": "ewogICJzb21lIjogImRhdGEiCn0=",
+    "message": "Updating /data/foo.json",
+    "path": "data/foo.json",
+    "sha": "content-sha",
+  },
+  "method": "PUT",
+  "url": "https://api.github.com/repos/someone/something/contents/data/foo.json",
+}
+`;
+
+exports[`gh-storage startTransaction should create a new branch 1`] = `
+Object {
+  "auth": "token some-token",
+  "body": undefined,
+  "method": "GET",
+  "url": "https://api.github.com/repos/someone/something/branches/master",
+}
+`;
+
+exports[`gh-storage startTransaction should create a new branch 2`] = `
+Object {
+  "auth": "token some-token",
+  "body": Object {
+    "ref": "refs/heads/simpla-editing-7di5k",
+    "sha": "commit-sha",
+  },
+  "method": "POST",
+  "url": "https://api.github.com/repos/someone/something/git/refs",
+}
+`;
+
+exports[`gh-storage transaction commit should create a merge 1`] = `
+Object {
+  "auth": "token some-token",
+  "body": Object {
+    "base": "master",
+    "head": "simpla-editing-7di5k",
+    "message": "Merging editing branch",
+  },
+  "method": "POST",
+  "url": "https://api.github.com/repos/someone/something/merges",
+}
+`;
+
+exports[`gh-storage transaction commit should create a merge 2`] = `
+Object {
+  "auth": "token some-token",
+  "body": undefined,
+  "method": "DELETE",
+  "url": "https://api.github.com/repos/someone/something/git/refs/heads/simpla-editing-7di5k",
+}
+`;
