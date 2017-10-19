@@ -106,7 +106,8 @@ export function validateItem(item) {
     }
   }
 
-  for (let key of keys) {
+  for (let i = 0, k = keys.length; i < k; i++) {
+    let key = keys[i];
     if (allowed.indexOf(key) === -1) {
       throw new Error(
         `Invalid property ${key}. Valid properties are ${allowed
