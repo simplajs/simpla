@@ -274,8 +274,13 @@ export default class Simpla {
     const buffer = this.getState('buffer');
     const entries = path ? [[ path, this._content.get(path) ]] : this._content.entries();
     const changedFiles = entries.filter(byModified(buffer));
+    const hasChanges = !!changedFiles.length;
 
     const persistAll = transaction => {
+      if (!hasChanges) {
+        return;
+      }
+
       changedFiles.forEach(([path, contents]) => {
         if (contents === null) {
           transaction.remove(path);
@@ -301,7 +306,9 @@ export default class Simpla {
           validatePath(path);
         }
 
-        return changedFiles.length ? this._storage.startTransaction() : Promise.resolve();
+        if (hasChanges) {
+          return this._storage.startTransaction();
+        }
       })
       .then(persistAll)
       .then(resetContent);

@@ -276,5 +276,15 @@ describe('Simpla', () => {
     it('should reject invalid paths', async () => {
       await expect(simpla.save('invalid-path')).rejects.toBeDefined();
     });
+
+    it('should do nothing if no changes happened', async () => {
+      const storage = GHStorage.mock.instances[0];
+      const { saved } = ITEMS;
+      
+      await simpla.set(saved[0].path, saved[0]);
+      await simpla.save();
+
+      expect(storage._mockState.transactions).toHaveLength(0);
+    });
   });
 });
