@@ -38,42 +38,48 @@ Create dynamic content with HTML and edit it inline. Ditch the server and use Gi
 
 ## Installation
 
-Simpla is available on NPM and Unpkg as `simpla`. Create a Github repo, grab the core library and an OAuth adapter, then just call `Simpla.init`
+Simpla is available on NPM and Unpkg as `simpla`.
 
-```html
-<!-- Include Simpla core, Netlify auth adapter, and a cross-browser polyfill-->
-<script src="https://unpkg.com/simpla@^3.0.0"></script>
-<script src="https://unpkg.com/simpla@^3.0.0/adapters/netlify.js"></script>
-<script src="https://unpkg.com/webcomponents.js@^0.7.24/webcomponents-lite.min.js" async></script>
-
-<!-- Init project -->
-<script>
-  Simpla.init({
-    /**
-     * Github Repo
-     * Repository where content will be stored (in a '_content' folder)
-     */
-    repo: 'username/repo',
-
-    /**
-     * Auth adapter
-     * Used to authenticate users with Github from your site
-     */
-    auth: new SimplaNetlify({ site: 'mysite' }),
-
-    /**
-     * Public content source (optional)
-     * Public URL of your content, defaults to fetching directly from GitHub
-     * Push your content to a CDN like Netlify in production
-     */
-    source: window.location.origin
-  });
-</script>
+```sh
+npm i simpla
 ```
 
-Simpla uses [web components](https://www.webcomponents.org) to manage content, the library itself is just a tiny (~5kb) core to an expansive ecosystem.
+Import the core library and an OAuth adapter, and call `Simpla.init`
 
-Install and add elements to your page with Bower and HTML imports (NPM/ES module support coming soon). You can find elements in the [elements catalogue](https://www.simpla.io/elements). 
+```js
+// Import Simpla and OAuth adapter
+import Simpla from 'simpla';
+import SimplaNetlify from 'simpla/adapters/netlify';
+
+// Init Simpla
+Simpla.init({
+  /**
+   * Github Repo
+   * Repository where content will be stored (in a '_content' folder)
+   */
+  repo: 'username/repo',
+
+  /**
+   * Auth adapter
+   * Used to authenticate users with Github from your site
+   */
+  auth: new SimplaNetlify({ site: 'mysite' }),
+
+  /**
+   * Public content source (optional)
+   * Public URL of your content, defaults to fetching directly from GitHub
+   * Push your content to a CDN like Netlify in production
+   */
+  source: window.location.origin
+});
+
+// Add Simpla to window global, for components to use
+window.Simpla = Simpla;
+```
+
+Simpla and its adapters export UMD modules, so you can also link to them with `<script>` tags and use the globals directly.
+
+Simpla uses [web components](https://www.webcomponents.org) to manage content, the library itself is just a tiny (~5kb) core to an expansive ecosystem. Install and add elements to your page with Bower and HTML imports (NPM/ES module support coming soon). You can find elements in the [elements catalogue](https://www.simpla.io/elements). 
 
 ```sh
 $ bower i simpla-text simpla-img simpla-admin --save
@@ -83,6 +89,12 @@ $ bower i simpla-text simpla-img simpla-admin --save
 <link rel="import" href="/bower_components/simpla-text/simpla-text.html">
 <link rel="import" href="/bower_components/simpla-img/simpla-img.html">
 <link rel="import" href="/bower_components/simpla-admin/simpla-admin.html" async>
+```
+
+You should also include a web components polyfill for full cross-browser support (see the [browsers Simpla supports](https://www.simpla.io/docs/guides/browser-support)).
+
+```html
+<script src="https://unpkg.com/webcomponents.js@^0.7.24/webcomponents-lite.min.js" async></script>
 ```
 
 **[See full documentation & API references](https://www.simpla.io/docs)**
@@ -99,7 +111,7 @@ There are lots of ways you can help push the Simpla project forward:
 
 - **Submitting Pull Requests.** We happily accept PRs against both this repository and any of the elements. Your PR should address an existing issue or have been discussed previously to ensure it gets merged.
 
-- **Build your own elements!** Simpla is an open ecosystem, build your own content elements and [publish them to the catalogue](https://github.com/simplaio/simpla-elements/#publishing-your-element).
+- **Submitting new components** Simpla is an open ecosystem, and the best way you can contribute to the project is to build your own content components and [publish them to the catalogue](https://github.com/simplaio/simpla-elements/#publishing-your-element). The ecosystem is currently built around Web Components, but there's no reason you couldn't use Simpla in a component environment of your choice (React, etc).
 
 Read the [Contributing guidelines](/CONTRIBUTING.md) for more information.
 
