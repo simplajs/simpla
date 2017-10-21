@@ -4,11 +4,7 @@
 -->
 
 ### Type of change
-
-- [ ] Bugfix
-- [ ] New feature
-- [ ] Enhancement of existing feature
-- [ ] Breaking change
+<!-- Is it a bugfix, new feature, enhancement, or breaking change? -->
 
 ### Description
 <!-- Describe the purpose of this PR, if it fixes a bug or resolves a feature request link to the relevant issue -->

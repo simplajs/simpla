@@ -3,13 +3,12 @@
  -->
 
 ### I'm submitting a
-- [ ] Bug report
-- [ ] Feature request
+<!-- Is this for a Bug or a Feature request?-->
 
 ### Description
 
-### Steps to reproduce the problem
-<!-- Be as detailed as possible, if submitting a feature request say what problem or use-case you think it will solve -->
+### Futher details
+<!-- Eg: steps to reproduce problem - be as detailed as possible. For a feature request,  what problem will it solve? -->
 
 ### Browsers Affected
 <!-- Check all that apply, add versions if possible -->
