@@ -1,6 +1,6 @@
 {
   "name": "simpla",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "main": "simpla.min.js",
   "license": "MIT",
   "scripts": {
