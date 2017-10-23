@@ -15,9 +15,16 @@ describe('http-source', () => {
 
   test('getting and transforming data', () => {
     fetch.mockResponseOnce(JSON.stringify({ text: 'Hello world [upload picture.png]' }));
-    return http.get('/foo').then(response => {
+    return http.get('/foo').then(({ text }) => {
       expect(fetch).toHaveBeenCalledWith('/content/foo.json');
-      expect(response).toMatchSnapshot();
+      expect(text).toEqual('Hello world /uploads/picture.png');
+    });
+  });
+
+  test('transforming more than one picture', () => {
+    fetch.mockResponseOnce(JSON.stringify({ text: 'One: [upload one.png], two: [upload two.png]' }));
+    return http.get('/foo').then(({ text }) => {
+      expect(text).toEqual('One: /uploads/one.png, two: /uploads/two.png');
     });
   });
 

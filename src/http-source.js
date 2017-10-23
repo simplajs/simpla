@@ -1,7 +1,7 @@
 import fetch from 'unfetch';
 import { deepMapIn } from "./utils";
 
-const UPLOAD_REGEX = /\[upload\s(.+)\]/g;
+const UPLOAD_REGEX = /\[upload\s(.+?)\]/g;
 
 export default class HttpSource {
   constructor({ data, uploads, cacheBusting }) {
