@@ -1,5 +1,13 @@
 # Change Log
 
+## [v3.0.1](https://github.com/simplaio/simpla/tree/v3.0.1) (2017-10-23)
+[Full Changelog](https://github.com/simplaio/simpla/compare/v3.0.0...v3.0.1)
+
+**Closed issues:**
+
+- Add prefetch method [\#65](https://github.com/simplaio/simpla/issues/65)
+- Ability to run simpla on own server [\#11](https://github.com/simplaio/simpla/issues/11)
+
 ## [v3.0.0](https://github.com/simplaio/simpla/tree/v3.0.0) (2017-10-17)
 [Full Changelog](https://github.com/simplaio/simpla/compare/v2.3.2...v3.0.0)
 
