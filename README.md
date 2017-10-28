@@ -30,6 +30,8 @@ Create dynamic content with HTML and edit it inline. Ditch the server and use Gi
     <simpla-text path="/gallery/[photo]/caption"></simpla-text>
   </template>
 </simpla-collection>
+
+<!-- And many more components -->
 ```
 
 <p align="center">
@@ -70,7 +72,7 @@ Simpla.init({
    * Public URL of your content, defaults to fetching directly from GitHub
    * Push your content to a CDN like Netlify in production
    */
-  source: window.location.origin
+  source: https://mysite.netlify.com
 });
 
 // Add Simpla to window global, for components to use
@@ -79,7 +81,7 @@ window.Simpla = Simpla;
 
 Simpla and its adapters export UMD modules, so you can also link to them with `<script>` tags and use the globals directly.
 
-Simpla uses [web components](https://www.webcomponents.org) to manage content, the library itself is just a tiny (~5kb) core to an expansive ecosystem. Install and add elements to your page with Bower and HTML imports (NPM/ES module support coming soon). You can find elements in the [elements catalogue](https://www.simpla.io/elements). 
+Simpla uses [web components](https://www.webcomponents.org) to manage content, the library itself is just a tiny (~4kb) core to an expansive ecosystem. Install and add components to your page with Bower and HTML imports (NPM/JS support coming soon). You can find components in the [elements catalogue](https://www.simpla.io/elements). 
 
 ```sh
 $ bower i simpla-text simpla-img simpla-admin --save
@@ -99,10 +101,6 @@ You should also include a web components polyfill for full cross-browser support
 
 **[See full documentation & API references](https://www.simpla.io/docs)**
 
-## Questions
-
-To find out more about Simpla visit the project [website](https://www.simpla.io), and for questions join the community on [Slack](https://slack.simpla.io)
-
 ## Contributing
 
 There are lots of ways you can help push the Simpla project forward:
@@ -111,7 +109,7 @@ There are lots of ways you can help push the Simpla project forward:
 
 - **Submitting Pull Requests.** We happily accept PRs against both this repository and any of the elements. Your PR should address an existing issue or have been discussed previously to ensure it gets merged.
 
-- **Submitting new components** Simpla is an open ecosystem, and the best way you can contribute to the project is to build your own content components and [publish them to the catalogue](https://github.com/simplaio/simpla-elements/#publishing-your-element). The ecosystem is currently built around Web Components, but there's no reason you couldn't use Simpla in a component environment of your choice (React, etc).
+- **Publishing new components** Simpla is an open ecosystem, and the best way you can contribute to the project is to build your own content components and [publish them to the catalogue](https://github.com/simplaio/simpla-elements/#publishing-your-element). The ecosystem is currently built around Web Components, but there's no reason you couldn't use Simpla in a component environment of your choice (React, etc).
 
 Read the [Contributing guidelines](/CONTRIBUTING.md) for more information.
 
