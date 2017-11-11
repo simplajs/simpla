@@ -62,7 +62,7 @@ Simpla.init({
   auth: new SimplaNetlify({ site: 'mysite' }),
 
   // Public URL of your content (optional)
-  source: https://mysite.netlify.com
+  source: 'https://mysite.netlify.com'
 });
 
 // Add Simpla to window global, for components to use
