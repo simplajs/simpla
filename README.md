@@ -55,23 +55,13 @@ import SimplaNetlify from 'simpla/adapters/netlify';
 
 // Init Simpla
 Simpla.init({
-  /**
-   * Github Repo
-   * Repository where content will be stored (in a '_content' folder)
-   */
+  // Github repo to store content in
   repo: 'username/repo',
 
-  /**
-   * Auth adapter
-   * Used to authenticate users with Github from your site
-   */
+  // Adapter to authenticate users with Github
   auth: new SimplaNetlify({ site: 'mysite' }),
 
-  /**
-   * Public content source (optional)
-   * Public URL of your content, defaults to fetching directly from GitHub
-   * Push your content to a CDN like Netlify in production
-   */
+  // Public URL of your content (optional)
   source: https://mysite.netlify.com
 });
 
