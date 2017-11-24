@@ -12,9 +12,19 @@
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome"> 
 </p>
 
-Simpla is an open, modular, frontend content framework built on Web Components. 
+Simpla is a modular content system for frontend developers, built on Web Components.
 
-Create dynamic content with HTML and edit it inline. Ditch the server and use Github as your backend. Push everything to static a CDN. Integrate into any stack instantly. Assemble your own lightweight CMS.
+At a glance, it lets you:
+
+- Build with standard HTML & JS
+- Edit content (safely) inline
+- Use Github as your backend
+- Work in any stack or framework
+- Push everything as JSON data to a static CDN
+- Define content models in the DOM
+- Assemble your own lightweight CMS
+
+It looks like this: 
 
 ```html
 <!-- Block of editable richtext -->
@@ -55,6 +65,7 @@ import SimplaNetlify from 'simpla/adapters/netlify';
 
 // Init Simpla
 Simpla.init({
+
   // Github repo to store content in
   repo: 'username/repo',
 
@@ -63,15 +74,16 @@ Simpla.init({
 
   // Public URL of your content (optional)
   source: 'https://mysite.netlify.com'
+  
 });
 
-// Add Simpla to window global, for components to use
+// Add Simpla to window global for components to access
 window.Simpla = Simpla;
 ```
 
 Simpla and its adapters export UMD modules, so you can also link to them with `<script>` tags and use the globals directly.
 
-Simpla uses [web components](https://www.webcomponents.org) to manage content, the library itself is just a tiny (~4kb) core to an expansive ecosystem. Install and add components to your page with Bower and HTML imports (NPM/JS support coming soon). You can find components in the [elements catalogue](https://www.simpla.io/elements). 
+Simpla uses [web components](https://www.webcomponents.org) to manage content, the library itself is just a tiny (~4kb) core to an expansive ecosystem. Install and add components to your page with Bower and HTML imports (NPM/JS support coming soon). You can find components in the [elements catalogue](https://www.webcomponents.org/collection/simplaio/simpla-elements). 
 
 ```sh
 $ bower i simpla-text simpla-img simpla-admin --save
@@ -83,13 +95,13 @@ $ bower i simpla-text simpla-img simpla-admin --save
 <link rel="import" href="/bower_components/simpla-admin/simpla-admin.html" async>
 ```
 
-You should also include a web components polyfill for full cross-browser support (see the [browsers Simpla supports](https://www.simpla.io/docs/guides/browser-support)).
+You should also include a web components polyfill for full cross-browser support (see the [browsers Simpla supports](https://docs.simpla.io/guides/browser-support.html)).
 
 ```html
 <script src="https://unpkg.com/webcomponents.js@^0.7.24/webcomponents-lite.min.js" async></script>
 ```
 
-**[See full documentation & API references](https://www.simpla.io/docs)**
+**[See full documentation & API references](https://docs.simpla.io)**
 
 ## Contributing
 
@@ -99,7 +111,7 @@ There are lots of ways you can help push the Simpla project forward:
 
 - **Submitting Pull Requests.** We happily accept PRs against both this repository and any of the elements. Your PR should address an existing issue or have been discussed previously to ensure it gets merged.
 
-- **Publishing new components** Simpla is an open ecosystem, and the best way you can contribute to the project is to build your own content components and [publish them to the catalogue](https://github.com/simplaio/simpla-elements/#publishing-your-element). The ecosystem is currently built around Web Components, but there's no reason you couldn't use Simpla in a component environment of your choice (React, etc).
+- **Publishing new components** Simpla is a community driven project, and the best way you can contribute is to build your own content components and [publish them to the catalogue](https://github.com/simplaio/simpla-elements/#publishing-your-element)! The ecosystem is built on Web Components, but there's no reason you couldn't use Simpla in a component environment of your choice (React, etc).
 
 Read the [Contributing guidelines](/CONTRIBUTING.md) for more information.
 
