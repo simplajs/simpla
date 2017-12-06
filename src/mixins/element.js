@@ -1,3 +1,4 @@
+/* global Simpla */
 function changed(from, prop, value) {
   from.dispatchEvent(new CustomEvent(`${prop}-changed`, { detail: { value } }));
 }
