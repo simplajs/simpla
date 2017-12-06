@@ -37,4 +37,12 @@ export default [{
     name: 'SimplaNetlify'
   },
   plugins
+}, {
+  input: 'src/mixins/element.js',
+  output: {
+    file: './mixins/element.js',
+    format: 'umd',
+    name: 'SimplaElement'
+  },
+  plugins
 }];
