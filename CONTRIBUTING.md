@@ -32,13 +32,13 @@ Don't have time to contribute? No worries, here are some other ways to show your
 
 - Star the project
 - Tweet your support for Simpla
-- Share the project [website](https://www.simpla.io)
+- Share the project [website](https://www.simplajs.org)
 
 ### Simpla's ecosystem
 
 Simpla is a large open source project made up of dozens of repositories. The core library provides low-level tools for both developers and Simpla elements to save content, manage state, coordinate changes, authenticate users, and react to content updates.
 
-The majority of Simpla's user-facing functionality comes from its [elements](https://www.simpla.io/elements). All Simpla's elements are open-source and uphold the same contributing and code of conduct guidelines as this library. Their repositories can be found in the [SimplaElements](https://www.github.com/SimplaElements) organisation.
+The majority of Simpla's user-facing functionality comes from its [elements](https://www.simplajs.org/elements). All Simpla's elements are open-source and uphold the same contributing and code of conduct guidelines as this library. Their repositories can be found in the [SimplaElements](https://www.github.com/SimplaElements) organisation.
 
 ## Issues
 
@@ -80,7 +80,7 @@ Before submitting a pull request, ensure that the change it makes addresses an e
 
 ## New elements
 
-One of the best ways to contribute to the Simpla project is by creating your own Simpla elements! We're planning much more thorough documentation for this soon, but to publish your element to the [catalogue](https://www.simpla.io/elements) submit a PR against [its repo](https://github.com/SimplaElements/simpla-elements).
+One of the best ways to contribute to the Simpla project is by creating your own Simpla elements! We're planning much more thorough documentation for this soon, but to publish your element to the [catalogue](https://www.simplajs.org/elements) submit a PR against [its repo](https://github.com/SimplaElements/simpla-elements).
 
 
 

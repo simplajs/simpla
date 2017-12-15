@@ -1,5 +1,5 @@
-<!-- 
-    Thanks for reporting an issue! Remember, an issue isn't the place for support requests or 'how to' questions. Use Stack Overflow or join us on Slack (https://slack.simpla.io) instead
+<!--
+    Thanks for reporting an issue! Remember, an issue isn't the place for support requests or 'how to' questions. Use Stack Overflow or join us on Slack (https://slack.simplajs.org) instead
  -->
 
 ### I'm submitting a
