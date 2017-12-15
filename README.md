@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://www.simpla.io">
-    <img src="https://www.simpla.io/assets/public/logo.png" alt="Simpla" width="300">
+  <a href="https://www.simplajs.org">
+    <img src="https://www.simplajs.org/assets/public/logo.png" alt="Simpla" width="300">
   </a> 
 </p>
 
 <p align="center">
-  <a href="https://travis-ci.org/simplaio/simpla"><img src="https://travis-ci.org/simplaio/simpla.svg?branch=master" alt="Test status"></a>
+  <a href="https://travis-ci.org/simplajs/simpla"><img src="https://travis-ci.org/simplaio/simpla.svg?branch=master" alt="Test status"></a>
   <img src="http://img.badgesize.io/https://unpkg.com/simpla?compression=gzip&label=size%20(gzip)" alt="Size (gzip)">
   <a href="https://www.npmjs.com/package/simpla"><img src="https://img.shields.io/npm/v/simpla.svg" alt="NPM version"></a>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome"> 
@@ -44,7 +44,7 @@ It looks like this:
 ```
 
 <p align="center">
-  <img src="https://www.simpla.io/assets/public/demo.gif" width="600" alt="Demo of Simpla">
+  <img src="https://www.simplajs.org/assets/public/demo.gif" width="600" alt="Demo of Simpla">
 </p>
 
 ## Installation
@@ -82,7 +82,7 @@ window.Simpla = Simpla;
 
 Simpla and its adapters export UMD modules, so you can also link to them with `<script>` tags and use the globals directly.
 
-Simpla uses [web components](https://www.webcomponents.org) to manage content, the library itself is just a tiny (~4kb) core to an expansive ecosystem. Install and add components to your page with Bower and HTML imports (NPM/JS support coming soon). You can find components in the [elements catalogue](https://www.webcomponents.org/collection/simplaio/simpla-elements). 
+Simpla uses [web components](https://www.webcomponents.org) to manage content, the library itself is just a tiny (~4kb) core to an expansive ecosystem. Install and add components to your page with Bower and HTML imports (NPM/JS support coming soon). You can find components in the [elements catalogue](https://www.webcomponents.org/collection/simplajs/simpla-elements). 
 
 ```sh
 $ bower i simpla-text simpla-img simpla-admin --save
@@ -94,13 +94,13 @@ $ bower i simpla-text simpla-img simpla-admin --save
 <link rel="import" href="/bower_components/simpla-admin/simpla-admin.html" async>
 ```
 
-You should also include a web components polyfill for full cross-browser support (see the [browsers Simpla supports](https://docs.simpla.io/guides/browser-support.html)).
+You should also include a web components polyfill for full cross-browser support (see the [browsers Simpla supports](https://docs.simplajs.org/guides/browser-support.html)).
 
 ```html
 <script src="https://unpkg.com/webcomponents.js@^0.7.24/webcomponents-lite.min.js" async></script>
 ```
 
-**[See full documentation & API references](https://docs.simpla.io)**
+**[See full documentation & API references](https://docs.simplajs.org)**
 
 ## Contributing
 
@@ -110,7 +110,7 @@ There are lots of ways you can help push the Simpla project forward:
 
 - **Submitting Pull Requests.** We happily accept PRs against both this repository and any of the elements. Your PR should address an existing issue or have been discussed previously to ensure it gets merged.
 
-- **Publishing new components** Simpla is a community driven project, and the best way you can contribute is to build your own content components and [publish them to the catalogue](https://github.com/simplaio/simpla-elements/#publishing-your-element)! The ecosystem is built on Web Components, but there's no reason you couldn't use Simpla in a component environment of your choice (React, etc).
+- **Publishing new components** Simpla is a community driven project, and the best way you can contribute is to build your own content components and [publish them to the catalogue](https://github.com/simplajs/simpla-elements/#publishing-your-element)! The ecosystem is built on Web Components, but there's no reason you couldn't use Simpla in a component environment of your choice (React, etc).
 
 Read the [Contributing guidelines](/CONTRIBUTING.md) for more information.
 
