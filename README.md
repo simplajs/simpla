@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.simpla.io">
-    <img src="https://cdn.simpla.io/img/logo/logo-wordmark.png" alt="Simpla" width="300">
+    <img src="https://www.simpla.io/assets/public/logo.png" alt="Simpla" width="300">
   </a> 
 </p>
 
@@ -45,7 +45,7 @@ It looks like this:
 ```
 
 <p align="center">
-  <img src="https://cdn.simpla.io/img/laptop-demo.gif" width="600" alt="Demo of Simpla">
+  <img src="https://www.simpla.io/assets/public/demo.gif" width="600" alt="Demo of Simpla">
 </p>
 
 ## Installation
