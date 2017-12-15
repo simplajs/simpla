@@ -33,7 +33,6 @@ Don't have time to contribute? No worries, here are some other ways to show your
 - Star the project
 - Tweet your support for Simpla
 - Share the project [website](https://www.simpla.io)
-- Participate in the [Slack community](https://slack.simpla.io)
 
 ### Simpla's ecosystem
 
@@ -49,7 +48,7 @@ Please try to determine if the issue is caused by a) one of Simpla's elements, o
 
 Try to follow these guidelines
 
-- Avoid creating issues for implementation help. It's much better to keep the issue tracker focused on bugs and feature requests, ask implementation questions on Stack Overflow or the [Slack community](https://slack.simpla.io)
+- Avoid creating issues for implementation help. It's much better to keep the issue tracker focused on bugs and feature requests, ask implementation questions on Stack Overflow.
 - Investigate the issue
 - Create the issue in the appropriate repository
 
