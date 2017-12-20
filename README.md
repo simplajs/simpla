@@ -116,4 +116,4 @@ Read the [Contributing guidelines](/CONTRIBUTING.md) for more information.
 
 ***
 
-MIT © 2017 [Sean King](https://twitter.com/seaneking) & [Bede Overend](https://twitter.com/bedeoverend)
+[MIT](/LICENSE) © 2017
