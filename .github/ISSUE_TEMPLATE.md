@@ -11,16 +11,10 @@
 <!-- Eg: steps to reproduce problem - be as detailed as possible. For a feature request,  what problem will it solve? -->
 
 ### Browsers Affected
-<!-- Check all that apply, add versions if possible -->
-- [ ] Chrome
-- [ ] Firefox
-- [ ] Edge
-- [ ] Safari
-- [ ] IE 11
+<!-- List the browsers you've tested this in (eg: Chrome, Firefox, etc), add versions if possible -->
 
 ### Error messages
 <!-- Add any error messages from the console, if they're long link to a Gist -->
-
 
 ### Environment
 <!-- Full version of Simpla (eg: 3.0.1), Platform (eg: macOS), and other libraries used (eg: React) -->
