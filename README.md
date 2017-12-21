@@ -108,9 +108,9 @@ There are lots of ways you can help push the Simpla project forward:
 
 - **Reporting bugs.** If you find a bug please report it! Open an issue against this repository for problems with the core library. For problems with elements, open an issue against the element's repository.
 
-- **Submitting Pull Requests.** We happily accept PRs against both this repository and any of the elements. Your PR should address an existing issue or have been discussed previously to ensure it gets merged.
+- **Submitting Pull Requests.** We ❤️ PRs! Your PR should address an existing issue or have been discussed previously to ensure it gets merged.
 
-- **Publishing new components** Simpla is a community driven project, and the best way you can contribute is to build your own content components and [publish them to the catalogue](https://github.com/simplajs/simpla-elements/#publishing-your-element)! The ecosystem is built on Web Components, but there's no reason you couldn't use Simpla in a component environment of your choice (React, etc).
+- **Publishing new components** Simpla is a community driven project, and the best way you can contribute is to build your own content components. The ecosystem is built on Web Components, but there's no reason you couldn't use Simpla in a component environment of your choice (React, etc).
 
 Read the [Contributing guidelines](/CONTRIBUTING.md) for more information.
 
